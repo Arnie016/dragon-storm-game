@@ -2,32 +2,130 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Night Fury: Storm Warden</title>
+<title>Night Fury: Hidden World</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #060a12; font-family: ui-monospace, Menlo, monospace; }
-  #hud { position: fixed; top: 14px; left: 16px; color: #bcd2e8; font-size: 14px; line-height: 1.7;
-         text-shadow: 0 1px 3px #000; user-select: none; pointer-events: none; }
-  #msg { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-         color: #dce9f5; text-align: center; background: rgba(4,8,16,.55); transition: opacity .5s; }
-  #msg h1 { font-size: 34px; margin: 0 0 12px; letter-spacing: 2px; }
-  #msg p { color: #8fa8bf; font-size: 14px; line-height: 1.9; }
-  #msg.hide { opacity: 0; pointer-events: none; }
-  #vig { position: fixed; inset: 0; pointer-events: none;
-         background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.75) 100%); }
+  :root{ --purple:#a463ff; --teal:#38e6d0; --warn:#ff5a7a; }
+  html,body{ margin:0; height:100%; overflow:hidden; background:#04060d;
+    font-family:ui-monospace, "SF Mono", Menlo, monospace; color:#cfe0f5; }
+  canvas{ display:block; }
+
+  /* ---- vignette + being-lit edge glow ---- */
+  #vig{ position:fixed; inset:0; pointer-events:none;
+    background:radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,.8) 100%); }
+  #litglow{ position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity .1s;
+    box-shadow:inset 0 0 220px 40px var(--warn); }
+  #flash{ position:fixed; inset:0; pointer-events:none; opacity:0; background:#dfe4ff; }
+
+  /* ---- HUD ---- */
+  #hud{ position:fixed; inset:0; pointer-events:none; user-select:none; }
+  .panel{ position:absolute; background:linear-gradient(180deg, rgba(10,14,28,.72), rgba(8,10,22,.5));
+    border:1px solid rgba(120,90,200,.35); border-radius:10px; backdrop-filter:blur(3px);
+    padding:9px 13px; box-shadow:0 4px 24px rgba(0,0,0,.4); }
+  #hudTL{ top:14px; left:14px; min-width:190px; }
+  #hudTL .row{ display:flex; justify-content:space-between; font-size:12px; line-height:1.85; letter-spacing:.5px; }
+  #hudTL .k{ color:#7d8cad; } #hudTL .v{ color:#dbe7fb; font-weight:600; }
+  .bar{ height:7px; border-radius:4px; background:rgba(255,255,255,.08); overflow:hidden; margin-top:3px; }
+  .bar > i{ display:block; height:100%; width:0%; border-radius:4px; transition:width .08s linear; }
+  #detFill{ background:linear-gradient(90deg,#3aa0ff,var(--purple) 60%,var(--warn)); }
+  #hudTL .title{ font-size:11px; letter-spacing:2px; color:var(--purple); margin:2px 0 7px; font-weight:700; }
+
+  #objTag{ top:16px; left:50%; transform:translateX(-50%); text-align:center; font-size:12px;
+    letter-spacing:1.5px; color:#b9c8e6; padding:6px 16px; }
+  #objTag b{ color:var(--teal); }
+  #warn{ position:absolute; top:46%; left:50%; transform:translate(-50%,-50%); text-align:center;
+    font-size:26px; font-weight:800; letter-spacing:3px; color:var(--warn); opacity:0;
+    text-shadow:0 0 22px rgba(255,90,122,.8); }
+  #ctrlhint{ bottom:12px; left:50%; transform:translateX(-50%); font-size:11px; letter-spacing:1px;
+    color:#7f90b3; background:none; border:none; box-shadow:none; }
+  #ctrlhint b{ color:#c7d5f0; }
+
+  /* next-beacon arrow */
+  #arrow{ position:absolute; width:0;height:0; pointer-events:none;
+    border-left:11px solid transparent; border-right:11px solid transparent; border-bottom:20px solid var(--teal);
+    filter:drop-shadow(0 0 6px rgba(56,230,208,.9)); opacity:.9; }
+
+  /* ---- overlays (menu / gameover) ---- */
+  .screen{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; text-align:center;
+    background:radial-gradient(ellipse at 50% 30%, rgba(40,20,70,.5), rgba(4,6,13,.86) 70%);
+    transition:opacity .6s; z-index:5; }
+  .screen.hide{ opacity:0; pointer-events:none; }
+  .card{ max-width:640px; padding:0 28px; }
+  .kicker{ font-size:12px; letter-spacing:6px; color:var(--teal); margin-bottom:14px; }
+  h1{ margin:0; font-size:52px; letter-spacing:3px; font-weight:800; line-height:1.05;
+    background:linear-gradient(180deg,#fff,#b79bff 55%,#7a52d8);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 42px rgba(150,100,255,.35); }
+  h1.bad{ background:linear-gradient(180deg,#fff,#ff8a9c 55%,#c53a54); -webkit-background-clip:text; background-clip:text; }
+  h1.good{ background:linear-gradient(180deg,#fff,#7fe6c6 55%,#2aa98a); -webkit-background-clip:text; background-clip:text; }
+  .sub{ color:#9fb0d0; font-size:14px; line-height:1.6; margin:14px 0 22px; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px 22px; max-width:440px; margin:0 auto 24px;
+    font-size:12.5px; color:#aab8d6; text-align:left; }
+  .grid .key{ color:#fff; background:rgba(120,90,200,.22); border:1px solid rgba(150,120,230,.4);
+    border-radius:5px; padding:1px 7px; margin-right:7px; font-size:11px; }
+  .btn{ display:inline-block; margin-top:6px; padding:12px 34px; font-family:inherit; font-size:14px; font-weight:700;
+    letter-spacing:2px; color:#fff; cursor:pointer; border-radius:30px; border:1px solid rgba(160,120,255,.6);
+    background:linear-gradient(180deg, rgba(140,90,240,.5), rgba(90,50,170,.5)); transition:transform .15s, box-shadow .15s;
+    box-shadow:0 0 0 rgba(150,100,255,0); animation:pulse 2.2s ease-in-out infinite; }
+  .btn:hover{ transform:translateY(-2px); box-shadow:0 8px 28px rgba(140,90,240,.5); }
+  @keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(150,100,255,.5);} 50%{ box-shadow:0 0 26px 4px rgba(150,100,255,.15);} }
+  .stat{ display:inline-block; margin:0 14px; font-size:13px; color:#c7d5f0; }
+  .stat b{ display:block; font-size:26px; color:#fff; margin-top:2px; }
+  .foot{ margin-top:20px; font-size:11px; color:#5f6f92; letter-spacing:1px; }
 </style>
 </head>
 <body>
 <div id="vig"></div>
-<div id="hud"></div>
-<div id="msg"><div>
-  <h1>NIGHT FURY: STORM WARDEN</h1>
-  <p>Fly through all <b style="color:#7fe0ff">12 storm rings</b> before the gale wears you down.<br><br>
-     MOUSE — steer &nbsp;•&nbsp; HOLD CLICK or SPACE — flap (climb & speed)<br>
-     release to glide &nbsp;•&nbsp; <b>V</b> — ride first-person &nbsp;•&nbsp; dive to gain speed<br>
-     stall under 10 spd &nbsp;•&nbsp; the waves grab at you — stay above them<br><br>
-     <b>click to fly</b></p>
-</div></div>
+<div id="litglow"></div>
+<div id="flash"></div>
+
+<div id="hud">
+  <div class="panel" id="hudTL">
+    <div class="title">◈ NIGHT FURY</div>
+    <div class="row"><span class="k">DETECTION</span><span class="v" id="detPct">0%</span></div>
+    <div class="bar"><i id="detFill"></i></div>
+    <div class="row" style="margin-top:6px"><span class="k">BEACONS</span><span class="v" id="beaconV">0 / 8</span></div>
+    <div class="row"><span class="k">ALT</span><span class="v" id="altV">0 m</span></div>
+    <div class="row"><span class="k">SPEED</span><span class="v" id="spdV">0</span></div>
+  </div>
+  <div class="panel" id="objTag">reach the next <b>beacon</b> — stay out of the light</div>
+  <div id="warn">IN THE LIGHT — DIVE!</div>
+  <div id="arrow"></div>
+  <div id="ctrlhint"><b>MOUSE/WASD</b> fly · <b>SPACE</b> flap · <b>ARROWS/Q,E</b> look · <b>V</b> first-person</div>
+</div>
+
+<div class="screen" id="menu">
+  <div class="card">
+    <div class="kicker">STORM WARDEN · HIDDEN WORLD</div>
+    <h1>NIGHT&nbsp;FURY</h1>
+    <div class="sub">The keepers sweep the black water with searchlights.<br>
+      Ride the fury through the storm to the hidden cove — <b style="color:#c9b6ff">never be seen.</b></div>
+    <div class="grid">
+      <div><span class="key">MOUSE</span>steer · pitch & bank</div>
+      <div><span class="key">W A S D</span>fly (alt to mouse)</div>
+      <div><span class="key">SPACE</span>flap — thrust & climb</div>
+      <div><span class="key">↑↓←→ / Q E</span>look around, see wings</div>
+      <div><span class="key">V</span>first-person ride</div>
+      <div><span class="key">goal</span>hit 8 beacons, unseen</div>
+    </div>
+    <div class="btn" id="startBtn">▶ TAKE FLIGHT</div>
+    <div class="foot">headphones recommended · dive into shadow to break a lock</div>
+  </div>
+</div>
+
+<div class="screen hide" id="over">
+  <div class="card">
+    <div class="kicker" id="overKick">DETECTED</div>
+    <h1 id="overTitle" class="bad">SPOTTED</h1>
+    <div class="sub" id="overSub"></div>
+    <div style="margin-bottom:22px">
+      <span class="stat">BEACONS<b id="overBeacons">0</b></span>
+      <span class="stat">TIME ALOFT<b id="overTime">0s</b></span>
+    </div>
+    <div class="btn" id="againBtn">↺ FLY AGAIN</div>
+  </div>
+</div>
+
 <script type="importmap">
 { "imports": {
   "three": "./vendor/three.module.js",
@@ -40,386 +138,454 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
-addEventListener('error', e => {
-  document.getElementById('hud').textContent = 'ERR: ' + e.message;
-});
+const $ = id => document.getElementById(id);
+addEventListener('error', e => { $('objTag').innerHTML = 'ERR: ' + e.message; });
 
-// ---------- scene / atmosphere ----------
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+/* ============================ AUDIO ============================ */
+const AU = {
+  el:{}, on:false,
+  load(n,src,loop,vol){ const a=new Audio(src); a.loop=!!loop; a.volume=vol??1; a.preload='auto'; this.el[n]=a; },
+  play(n,vol){ const a=this.el[n]; if(!a)return; try{ a.currentTime=0; }catch(e){} if(vol!=null)a.volume=vol; a.play().catch(()=>{}); },
+  loop(n){ const a=this.el[n]; if(a) a.play().catch(()=>{}); },
+  stop(n){ const a=this.el[n]; if(a){ a.pause(); try{a.currentTime=0;}catch(e){} } },
+  fadeTo(n,to,ms){ const a=this.el[n]; if(!a)return; const f=a.volume,t0=performance.now();
+    const st=()=>{ const k=Math.min(1,(performance.now()-t0)/ms); a.volume=f+(to-f)*k; if(k<1)requestAnimationFrame(st); else if(to<=0)a.pause(); };
+    if(to>0&&a.paused)a.play().catch(()=>{}); st(); },
+};
+AU.load('menu','audio/music_menu.mp3',true,0.0);
+AU.load('music','audio/music_tension.mp3',true,0.0);
+AU.load('amb','audio/amb_sea.mp3',true,0.0);
+AU.load('flap','audio/flap.mp3',false,0.5);
+AU.load('ring','audio/ring.mp3',false,0.7);
+AU.load('detected','audio/detected.mp3',false,0.9);
+AU.load('crash','audio/crash.mp3',false,0.9);
+AU.load('thunder','audio/thunder.mp3',false,0.6);
+
+/* ============================ RENDERER / SCENE ============================ */
+const renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.45;
+renderer.toneMappingExposure = 1.35;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a1220);
-scene.fog = new THREE.FogExp2(0x0a1220, 0.0032);
+scene.fog = new THREE.FogExp2(0x0a0a1a, 0.0030);
+const camera = new THREE.PerspectiveCamera(64, innerWidth/innerHeight, 0.5, 6000);
 
-const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.5, 4000);
+// Hidden-World palette lighting
+const moon = new THREE.DirectionalLight(0x9fb4ff, 1.05); moon.position.set(-200,300,-120); scene.add(moon);
+const rimP = new THREE.DirectionalLight(0xb072ff, 1.25); rimP.position.set(220,120,180); scene.add(rimP);   // purple rim
+const fillT = new THREE.DirectionalLight(0x2fd6c0, 0.5); fillT.position.set(60,-40,-220); scene.add(fillT); // teal underlight
+scene.add(new THREE.AmbientLight(0x2c2a48, 1.7));
 
-const moon = new THREE.DirectionalLight(0x8fb0ff, 0.95);
-moon.position.set(-200, 300, -100);
-scene.add(moon, new THREE.AmbientLight(0x2a3a52, 1.5));
-
-// ---------- sea (gerstner-ish vertex waves + foam sparkle) ----------
-const seaUniforms = { uT: { value: 0 } };
-const sea = new THREE.Mesh(
-  new THREE.PlaneGeometry(3000, 3000, 196, 196),
-  new THREE.ShaderMaterial({
-    uniforms: { ...seaUniforms, fogColor: { value: scene.fog.color }, fogDensity: { value: scene.fog.density } },
-    fog: false,
-    vertexShader: `
-      uniform float uT; varying float vH; varying vec3 vW;
-      float wave(vec2 p, vec2 d, float k, float s, float a){ return a*sin(dot(p,d)*k + uT*s); }
-      void main(){
-        vec3 pos = position;
-        float h = wave(pos.xy, vec2(.8,.6), .045, 1.25, 2.6)
-                + wave(pos.xy, vec2(-.5,.9), .07, 1.7, 1.5)
-                + wave(pos.xy, vec2(.2,-1.), .11, 2.3, .8);
-        pos.z += h; vH = h;
-        vec4 w = modelMatrix * vec4(pos,1.); vW = w.xyz;
-        gl_Position = projectionMatrix * viewMatrix * w;
-      }`,
-    fragmentShader: `
-      uniform vec3 fogColor; uniform float fogDensity;
-      varying float vH; varying vec3 vW;
-      void main(){
-        vec3 deep = vec3(.012,.03,.05), crest = vec3(.55,.62,.68);
-        float foam = smoothstep(2.2, 4.2, vH) * .8;
-        foam += step(.985, fract(sin(dot(floor(vW.xz*1.5), vec2(12.9898,78.233))) * 43758.55)) * .12;
-        vec3 col = mix(deep, crest, foam);
-        float d = length(vW - cameraPosition);
-        float f = 1. - exp(-fogDensity*fogDensity*d*d);
-        gl_FragColor = vec4(mix(col, fogColor, f), 1.);
-      }`
-  })
-);
-sea.rotation.x = -Math.PI / 2;
-scene.add(sea);
-
-// ---------- island + lighthouse ----------
-const rockMat = new THREE.MeshStandardMaterial({ color: 0x14161a, roughness: .9, flatShading: true });
-function rock(x, z, r, h) {
-  const g = new THREE.IcosahedronGeometry(r, 2);
-  const p = g.attributes.position;
-  for (let i = 0; i < p.count; i++) {
-    const v = new THREE.Vector3().fromBufferAttribute(p, i);
-    const n = v.clone().normalize().multiplyScalar(r * 0.35 * (Math.sin(v.x * 7.1) * Math.cos(v.z * 5.3)));
-    v.add(n); v.y *= h / r;
-    p.setXYZ(i, v.x, v.y, v.z);
-  }
-  g.computeVertexNormals();
-  const m = new THREE.Mesh(g, rockMat);
-  m.position.set(x, 2, z);
-  scene.add(m);
-  return m;
-}
-rock(0, 0, 34, 40); rock(55, 30, 18, 26); rock(-60, -20, 15, 32); rock(30, -55, 12, 18);
-
-const LH = new THREE.Group();
-for (let i = 0; i < 6; i++) {
-  const seg = new THREE.Mesh(
-    new THREE.CylinderGeometry(5.2 - i * .45, 5.5 - i * .45, 7, 24),
-    new THREE.MeshStandardMaterial({ color: i % 2 ? 0xb8b0a4 : 0x8c1f18, roughness: .65 })
-  );
-  seg.position.y = 40 + 3.5 + i * 7;
-  LH.add(seg);
-}
-const lampGlass = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 6, 16, 1, true),
-  new THREE.MeshStandardMaterial({ color: 0xffe9b0, emissive: 0xffc860, emissiveIntensity: 2.2, transparent: true, opacity: .85 }));
-lampGlass.position.y = 40 + 45;
-const roof = new THREE.Mesh(new THREE.ConeGeometry(4.4, 5.5, 16),
-  new THREE.MeshStandardMaterial({ color: 0x101216, roughness: .5 }));
-roof.position.y = 40 + 50.5;
-LH.add(lampGlass, roof);
-scene.add(LH);
-const LAMP_Y = 85;
-const lampLight = new THREE.PointLight(0xffd080, 900, 260, 1.8);
-lampLight.position.set(0, LAMP_Y, 0);
-scene.add(lampLight);
-
-// beam: spotlight + additive cone (the Blender trick, ported)
-const beamPivot = new THREE.Group();
-beamPivot.position.set(0, LAMP_Y, 0);
-scene.add(beamPivot);
-const spot = new THREE.SpotLight(0xffe0a0, 4000, 700, 0.16, 0.5, 1.2);
-beamPivot.add(spot, spot.target);
-spot.target.position.set(200, -18, 0);
-const beamGeo = new THREE.ConeGeometry(30, 340, 24, 1, true);
-beamGeo.translate(0, -170, 0);
-beamGeo.rotateZ(Math.PI / 2);
-const beam = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({
-  color: 0xffe6b8, transparent: true, opacity: 0.10, blending: THREE.AdditiveBlending,
-  side: THREE.DoubleSide, depthWrite: false, fog: false
+/* ---- star + aurora sky dome ---- */
+const sky = new THREE.Mesh(new THREE.SphereGeometry(2600,32,20), new THREE.ShaderMaterial({
+  side:THREE.BackSide, depthWrite:false, fog:false, uniforms:{uT:{value:0}},
+  vertexShader:`varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
+  fragmentShader:`
+    uniform float uT; varying vec3 vP;
+    float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+    void main(){
+      vec3 d=normalize(vP); float up=clamp(d.y,0.,1.);
+      vec3 col=mix(vec3(0.05,0.045,0.11), vec3(0.015,0.02,0.05), pow(up,0.55));   // horizon purple -> deep top
+      // stars (fade hard near horizon to avoid blocky cells)
+      vec2 uv=d.xz/(abs(d.y)+0.7); vec2 gp=floor(uv*70.); float s=hash(gp);
+      float star=smoothstep(0.992,1.0,s)*(0.45+0.55*sin(uT*3.0+s*40.));
+      col+=vec3(0.85,0.9,1.0)*star*smoothstep(0.18,0.6,up);
+      // aurora bands
+      float band=exp(-pow((d.y-0.28)*5.2,2.0))*smoothstep(-0.1,0.5,d.y);
+      float wav=sin(d.x*2.6+uT*0.32)+sin(d.z*3.4-uT*0.22)+0.5*sin(d.x*6.0+uT*0.5);
+      float a=band*(0.45+0.55*sin(wav*1.4));
+      col+=mix(vec3(0.42,0.12,0.7), vec3(0.08,0.55,0.5), 0.5+0.5*sin(wav))*a*0.55;
+      gl_FragColor=vec4(col,1.0);
+    }`
 }));
-beam.position.x = 0;
-beamPivot.add(beam);
-beam.rotation.z = -0.06;
+sky.frustumCulled=false; scene.add(sky);
 
-// ---------- rain ----------
-const RAIN_N = 1400, rainBox = 260;
-const rainGeo = new THREE.BufferGeometry();
-const rp = new Float32Array(RAIN_N * 6);
-rainGeo.setAttribute('position', new THREE.BufferAttribute(rp, 3));
-const rain = new THREE.LineSegments(rainGeo, new THREE.LineBasicMaterial({ color: 0x5a7086, transparent: true, opacity: .5 }));
-scene.add(rain);
-const rainSeed = Array.from({ length: RAIN_N }, () => [Math.random(), Math.random(), Math.random()]);
+/* ---- sea ---- */
+const seaUniforms = { uT:{value:0} };
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(4000,4000,200,200), new THREE.ShaderMaterial({
+  uniforms:{ ...seaUniforms, fogColor:{value:scene.fog.color}, fogDensity:{value:scene.fog.density} }, fog:false,
+  vertexShader:`uniform float uT; varying float vH; varying vec3 vW;
+    float wave(vec2 p,vec2 d,float k,float s,float a){ return a*sin(dot(p,d)*k+uT*s); }
+    void main(){ vec3 pos=position;
+      float h=wave(pos.xy,vec2(.8,.6),.045,1.25,2.6)+wave(pos.xy,vec2(-.5,.9),.07,1.7,1.5)+wave(pos.xy,vec2(.2,-1.),.11,2.3,.8);
+      pos.z+=h; vH=h; vec4 w=modelMatrix*vec4(pos,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
+  fragmentShader:`uniform vec3 fogColor; uniform float fogDensity; varying float vH; varying vec3 vW;
+    void main(){ vec3 deep=vec3(.01,.025,.05), crest=vec3(.4,.5,.62);
+      float foam=smoothstep(2.2,4.2,vH)*.8;
+      foam+=step(.985,fract(sin(dot(floor(vW.xz*1.5),vec2(12.9898,78.233)))*43758.55))*.12;
+      vec3 col=mix(deep,crest,foam);
+      col+=vec3(0.18,0.05,0.32)*smoothstep(1.0,3.2,vH)*0.4;   // purple crest sheen
+      float dd=length(vW-cameraPosition); float f=1.-exp(-fogDensity*fogDensity*dd*dd);
+      gl_FragColor=vec4(mix(col,fogColor,f),1.); }`
+}));
+sea.rotation.x=-Math.PI/2; scene.add(sea);
+function waveH(x,z,t){ const a=x*.8+(-z)*.6, b=x*-.5+(-z)*.9, c=x*.2+(-z)*-1.0;
+  return 2.6*Math.sin(a*.045+t*1.25)+1.5*Math.sin(b*.07+t*1.7)+0.8*Math.sin(c*.11+t*2.3); }
 
-// ---------- rings ----------
-const rings = [], RING_R = 11;
-const ringMat = new THREE.MeshStandardMaterial({ color: 0x0c333d, emissive: 0x36c8e8, emissiveIntensity: 2.8 });
-const ringDone = new THREE.MeshStandardMaterial({ color: 0x11351d, emissive: 0x2f8f4a, emissiveIntensity: .7 });
-for (let i = 0; i < 12; i++) {
-  const a = i / 12 * Math.PI * 2;
-  const r = 150 + 45 * Math.sin(i * 2.1);
-  const m = new THREE.Mesh(new THREE.TorusGeometry(RING_R, 1.1, 10, 36), ringMat.clone());
-  m.position.set(Math.cos(a) * r, 26 + 20 * Math.abs(Math.sin(i * 1.3)), Math.sin(a) * r);
-  m.lookAt(new THREE.Vector3(Math.cos(a + .45) * r, m.position.y, Math.sin(a + .45) * r));
-  m.userData.hit = false;
+/* ---- rocks (collidable) + purple crystal spires ---- */
+const colliders = [];   // {x,z,r,top}
+const rockMat = new THREE.MeshStandardMaterial({ color:0x111318, roughness:.92, flatShading:true });
+function rock(x,z,r,h){
+  const g=new THREE.IcosahedronGeometry(r,2), p=g.attributes.position;
+  for(let i=0;i<p.count;i++){ const v=new THREE.Vector3().fromBufferAttribute(p,i);
+    const n=v.clone().normalize().multiplyScalar(r*.35*(Math.sin(v.x*7.1)*Math.cos(v.z*5.3)));
+    v.add(n); v.y*=h/r; p.setXYZ(i,v.x,v.y,v.z); }
+  g.computeVertexNormals();
+  const m=new THREE.Mesh(g,rockMat); m.position.set(x,2,z); scene.add(m);
+  colliders.push({x,z,r:r*0.82,top:h*1.0+4}); return m;
+}
+rock(0,0,34,42); rock(58,32,18,28); rock(-64,-22,16,34); rock(34,-58,13,20);
+rock(-30,70,14,24); rock(90,-30,12,18);
+
+// bioluminescent purple crystals (hazards + glow)
+const crystalMat = new THREE.MeshStandardMaterial({ color:0x2a1550, emissive:0x8a3cff, emissiveIntensity:1.4, roughness:.3, flatShading:true });
+function crystal(x,z,h){
+  const g=new THREE.ConeGeometry(3.2, h, 6); const m=new THREE.Mesh(g,crystalMat);
+  m.position.set(x, h/2, z); m.rotation.y=Math.random()*3; scene.add(m);
+  const gl=new THREE.PointLight(0x9a4cff, 60, 90, 2); gl.position.set(x,h*0.7,z); scene.add(gl);
+  colliders.push({x,z,r:4,top:h}); return m;
+}
+crystal(20,18,26); crystal(-44,-8,20); crystal(70,44,30); crystal(-20,-64,22); crystal(-78,40,24);
+
+/* ---- lighthouse + 3 sweeping searchlights ---- */
+const searchlights = [];
+function beacon(x,z,baseH,yaw0,rate,warm){
+  const G=new THREE.Group(); G.position.set(x,0,z); scene.add(G);
+  const stripes = warm;
+  for(let i=0;i<6;i++){
+    const seg=new THREE.Mesh(new THREE.CylinderGeometry(4.6-i*.42,4.9-i*.42,6.5,20),
+      new THREE.MeshStandardMaterial({ color:i%2?0xb8b0a4:0x7c1f18, roughness:.65 }));
+    seg.position.y=baseH+3.2+i*6.5; G.add(seg);
+  }
+  const lampY=baseH+42;
+  const lamp=new THREE.Mesh(new THREE.CylinderGeometry(3,3,5,14,1,true),
+    new THREE.MeshStandardMaterial({ color:0xffe9b0, emissive:0xffcf70, emissiveIntensity:2.4, transparent:true, opacity:.85 }));
+  lamp.position.y=lampY; G.add(lamp);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(3.9,5,14), new THREE.MeshStandardMaterial({color:0x0e1016,roughness:.5}));
+  roof.position.y=lampY+3.2; G.add(roof);
+  const lampGlow=new THREE.PointLight(0xffd080,500,220,2); lampGlow.position.set(0,lampY,0); G.add(lampGlow);
+
+  const pivot=new THREE.Group(); pivot.position.set(0,lampY,0); G.add(pivot);
+  const spot=new THREE.SpotLight(0xffe0a0,3200,760,0.19,0.5,1.1); pivot.add(spot,spot.target);
+  spot.target.position.set(220,-26,0);
+  const cg=new THREE.ConeGeometry(34,360,26,1,true); cg.translate(0,-180,0); cg.rotateZ(Math.PI/2);
+  const cone=new THREE.Mesh(cg,new THREE.MeshBasicMaterial({ color:0xffe6b8, transparent:true, opacity:.09,
+    blending:THREE.AdditiveBlending, side:THREE.DoubleSide, depthWrite:false, fog:false }));
+  cone.rotation.z=-0.09; pivot.add(cone);
+  const sl={ pivot, cone, lampPos:new THREE.Vector3(x,lampY,z), yaw0, rate, range:720, coneHalf:0.30, lit:0 };
+  searchlights.push(sl); return sl;
+}
+beacon(0,0,42,0,0.42,true);
+beacon(120,90,26,2.1,-0.34,true);
+beacon(-140,60,30,4.0,0.29,true);
+
+/* ---- rain ---- */
+const RAIN_N=1500, rainBox=280; const rainGeo=new THREE.BufferGeometry();
+const rp=new Float32Array(RAIN_N*6); rainGeo.setAttribute('position',new THREE.BufferAttribute(rp,3));
+scene.add(new THREE.LineSegments(rainGeo,new THREE.LineBasicMaterial({color:0x7488ad,transparent:true,opacity:.28})));
+const rainSeed=Array.from({length:RAIN_N},()=>[Math.random(),Math.random(),Math.random()]);
+
+/* ---- beacons (waypoint rings) : a winding route ---- */
+const rings=[]; const RING_R=13; const N_RINGS=8;
+const ringBase=new THREE.MeshStandardMaterial({ color:0x1a0f38, emissive:0x8b46ff, emissiveIntensity:3.0 });
+const ringDone=new THREE.MeshStandardMaterial({ color:0x0f2e26, emissive:0x2fd6a0, emissiveIntensity:1.4 });
+const route=[[0,44,200],[120,60,120],[150,70,-40],[40,58,-150],[-90,66,-140],[-170,72,-10],[-150,80,120],[-30,90,210]];
+for(let i=0;i<N_RINGS;i++){
+  const [x,y,z]=route[i];
+  const m=new THREE.Mesh(new THREE.TorusGeometry(RING_R,1.3,10,40), ringBase.clone());
+  m.position.set(x,y,z);
+  const nx = route[(i+1)%N_RINGS][0], nz=route[(i+1)%N_RINGS][2];
+  m.lookAt(new THREE.Vector3(nx,y,nz)); m.userData.hit=false;
   rings.push(m); scene.add(m);
 }
 
-// ---------- dragon ----------
-const D = { group: new THREE.Group(), mixer: null, flap: null, glide: null, yaw: 0, pitch: 0, speed: 16,
-            flapping: false, headNode: null, model: null };
-D.group.position.set(0, 40, 260);
-scene.add(D.group);
-const draco = new DRACOLoader().setDecoderPath('./vendor/draco/');
-const loader = new GLTFLoader();
-loader.setDRACOLoader(draco);
-loader.load('dragon_rigged.glb', (g) => {
-  const model = g.scene;
-  D.model = model;
-  model.scale.setScalar(7.5);
-  model.rotation.y = Math.PI;             // glTF exports Blender's -Y forward as +Z; face -Z (three forward)
+/* ============================ DRAGON ============================ */
+const START=new THREE.Vector3(0,58,250);
+const D={ group:new THREE.Group(), model:null, mixer:null, flap:null, glide:null,
+  yaw:Math.PI, pitch:0, roll:0, speed:20, flapping:false, headNode:null, glow:null };
+D.group.position.copy(START); scene.add(D.group);
+const draco=new DRACOLoader().setDecoderPath('./vendor/draco/');
+const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
+loader.load('dragon_rigged.glb',(g)=>{
+  const model=g.scene; D.model=model; model.scale.setScalar(9.0); model.rotation.y=Math.PI;
   D.group.add(model);
-  D.mixer = new THREE.AnimationMixer(model);
-  const clips = g.animations;
-  D.flap = D.mixer.clipAction(THREE.AnimationClip.findByName(clips, 'Flap'));
-  D.glide = D.mixer.clipAction(THREE.AnimationClip.findByName(clips, 'Glide'));
-  D.flap.play(); D.glide.play();
-  D.flap.setEffectiveWeight(0); D.glide.setEffectiveWeight(1);
-  D.headNode = model.getObjectByName('head');
-
-  // ---- rider: hooded silhouette saddled on the chest bone ----
-  const chest = model.getObjectByName('chest');
-  if (chest) {
-    const rider = new THREE.Group();
-    const cloth = new THREE.MeshStandardMaterial({ color: 0x2a2119, roughness: .9 });
-    const leather = new THREE.MeshStandardMaterial({ color: 0x17120c, roughness: .8 });
-    const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.026, 0.05, 4, 8), cloth);
-    torso.position.y = 0.055;
-    torso.rotation.x = 0.25;
-    const hood = new THREE.Mesh(new THREE.ConeGeometry(0.024, 0.045, 8), cloth);
-    hood.position.set(0, 0.105, -0.004);
-    hood.rotation.x = -0.2;
-    const legL = new THREE.Mesh(new THREE.CapsuleGeometry(0.011, 0.05, 3, 6), leather);
-    legL.position.set(0.033, 0.016, 0.004); legL.rotation.z = 1.05;
-    const legR = legL.clone(); legR.position.x = -0.033; legR.rotation.z = -1.05;
-    rider.add(torso, hood, legL, legR);
-    // place on the back: model-space (0, 0.545, 0.03) converted into chest-bone space
-    chest.updateWorldMatrix(true, false);
-    const p = new THREE.Vector3(0, 0.545, 0.03).applyMatrix4(model.matrixWorld);
-    rider.position.copy(chest.worldToLocal(p));
-    chest.add(rider);
+  D.mixer=new THREE.AnimationMixer(model);
+  D.flap=D.mixer.clipAction(THREE.AnimationClip.findByName(g.animations,'Flap'));
+  D.glide=D.mixer.clipAction(THREE.AnimationClip.findByName(g.animations,'Glide'));
+  D.flap.play(); D.glide.play(); D.flap.setEffectiveWeight(0); D.glide.setEffectiveWeight(1);
+  D.headNode=model.getObjectByName('head');
+  // purple plasma glow at the chest
+  const glow=new THREE.PointLight(0x9a4cff, 0, 60, 2); D.group.add(glow); glow.position.set(0,4,0); D.glow=glow;
+  // rider
+  const chest=model.getObjectByName('chest');
+  if(chest){ const rider=new THREE.Group();
+    const cloth=new THREE.MeshStandardMaterial({color:0x2a2119,roughness:.9});
+    const leather=new THREE.MeshStandardMaterial({color:0x17120c,roughness:.8});
+    const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.026,.05,4,8),cloth); torso.position.y=.055; torso.rotation.x=.25;
+    const hood=new THREE.Mesh(new THREE.ConeGeometry(.024,.045,8),cloth); hood.position.set(0,.105,-.004); hood.rotation.x=-.2;
+    const legL=new THREE.Mesh(new THREE.CapsuleGeometry(.011,.05,3,6),leather); legL.position.set(.033,.016,.004); legL.rotation.z=1.05;
+    const legR=legL.clone(); legR.position.x=-.033; legR.rotation.z=-1.05;
+    rider.add(torso,hood,legL,legR);
+    chest.updateWorldMatrix(true,false);
+    const pw=new THREE.Vector3(0,.545,.03).applyMatrix4(model.matrixWorld);
+    rider.position.copy(chest.worldToLocal(pw)); chest.add(rider);
   }
-  document.getElementById('hud').textContent = 'dragon aboard';
 });
 
-// ---------- input ----------
-const input = { x: 0, y: 0, flap: false };
-addEventListener('mousemove', e => {
-  input.x = (e.clientX / innerWidth) * 2 - 1;
-  input.y = (e.clientY / innerHeight) * 2 - 1;
+/* ============================ INPUT ============================ */
+const key={};
+const input={ mx:0, my:0, flap:false };
+addEventListener('mousemove',e=>{ input.mx=(e.clientX/innerWidth)*2-1; input.my=(e.clientY/innerHeight)*2-1; });
+addEventListener('mousedown',()=>{ if(S.started&&!S.done) input.flap=true; });
+addEventListener('mouseup',()=>{ input.flap=false; });
+addEventListener('keydown',e=>{
+  key[e.code]=true;
+  if(e.code==='Space'){ if(S.started&&!S.done) input.flap=true; e.preventDefault(); }
+  if(e.code==='KeyV') S.fpv=!S.fpv;
 });
-addEventListener('mousedown', () => input.flap = true);
-addEventListener('mouseup', () => input.flap = false);
-addEventListener('keydown', e => {
-  if (e.code === 'Space') { input.flap = true; e.preventDefault(); }
-  if (e.code === 'KeyV') S.fpv = !S.fpv;
-});
-addEventListener('keyup', e => { if (e.code === 'Space') input.flap = false; });
+addEventListener('keyup',e=>{ key[e.code]=false; if(e.code==='Space') input.flap=false; });
 
-// ---------- game state ----------
-const S = { t: 0, score: 0, done: false, started: false, timeLeft: 150, fpv: false, shake: 0 };
+/* ============================ GAME STATE ============================ */
+const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake:0, flapCd:0,
+  camYaw:0, camPitch:0, nextThunder:5, cause:'' };
 
-// same three sines as the sea shader (plane local xy = world x, -z)
-function waveH(x, z, t) {
-  const a = x * 0.8 + (-z) * 0.6, b = x * -0.5 + (-z) * 0.9, c = x * 0.2 + (-z) * -1.0;
-  return 2.6 * Math.sin(a * 0.045 + t * 1.25) + 1.5 * Math.sin(b * 0.07 + t * 1.7) + 0.8 * Math.sin(c * 0.11 + t * 2.3);
+/* ---- searchlight direction + detection ---- */
+const _wq=new THREE.Quaternion(), _dir=new THREE.Vector3(), _toD=new THREE.Vector3();
+function beamDir(sl){ sl.cone.getWorldQuaternion(_wq); return _dir.set(1,0,0).applyQuaternion(_wq).normalize().clone(); }
+function occluded(lamp,drag){
+  // any rock/crystal sphere blocking the segment lamp->dragon
+  for(const c of colliders){
+    const cx=c.x, cz=c.z, cy=Math.min(c.top*0.6,drag.y+6);
+    const ax=lamp.x,ay=lamp.y,az=lamp.z, bx=drag.x,by=drag.y,bz=drag.z;
+    const dx=bx-ax,dy=by-ay,dz=bz-az; const L2=dx*dx+dy*dy+dz*dz||1;
+    let tt=((cx-ax)*dx+(cy-ay)*dy+(cz-az)*dz)/L2; tt=Math.max(.05,Math.min(.95,tt));
+    const px=ax+dx*tt,py=ay+dy*tt,pz=az+dz*tt;
+    const d2=(px-cx)**2+(py-cy)**2+(pz-cz)**2;
+    if(d2 < (c.r*0.95)**2) return true;
+  }
+  return false;
 }
-document.getElementById('msg').addEventListener('click', () => {
-  S.started = true;
-  document.getElementById('msg').classList.add('hide');
-});
 
-// verification hooks (SIM.warp discipline)
-window.SIM = {
-  state: () => ({ t: S.t, score: S.score, pos: D.group.position.toArray().map(v => +v.toFixed(1)),
-                  spd: +D.speed.toFixed(1), fpv: S.fpv, done: S.done }),
-  warp: (dt, steps = 60) => { for (let i = 0; i < steps; i++) tick(dt); render(); },
-  teleport: (x, y, z, yaw) => { D.group.position.set(x, y, z); if (yaw !== undefined) D.yaw = yaw; },
-  setFpv: (v) => { S.fpv = !!v; },
-  start: () => { S.started = true; document.getElementById('msg').classList.add('hide'); },
-  autofly: false,
-};
+/* ============================ SIM ============================ */
+function tick(dt){
+  S.t+=dt; seaUniforms.uT.value=S.t; sky.material.uniforms.uT.value=S.t;
+  for(const sl of searchlights) sl.pivot.rotation.y=sl.yaw0 + S.t*sl.rate;
 
-// ---------- simulation ----------
-function tick(dt) {
-  S.t += dt;
-  if (!S.done && S.started) S.timeLeft -= dt;
+  // menu idle: gentle orbit, no control
+  if(!S.started){ if(D.mixer) D.mixer.update(dt); return; }
+  if(S.done){ if(D.mixer) D.mixer.update(dt); return; }
 
-  if (window.SIM.autofly) { // simple autopilot toward nearest un-hit ring
-    const next = rings.find(r => !r.userData.hit);
-    if (next) {
-      const to = next.position.clone().sub(D.group.position);
-      const wantYaw = Math.atan2(-to.x, -to.z);
-      let dy = wantYaw - D.yaw;
-      while (dy > Math.PI) dy -= 2 * Math.PI;
-      while (dy < -Math.PI) dy += 2 * Math.PI;
-      input.x = THREE.MathUtils.clamp(-dy * 2, -1, 1);
-      input.y = THREE.MathUtils.clamp(-(to.y / Math.max(to.length(), 1)) * 3, -.8, .8);
-      input.flap = to.y > 2;
+  /* ---- combined flight input ---- */
+  const pitchCmd=THREE.MathUtils.clamp(-input.my + (key['KeyW']?1:0) - (key['KeyS']?1:0), -1,1);
+  const rollCmd =THREE.MathUtils.clamp( input.mx + (key['KeyD']?1:0) - (key['KeyA']?1:0), -1,1);
+
+  // bank-to-turn + a little direct yaw; authority scales with airspeed
+  const auth=0.5+D.speed/40;
+  D.yaw -= rollCmd*dt*1.9*auth;
+  const pitchTarget=pitchCmd*1.15;                       // strong up/down authority
+  D.pitch += (pitchTarget-D.pitch)*Math.min(1,dt*4.0);
+  D.roll  += (rollCmd*0.85 - D.roll)*Math.min(1,dt*5.0);
+
+  /* ---- energy + LIFT ---- */
+  D.flapping=input.flap && S.flapCd<=0;
+  const CRUISE=22, GRAV=13;
+  const thrust=input.flap?26:0;
+  D.speed += (thrust - Math.sin(D.pitch)*GRAV*1.2 - (D.speed-CRUISE)*0.45)*dt;
+  D.speed = THREE.MathUtils.clamp(D.speed, 4, 60);
+  const lift=Math.min(1.35, D.speed/CRUISE);             // aerodynamic lift ratio
+  const sink=Math.max(0, (1-lift))*GRAV;                 // below cruise → you sink (real lift feel)
+
+  const fwd=new THREE.Vector3(-Math.sin(D.yaw),0,-Math.cos(D.yaw));
+  const p=D.group.position;
+  p.addScaledVector(fwd, Math.cos(D.pitch)*D.speed*dt);
+  const flapBoost=(input.flap?7:0);
+  p.y += (Math.sin(D.pitch)*D.speed - sink + flapBoost)*dt;
+  p.y = Math.min(p.y, 240);
+
+  if(input.flap && S.flapCd<=0){ AU.play('flap',0.45); S.flapCd=0.42; }
+  S.flapCd-=dt;
+
+  // wind gusts (all directions)
+  const gx=Math.sin(S.t*.37+1.7)+.6*Math.sin(S.t*.13), gz=Math.sin(S.t*.29+4.1)+.6*Math.sin(S.t*.17+2.);
+  p.x+=gx*2.6*dt; p.z+=gz*2.6*dt;
+
+  /* ---- collisions ---- */
+  const wh=waveH(p.x,p.z,S.t);
+  if(p.y<wh+3.0){ // sea strike
+    S.shake=Math.min(1,S.shake+dt*6); D.speed*=1-1.1*dt;
+    if(p.y<wh+1.2){ crash('THE SEA TOOK YOU'); }
+    p.y += (wh+3.0-p.y)*Math.min(1,dt*5);
+  }
+  for(const c of colliders){
+    const dx=p.x-c.x, dz=p.z-c.z, horiz=Math.hypot(dx,dz);
+    if(horiz < c.r+4 && p.y < c.top+3){ crash('DASHED ON THE ROCKS'); break; }
+  }
+  S.shake=Math.max(0,S.shake-dt*2.4);
+
+  /* ---- orientation ---- */
+  D.group.rotation.set(0,D.yaw,0);
+  D.group.rotateX(-D.pitch*0.6);
+  D.group.rotateZ(-D.roll*0.9);
+
+  /* ---- animation blend ---- */
+  if(D.mixer){
+    const w=THREE.MathUtils.clamp(D.flap.getEffectiveWeight()+(input.flap?dt*6:-dt*6),0,1);
+    D.flap.setEffectiveWeight(w); D.glide.setEffectiveWeight(1-w); D.flap.timeScale=1.5; D.mixer.update(dt);
+    if(D.glow) D.glow.intensity = 6 + (input.flap?26:0) + Math.sin(S.t*8)*2;   // plasma pulse
+  }
+
+  /* ---- STEALTH detection ---- */
+  let litNow=0;
+  for(const sl of searchlights){
+    _toD.copy(p).sub(sl.lampPos); const dist=_toD.length();
+    if(dist>sl.range){ sl.lit*= (1-Math.min(1,dt*4)); continue; }
+    const bd=beamDir(sl); const ang=bd.angleTo(_toD.normalize());
+    let lit=0;
+    if(ang<sl.coneHalf && !occluded(sl.lampPos,p)){
+      lit = (1-ang/sl.coneHalf) * THREE.MathUtils.clamp(1-dist/sl.range,0,1);
     }
+    sl.lit += (lit-sl.lit)*Math.min(1,dt*8);
+    litNow=Math.max(litNow, sl.lit);
+    sl.cone.material.opacity = 0.07 + sl.lit*0.14;
+  }
+  if(litNow>0.02){ S.detection += litNow*0.55*dt; }
+  else { S.detection -= 0.30*dt; }
+  S.detection=THREE.MathUtils.clamp(S.detection,0,1);
+  if(S.detection>=1) detected();
+
+  // lit HUD feedback
+  $('litglow').style.opacity = (litNow>0.02? 0.25+litNow*0.55 : Math.max(0, S.detection*0.25)).toFixed(2);
+  $('warn').style.opacity = (litNow>0.35? (0.5+0.5*Math.sin(S.t*14)).toFixed(2) : 0);
+
+  /* ---- beacons ---- */
+  for(const r of rings){ r.rotation.z+=dt*.5;
+    if(r.userData.hit) continue;
+    if(p.distanceTo(r.position)<RING_R){ r.userData.hit=true; r.material=ringDone; S.score++; AU.play('ring',0.7);
+      if(S.score===rings.length) escaped(); }
   }
 
-  // steering — turn authority grows with airspeed
-  D.yaw -= input.x * dt * 1.1 * (0.55 + D.speed / 34);
-  const targetPitch = -input.y * 0.85;
-  D.pitch += (targetPitch - D.pitch) * Math.min(1, dt * 3);
+  /* ---- lightning + thunder ---- */
+  if(S.t>S.nextThunder){ S.nextThunder=S.t+8+Math.random()*14; S.flash=1; setTimeout(()=>AU.play('thunder',0.55), 250+Math.random()*500); }
+  if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
 
-  // flight energy: dive to gain speed, climb to bleed it, flap for thrust, drag toward trim
-  D.flapping = input.flap;
-  const thrust = D.flapping ? 9.5 : 0;
-  D.speed += (thrust - Math.sin(D.pitch) * 9.8 * 0.85 - (D.speed - 15) * 0.32) * dt;
-  D.speed = THREE.MathUtils.clamp(D.speed, 6, 44);
-  const stall = Math.max(0, 9.5 - D.speed);            // too slow: nose drops, you sink
-
-  const fwd = new THREE.Vector3(-Math.sin(D.yaw), 0, -Math.cos(D.yaw));
-  D.group.position.addScaledVector(fwd, D.speed * dt);
-  const vy = Math.sin(D.pitch) * D.speed + (D.flapping ? 5.5 : -2.6) - stall * 1.6;
-  D.group.position.y += vy * dt;
-  D.group.position.y = Math.min(D.group.position.y, 190);
-
-  // wind gusts shove you around
-  const gx = Math.sin(S.t * 0.37 + 1.7) + 0.6 * Math.sin(S.t * 0.13);
-  const gz = Math.sin(S.t * 0.29 + 4.1) + 0.6 * Math.sin(S.t * 0.17 + 2.0);
-  D.group.position.x += gx * 2.4 * dt;
-  D.group.position.z += gz * 2.4 * dt;
-
-  // waves are physical: skim them and they grab at you
-  const p = D.group.position;
-  const wh = waveH(p.x, p.z, S.t);
-  if (p.y < wh + 3.2) {
-    D.speed *= 1 - 0.9 * dt;                            // water drag
-    S.shake = Math.min(1, S.shake + dt * 5);
-    p.y += (wh + 3.2 - p.y) * Math.min(1, dt * 6);      // buoyant shove upward
-    if (p.y < wh + 1.0) { p.y = wh + 1.0; D.pitch = Math.max(D.pitch, 0.3); }
+  /* ---- rain ---- */
+  const c=camera.position;
+  for(let i=0;i<RAIN_N;i++){ const s=rainSeed[i];
+    const fall=((s[1]*400-S.t*95*(0.7+s[2]*.6))%rainBox+rainBox)%rainBox;
+    const x=c.x+(s[0]-.5)*rainBox, z=c.z+(s[2]-.5)*rainBox, y=c.y+fall-rainBox/2;
+    rp[i*6]=x; rp[i*6+1]=y; rp[i*6+2]=z; rp[i*6+3]=x+.22; rp[i*6+4]=y-5.0; rp[i*6+5]=z;
   }
-  S.shake = Math.max(0, S.shake - dt * 2.5);
+  rainGeo.attributes.position.needsUpdate=true;
 
-  // orientation + bank
-  D.group.rotation.set(0, D.yaw, 0);
-  D.group.rotateX(-D.pitch * 0.55);
-  D.group.rotateZ(input.x * 0.6);
-
-  // animation blend
-  if (D.mixer) {
-    const w = THREE.MathUtils.clamp((D.flap.getEffectiveWeight() + (D.flapping ? dt * 5 : -dt * 5)), 0, 1);
-    D.flap.setEffectiveWeight(w);
-    D.glide.setEffectiveWeight(1 - w);
-    D.flap.timeScale = 1.35;
-    D.mixer.update(dt);
-  }
-
-  // rings
-  if (S.started && !S.done) for (const r of rings) {
-    if (r.userData.hit) continue;
-    if (D.group.position.distanceTo(r.position) < RING_R) {
-      r.userData.hit = true;
-      r.material = ringDone;
-      S.score++;
-      if (S.score === rings.length) endGame(true);
-    }
-    r.rotation.z += dt * .4;
-  }
-  if (S.timeLeft <= 0 && !S.done && S.started) endGame(false);
-
-  // beam sweep
-  beamPivot.rotation.y = S.t * 0.45;
-
-  // rain follows camera
-  const c = camera.position;
-  for (let i = 0; i < RAIN_N; i++) {
-    const s = rainSeed[i];
-    const fall = ((s[1] * 400 - S.t * 90 * (0.7 + s[2] * .6)) % rainBox + rainBox) % rainBox;
-    const x = c.x + (s[0] - .5) * rainBox, z = c.z + (s[2] - .5) * rainBox;
-    const y = c.y + fall - rainBox / 2;
-    rp[i * 6] = x; rp[i * 6 + 1] = y; rp[i * 6 + 2] = z;
-    rp[i * 6 + 3] = x + 0.4; rp[i * 6 + 4] = y - 2.6; rp[i * 6 + 5] = z;
-  }
-  rainGeo.attributes.position.needsUpdate = true;
-  seaUniforms.uT.value = S.t;
-
-  // HUD
-  document.getElementById('hud').innerHTML =
-    `rings <b style="color:#7fe0ff">${S.score}/${rings.length}</b> &nbsp; ` +
-    `time ${Math.max(0, S.timeLeft).toFixed(0)}s &nbsp; ` +
-    `alt ${D.group.position.y.toFixed(0)}m &nbsp; spd ${D.speed.toFixed(0)}`;
+  hud(litNow);
 }
 
-function endGame(won) {
-  S.done = true;
-  const m = document.getElementById('msg');
-  m.classList.remove('hide');
-  m.firstElementChild.innerHTML = won
-    ? `<h1>STORM TAMED</h1><p>all ${rings.length} rings in ${(150 - S.timeLeft).toFixed(1)}s<br><br>reload to fly again</p>`
-    : `<h1>THE STORM WINS</h1><p>${S.score}/${rings.length} rings<br><br>reload to try again</p>`;
+function hud(litNow){
+  $('detPct').textContent=Math.round(S.detection*100)+'%';
+  $('detFill').style.width=(S.detection*100)+'%';
+  $('beaconV').textContent=S.score+' / '+rings.length;
+  $('altV').textContent=Math.max(0,Math.round(D.group.position.y-waveH(D.group.position.x,D.group.position.z,S.t)))+' m';
+  $('spdV').textContent=Math.round(D.speed);
+  // next-beacon arrow projected to screen
+  const nb=rings.find(r=>!r.userData.hit);
+  const A=$('arrow');
+  if(nb){ const v=nb.position.clone().project(camera);
+    if(v.z<1){ const sx=(v.x*.5+.5)*innerWidth, sy=(-v.y*.5+.5)*innerHeight;
+      const mx=Math.max(30,Math.min(innerWidth-30,sx)), my=Math.max(70,Math.min(innerHeight-40,sy));
+      A.style.left=(mx-11)+'px'; A.style.top=(my-10)+'px';
+      A.style.transform='rotate('+Math.atan2(sy-my,sx-mx)+'rad)'; A.style.opacity=.9;
+    } else A.style.opacity=0;
+  } else A.style.opacity=0;
 }
 
-// ---------- camera + loop ----------
-const _hp = new THREE.Vector3();
-function render() {
-  const back = new THREE.Vector3(Math.sin(D.yaw), 0, Math.cos(D.yaw));
-  const shakeV = new THREE.Vector3((Math.random() - .5), (Math.random() - .5), (Math.random() - .5))
-    .multiplyScalar(S.shake * 1.4);
-  if (S.fpv && D.headNode) {
-    // ride the head bone: camera just above the neck, looking down the flight path
+/* ---- endings ---- */
+function showOver(kick,title,cls,sub){
+  S.done=true; input.flap=false;
+  AU.fadeTo('music',0,600); AU.fadeTo('amb',0.15,600);
+  $('overKick').textContent=kick; const h=$('overTitle'); h.textContent=title; h.className=cls;
+  $('overSub').innerHTML=sub;
+  $('overBeacons').textContent=S.score+' / '+rings.length;
+  $('overTime').textContent=Math.round(S.t)+'s';
+  $('over').classList.remove('hide');
+}
+function detected(){ if(S.done)return; AU.play('detected',0.9); showOver('DETECTED','SPOTTED','bad',
+  'The searchlight found you. The keepers loose their bolts into the dark.'); }
+function crash(reason){ if(S.done)return; S.cause=reason; AU.play('crash',0.9); S.shake=1; showOver('WRECKED',reason,'bad',
+  'Even a Night Fury cannot fly through stone.'); }
+function escaped(){ if(S.done)return; AU.play('ring',0.9); showOver('ESCAPED','HIDDEN WORLD','good',
+  'All eight beacons, unseen. The cove opens and the storm closes behind you.'); }
+
+/* ---- start / restart ---- */
+function begin(){
+  if(!AU.on){ AU.on=true; AU.loop('amb'); AU.el.amb.volume=0; AU.fadeTo('amb',0.5,1200);
+    AU.loop('music'); AU.el.music.volume=0; AU.fadeTo('music',0.4,1500); }
+  S.started=true; $('menu').classList.add('hide');
+}
+function reset(){
+  D.group.position.copy(START); D.yaw=Math.PI; D.pitch=0; D.roll=0; D.speed=20; input.flap=false;
+  S.done=false; S.detection=0; S.score=0; S.t=S.t; S.shake=0; S.fpv=false; S.nextThunder=S.t+5;
+  for(const r of rings){ r.userData.hit=false; r.material=ringBase.clone(); }
+  for(const sl of searchlights) sl.lit=0;
+  $('over').classList.add('hide'); $('litglow').style.opacity=0; $('warn').style.opacity=0;
+  AU.fadeTo('music',0.4,600); AU.fadeTo('amb',0.5,600);
+  S.started=true;
+}
+$('startBtn').addEventListener('click',begin);
+$('menu').addEventListener('click',e=>{ if(e.target.id==='menu') begin(); });
+$('againBtn').addEventListener('click',reset);
+
+/* ============================ CAMERA + LOOP ============================ */
+const _hp=new THREE.Vector3();
+function render(){
+  sky.position.copy(camera.position);
+  // camera look-around (arrows / Q,E), returns to center when released
+  const lookX=(key['ArrowLeft']||key['KeyQ']?-1:0)+(key['ArrowRight']||key['KeyE']?1:0);
+  const lookY=(key['ArrowUp']?1:0)+(key['ArrowDown']?-1:0);
+  S.camYaw   += (lookX*2.2 - S.camYaw)*0.12;
+  S.camPitch += (lookY*0.6 - S.camPitch)*0.12;
+
+  const shakeV=new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar(S.shake*1.6);
+
+  if(S.fpv && D.headNode){
+    const back=new THREE.Vector3(Math.sin(D.yaw),0,Math.cos(D.yaw));
+    const fwd=back.clone().negate();
     D.headNode.getWorldPosition(_hp);
-    const fwd = back.clone().negate();
-    camera.position.copy(_hp).addScaledVector(fwd, 1.5).add(new THREE.Vector3(0, 2.0, 0)).add(shakeV);
-    const look = camera.position.clone().addScaledVector(fwd, 60);
-    look.y += Math.sin(D.pitch) * 40;
-    camera.lookAt(look);
-    camera.rotateZ(input.x * 0.35);       // lean into the bank
+    camera.position.copy(_hp).addScaledVector(fwd,1.4).add(new THREE.Vector3(0,2.0,0)).add(shakeV);
+    const look=camera.position.clone().addScaledVector(fwd,60); look.y+=Math.sin(D.pitch)*40;
+    camera.lookAt(look); camera.rotateZ(-D.roll*0.4);
   } else {
-    const camTarget = D.group.position.clone().addScaledVector(back, 34).add(new THREE.Vector3(0, 12, 0));
-    camera.position.lerp(camTarget, 0.08);
-    camera.position.add(shakeV);
-    const look = D.group.position.clone().addScaledVector(back, -30);
-    camera.lookAt(look);
-    camera.rotateZ(input.x * 0.08);
+    const ang=D.yaw + S.camYaw;
+    const back=new THREE.Vector3(Math.sin(ang),0,Math.cos(ang));
+    const height=9 + S.camPitch*22;
+    const dist = S.started? 25 : 40;
+    const camTarget=D.group.position.clone().addScaledVector(back,dist).add(new THREE.Vector3(0,height,0));
+    camera.position.lerp(camTarget, S.started?0.15:0.04); camera.position.add(shakeV);
+    const look=D.group.position.clone().add(new THREE.Vector3(0,2,0));
+    camera.lookAt(look); camera.rotateZ(-D.roll*0.10);
   }
-  renderer.render(scene, camera);
+  renderer.render(scene,camera);
 }
 
-let last = performance.now();
-function loop(now) {
-  requestAnimationFrame(loop);
-  const dt = Math.min((now - last) / 1000, 0.05);
-  last = now;
-  if (S.started || window.SIM.autofly) tick(dt);
-  else { seaUniforms.uT.value = S.t += dt; beamPivot.rotation.y = S.t * 0.45; if (D.mixer) D.mixer.update(dt); }
-  render();
+let last=performance.now();
+function loop(now){ requestAnimationFrame(loop);
+  const dt=Math.min((now-last)/1000,0.05); last=now; tick(dt); render();
 }
 loop(last);
 
-addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight);
-});
+addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight); });
+
+/* ---- debug hooks ---- */
+window.SIM={
+  state:()=>({t:+S.t.toFixed(1),started:S.started,done:S.done,det:+S.detection.toFixed(2),score:S.score,
+    spd:+D.speed.toFixed(1),pos:D.group.position.toArray().map(v=>+v.toFixed(1)),fpv:S.fpv}),
+  start:begin, reset, setFpv:v=>{S.fpv=!!v}, key:(c,v)=>{key[c]=!!v},
+  teleport:(x,y,z,yaw)=>{ D.group.position.set(x,y,z); if(yaw!=null)D.yaw=yaw; },
+  warp:(dt,steps=60)=>{ for(let i=0;i<steps;i++) tick(dt); render(); },
+};
 </script>
 </body>
 </html>
