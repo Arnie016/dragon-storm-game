@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Night Fury: Storm Warden</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #060a12; font-family: ui-monospace, Menlo, monospace; }
+  #hud { position: fixed; top: 14px; left: 16px; color: #bcd2e8; font-size: 14px; line-height: 1.7;
+         text-shadow: 0 1px 3px #000; user-select: none; pointer-events: none; }
+  #msg { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+         color: #dce9f5; text-align: center; background: rgba(4,8,16,.55); transition: opacity .5s; }
+  #msg h1 { font-size: 34px; margin: 0 0 12px; letter-spacing: 2px; }
+  #msg p { color: #8fa8bf; font-size: 14px; line-height: 1.9; }
+  #msg.hide { opacity: 0; pointer-events: none; }
+  #vig { position: fixed; inset: 0; pointer-events: none;
+         background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.75) 100%); }
+</style>
+</head>
+<body>
+<div id="vig"></div>
+<div id="hud"></div>
+<div id="msg"><div>
+  <h1>NIGHT FURY: STORM WARDEN</h1>
+  <p>Fly through all <b style="color:#7fe0ff">12 storm rings</b> before the gale wears you down.<br><br>
+     MOUSE — steer &nbsp;•&nbsp; HOLD CLICK or SPACE — flap (climb & speed)<br>
+     release to glide &nbsp;•&nbsp; <b>V</b> — ride first-person &nbsp;•&nbsp; dive to gain speed<br>
+     stall under 10 spd &nbsp;•&nbsp; the waves grab at you — stay above them<br><br>
+     <b>click to fly</b></p>
+</div></div>
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/three.module.js",
+  "three/addons/loaders/GLTFLoader.js": "./vendor/GLTFLoader.js",
+  "three/addons/loaders/DRACOLoader.js": "./vendor/DRACOLoader.js"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+addEventListener('error', e => {
+  document.getElementById('hud').textContent = 'ERR: ' + e.message;
+});
+
+// ---------- scene / atmosphere ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.45;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0a1220);
+scene.fog = new THREE.FogExp2(0x0a1220, 0.0032);
+
+const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.5, 4000);
+
+const moon = new THREE.DirectionalLight(0x8fb0ff, 0.95);
+moon.position.set(-200, 300, -100);
+scene.add(moon, new THREE.AmbientLight(0x2a3a52, 1.5));
+
+// ---------- sea (gerstner-ish vertex waves + foam sparkle) ----------
+const seaUniforms = { uT: { value: 0 } };
+const sea = new THREE.Mesh(
+  new THREE.PlaneGeometry(3000, 3000, 196, 196),
+  new THREE.ShaderMaterial({
+    uniforms: { ...seaUniforms, fogColor: { value: scene.fog.color }, fogDensity: { value: scene.fog.density } },
+    fog: false,
+    vertexShader: `
+      uniform float uT; varying float vH; varying vec3 vW;
+      float wave(vec2 p, vec2 d, float k, float s, float a){ return a*sin(dot(p,d)*k + uT*s); }
+      void main(){
+        vec3 pos = position;
+        float h = wave(pos.xy, vec2(.8,.6), .045, 1.25, 2.6)
+                + wave(pos.xy, vec2(-.5,.9), .07, 1.7, 1.5)
+                + wave(pos.xy, vec2(.2,-1.), .11, 2.3, .8);
+        pos.z += h; vH = h;
+        vec4 w = modelMatrix * vec4(pos,1.); vW = w.xyz;
+        gl_Position = projectionMatrix * viewMatrix * w;
+      }`,
+    fragmentShader: `
+      uniform vec3 fogColor; uniform float fogDensity;
+      varying float vH; varying vec3 vW;
+      void main(){
+        vec3 deep = vec3(.012,.03,.05), crest = vec3(.55,.62,.68);
+        float foam = smoothstep(2.2, 4.2, vH) * .8;
+        foam += step(.985, fract(sin(dot(floor(vW.xz*1.5), vec2(12.9898,78.233))) * 43758.55)) * .12;
+        vec3 col = mix(deep, crest, foam);
+        float d = length(vW - cameraPosition);
+        float f = 1. - exp(-fogDensity*fogDensity*d*d);
+        gl_FragColor = vec4(mix(col, fogColor, f), 1.);
+      }`
+  })
+);
+sea.rotation.x = -Math.PI / 2;
+scene.add(sea);
+
+// ---------- island + lighthouse ----------
+const rockMat = new THREE.MeshStandardMaterial({ color: 0x14161a, roughness: .9, flatShading: true });
+function rock(x, z, r, h) {
+  const g = new THREE.IcosahedronGeometry(r, 2);
+  const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const v = new THREE.Vector3().fromBufferAttribute(p, i);
+    const n = v.clone().normalize().multiplyScalar(r * 0.35 * (Math.sin(v.x * 7.1) * Math.cos(v.z * 5.3)));
+    v.add(n); v.y *= h / r;
+    p.setXYZ(i, v.x, v.y, v.z);
+  }
+  g.computeVertexNormals();
+  const m = new THREE.Mesh(g, rockMat);
+  m.position.set(x, 2, z);
+  scene.add(m);
+  return m;
+}
+rock(0, 0, 34, 40); rock(55, 30, 18, 26); rock(-60, -20, 15, 32); rock(30, -55, 12, 18);
+
+const LH = new THREE.Group();
+for (let i = 0; i < 6; i++) {
+  const seg = new THREE.Mesh(
+    new THREE.CylinderGeometry(5.2 - i * .45, 5.5 - i * .45, 7, 24),
+    new THREE.MeshStandardMaterial({ color: i % 2 ? 0xb8b0a4 : 0x8c1f18, roughness: .65 })
+  );
+  seg.position.y = 40 + 3.5 + i * 7;
+  LH.add(seg);
+}
+const lampGlass = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 6, 16, 1, true),
+  new THREE.MeshStandardMaterial({ color: 0xffe9b0, emissive: 0xffc860, emissiveIntensity: 2.2, transparent: true, opacity: .85 }));
+lampGlass.position.y = 40 + 45;
+const roof = new THREE.Mesh(new THREE.ConeGeometry(4.4, 5.5, 16),
+  new THREE.MeshStandardMaterial({ color: 0x101216, roughness: .5 }));
+roof.position.y = 40 + 50.5;
+LH.add(lampGlass, roof);
+scene.add(LH);
+const LAMP_Y = 85;
+const lampLight = new THREE.PointLight(0xffd080, 900, 260, 1.8);
+lampLight.position.set(0, LAMP_Y, 0);
+scene.add(lampLight);
+
+// beam: spotlight + additive cone (the Blender trick, ported)
+const beamPivot = new THREE.Group();
+beamPivot.position.set(0, LAMP_Y, 0);
+scene.add(beamPivot);
+const spot = new THREE.SpotLight(0xffe0a0, 4000, 700, 0.16, 0.5, 1.2);
+beamPivot.add(spot, spot.target);
+spot.target.position.set(200, -18, 0);
+const beamGeo = new THREE.ConeGeometry(30, 340, 24, 1, true);
+beamGeo.translate(0, -170, 0);
+beamGeo.rotateZ(Math.PI / 2);
+const beam = new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({
+  color: 0xffe6b8, transparent: true, opacity: 0.10, blending: THREE.AdditiveBlending,
+  side: THREE.DoubleSide, depthWrite: false, fog: false
+}));
+beam.position.x = 0;
+beamPivot.add(beam);
+beam.rotation.z = -0.06;
+
+// ---------- rain ----------
+const RAIN_N = 1400, rainBox = 260;
+const rainGeo = new THREE.BufferGeometry();
+const rp = new Float32Array(RAIN_N * 6);
+rainGeo.setAttribute('position', new THREE.BufferAttribute(rp, 3));
+const rain = new THREE.LineSegments(rainGeo, new THREE.LineBasicMaterial({ color: 0x5a7086, transparent: true, opacity: .5 }));
+scene.add(rain);
+const rainSeed = Array.from({ length: RAIN_N }, () => [Math.random(), Math.random(), Math.random()]);
+
+// ---------- rings ----------
+const rings = [], RING_R = 11;
+const ringMat = new THREE.MeshStandardMaterial({ color: 0x0c333d, emissive: 0x36c8e8, emissiveIntensity: 2.8 });
+const ringDone = new THREE.MeshStandardMaterial({ color: 0x11351d, emissive: 0x2f8f4a, emissiveIntensity: .7 });
+for (let i = 0; i < 12; i++) {
+  const a = i / 12 * Math.PI * 2;
+  const r = 150 + 45 * Math.sin(i * 2.1);
+  const m = new THREE.Mesh(new THREE.TorusGeometry(RING_R, 1.1, 10, 36), ringMat.clone());
+  m.position.set(Math.cos(a) * r, 26 + 20 * Math.abs(Math.sin(i * 1.3)), Math.sin(a) * r);
+  m.lookAt(new THREE.Vector3(Math.cos(a + .45) * r, m.position.y, Math.sin(a + .45) * r));
+  m.userData.hit = false;
+  rings.push(m); scene.add(m);
+}
+
+// ---------- dragon ----------
+const D = { group: new THREE.Group(), mixer: null, flap: null, glide: null, yaw: 0, pitch: 0, speed: 16,
+            flapping: false, headNode: null, model: null };
+D.group.position.set(0, 40, 260);
+scene.add(D.group);
+const draco = new DRACOLoader().setDecoderPath('./vendor/draco/');
+const loader = new GLTFLoader();
+loader.setDRACOLoader(draco);
+loader.load('dragon_rigged.glb', (g) => {
+  const model = g.scene;
+  D.model = model;
+  model.scale.setScalar(7.5);
+  model.rotation.y = Math.PI;             // glTF exports Blender's -Y forward as +Z; face -Z (three forward)
+  D.group.add(model);
+  D.mixer = new THREE.AnimationMixer(model);
+  const clips = g.animations;
+  D.flap = D.mixer.clipAction(THREE.AnimationClip.findByName(clips, 'Flap'));
+  D.glide = D.mixer.clipAction(THREE.AnimationClip.findByName(clips, 'Glide'));
+  D.flap.play(); D.glide.play();
+  D.flap.setEffectiveWeight(0); D.glide.setEffectiveWeight(1);
+  D.headNode = model.getObjectByName('head');
+
+  // ---- rider: hooded silhouette saddled on the chest bone ----
+  const chest = model.getObjectByName('chest');
+  if (chest) {
+    const rider = new THREE.Group();
+    const cloth = new THREE.MeshStandardMaterial({ color: 0x2a2119, roughness: .9 });
+    const leather = new THREE.MeshStandardMaterial({ color: 0x17120c, roughness: .8 });
+    const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.026, 0.05, 4, 8), cloth);
+    torso.position.y = 0.055;
+    torso.rotation.x = 0.25;
+    const hood = new THREE.Mesh(new THREE.ConeGeometry(0.024, 0.045, 8), cloth);
+    hood.position.set(0, 0.105, -0.004);
+    hood.rotation.x = -0.2;
+    const legL = new THREE.Mesh(new THREE.CapsuleGeometry(0.011, 0.05, 3, 6), leather);
+    legL.position.set(0.033, 0.016, 0.004); legL.rotation.z = 1.05;
+    const legR = legL.clone(); legR.position.x = -0.033; legR.rotation.z = -1.05;
+    rider.add(torso, hood, legL, legR);
+    // place on the back: model-space (0, 0.545, 0.03) converted into chest-bone space
+    chest.updateWorldMatrix(true, false);
+    const p = new THREE.Vector3(0, 0.545, 0.03).applyMatrix4(model.matrixWorld);
+    rider.position.copy(chest.worldToLocal(p));
+    chest.add(rider);
+  }
+  document.getElementById('hud').textContent = 'dragon aboard';
+});
+
+// ---------- input ----------
+const input = { x: 0, y: 0, flap: false };
+addEventListener('mousemove', e => {
+  input.x = (e.clientX / innerWidth) * 2 - 1;
+  input.y = (e.clientY / innerHeight) * 2 - 1;
+});
+addEventListener('mousedown', () => input.flap = true);
+addEventListener('mouseup', () => input.flap = false);
+addEventListener('keydown', e => {
+  if (e.code === 'Space') { input.flap = true; e.preventDefault(); }
+  if (e.code === 'KeyV') S.fpv = !S.fpv;
+});
+addEventListener('keyup', e => { if (e.code === 'Space') input.flap = false; });
+
+// ---------- game state ----------
+const S = { t: 0, score: 0, done: false, started: false, timeLeft: 150, fpv: false, shake: 0 };
+
+// same three sines as the sea shader (plane local xy = world x, -z)
+function waveH(x, z, t) {
+  const a = x * 0.8 + (-z) * 0.6, b = x * -0.5 + (-z) * 0.9, c = x * 0.2 + (-z) * -1.0;
+  return 2.6 * Math.sin(a * 0.045 + t * 1.25) + 1.5 * Math.sin(b * 0.07 + t * 1.7) + 0.8 * Math.sin(c * 0.11 + t * 2.3);
+}
+document.getElementById('msg').addEventListener('click', () => {
+  S.started = true;
+  document.getElementById('msg').classList.add('hide');
+});
+
+// verification hooks (SIM.warp discipline)
+window.SIM = {
+  state: () => ({ t: S.t, score: S.score, pos: D.group.position.toArray().map(v => +v.toFixed(1)),
+                  spd: +D.speed.toFixed(1), fpv: S.fpv, done: S.done }),
+  warp: (dt, steps = 60) => { for (let i = 0; i < steps; i++) tick(dt); render(); },
+  teleport: (x, y, z, yaw) => { D.group.position.set(x, y, z); if (yaw !== undefined) D.yaw = yaw; },
+  setFpv: (v) => { S.fpv = !!v; },
+  start: () => { S.started = true; document.getElementById('msg').classList.add('hide'); },
+  autofly: false,
+};
+
+// ---------- simulation ----------
+function tick(dt) {
+  S.t += dt;
+  if (!S.done && S.started) S.timeLeft -= dt;
+
+  if (window.SIM.autofly) { // simple autopilot toward nearest un-hit ring
+    const next = rings.find(r => !r.userData.hit);
+    if (next) {
+      const to = next.position.clone().sub(D.group.position);
+      const wantYaw = Math.atan2(-to.x, -to.z);
+      let dy = wantYaw - D.yaw;
+      while (dy > Math.PI) dy -= 2 * Math.PI;
+      while (dy < -Math.PI) dy += 2 * Math.PI;
+      input.x = THREE.MathUtils.clamp(-dy * 2, -1, 1);
+      input.y = THREE.MathUtils.clamp(-(to.y / Math.max(to.length(), 1)) * 3, -.8, .8);
+      input.flap = to.y > 2;
+    }
+  }
+
+  // steering — turn authority grows with airspeed
+  D.yaw -= input.x * dt * 1.1 * (0.55 + D.speed / 34);
+  const targetPitch = -input.y * 0.85;
+  D.pitch += (targetPitch - D.pitch) * Math.min(1, dt * 3);
+
+  // flight energy: dive to gain speed, climb to bleed it, flap for thrust, drag toward trim
+  D.flapping = input.flap;
+  const thrust = D.flapping ? 9.5 : 0;
+  D.speed += (thrust - Math.sin(D.pitch) * 9.8 * 0.85 - (D.speed - 15) * 0.32) * dt;
+  D.speed = THREE.MathUtils.clamp(D.speed, 6, 44);
+  const stall = Math.max(0, 9.5 - D.speed);            // too slow: nose drops, you sink
+
+  const fwd = new THREE.Vector3(-Math.sin(D.yaw), 0, -Math.cos(D.yaw));
+  D.group.position.addScaledVector(fwd, D.speed * dt);
+  const vy = Math.sin(D.pitch) * D.speed + (D.flapping ? 5.5 : -2.6) - stall * 1.6;
+  D.group.position.y += vy * dt;
+  D.group.position.y = Math.min(D.group.position.y, 190);
+
+  // wind gusts shove you around
+  const gx = Math.sin(S.t * 0.37 + 1.7) + 0.6 * Math.sin(S.t * 0.13);
+  const gz = Math.sin(S.t * 0.29 + 4.1) + 0.6 * Math.sin(S.t * 0.17 + 2.0);
+  D.group.position.x += gx * 2.4 * dt;
+  D.group.position.z += gz * 2.4 * dt;
+
+  // waves are physical: skim them and they grab at you
+  const p = D.group.position;
+  const wh = waveH(p.x, p.z, S.t);
+  if (p.y < wh + 3.2) {
+    D.speed *= 1 - 0.9 * dt;                            // water drag
+    S.shake = Math.min(1, S.shake + dt * 5);
+    p.y += (wh + 3.2 - p.y) * Math.min(1, dt * 6);      // buoyant shove upward
+    if (p.y < wh + 1.0) { p.y = wh + 1.0; D.pitch = Math.max(D.pitch, 0.3); }
+  }
+  S.shake = Math.max(0, S.shake - dt * 2.5);
+
+  // orientation + bank
+  D.group.rotation.set(0, D.yaw, 0);
+  D.group.rotateX(-D.pitch * 0.55);
+  D.group.rotateZ(input.x * 0.6);
+
+  // animation blend
+  if (D.mixer) {
+    const w = THREE.MathUtils.clamp((D.flap.getEffectiveWeight() + (D.flapping ? dt * 5 : -dt * 5)), 0, 1);
+    D.flap.setEffectiveWeight(w);
+    D.glide.setEffectiveWeight(1 - w);
+    D.flap.timeScale = 1.35;
+    D.mixer.update(dt);
+  }
+
+  // rings
+  if (S.started && !S.done) for (const r of rings) {
+    if (r.userData.hit) continue;
+    if (D.group.position.distanceTo(r.position) < RING_R) {
+      r.userData.hit = true;
+      r.material = ringDone;
+      S.score++;
+      if (S.score === rings.length) endGame(true);
+    }
+    r.rotation.z += dt * .4;
+  }
+  if (S.timeLeft <= 0 && !S.done && S.started) endGame(false);
+
+  // beam sweep
+  beamPivot.rotation.y = S.t * 0.45;
+
+  // rain follows camera
+  const c = camera.position;
+  for (let i = 0; i < RAIN_N; i++) {
+    const s = rainSeed[i];
+    const fall = ((s[1] * 400 - S.t * 90 * (0.7 + s[2] * .6)) % rainBox + rainBox) % rainBox;
+    const x = c.x + (s[0] - .5) * rainBox, z = c.z + (s[2] - .5) * rainBox;
+    const y = c.y + fall - rainBox / 2;
+    rp[i * 6] = x; rp[i * 6 + 1] = y; rp[i * 6 + 2] = z;
+    rp[i * 6 + 3] = x + 0.4; rp[i * 6 + 4] = y - 2.6; rp[i * 6 + 5] = z;
+  }
+  rainGeo.attributes.position.needsUpdate = true;
+  seaUniforms.uT.value = S.t;
+
+  // HUD
+  document.getElementById('hud').innerHTML =
+    `rings <b style="color:#7fe0ff">${S.score}/${rings.length}</b> &nbsp; ` +
+    `time ${Math.max(0, S.timeLeft).toFixed(0)}s &nbsp; ` +
+    `alt ${D.group.position.y.toFixed(0)}m &nbsp; spd ${D.speed.toFixed(0)}`;
+}
+
+function endGame(won) {
+  S.done = true;
+  const m = document.getElementById('msg');
+  m.classList.remove('hide');
+  m.firstElementChild.innerHTML = won
+    ? `<h1>STORM TAMED</h1><p>all ${rings.length} rings in ${(150 - S.timeLeft).toFixed(1)}s<br><br>reload to fly again</p>`
+    : `<h1>THE STORM WINS</h1><p>${S.score}/${rings.length} rings<br><br>reload to try again</p>`;
+}
+
+// ---------- camera + loop ----------
+const _hp = new THREE.Vector3();
+function render() {
+  const back = new THREE.Vector3(Math.sin(D.yaw), 0, Math.cos(D.yaw));
+  const shakeV = new THREE.Vector3((Math.random() - .5), (Math.random() - .5), (Math.random() - .5))
+    .multiplyScalar(S.shake * 1.4);
+  if (S.fpv && D.headNode) {
+    // ride the head bone: camera just above the neck, looking down the flight path
+    D.headNode.getWorldPosition(_hp);
+    const fwd = back.clone().negate();
+    camera.position.copy(_hp).addScaledVector(fwd, 1.5).add(new THREE.Vector3(0, 2.0, 0)).add(shakeV);
+    const look = camera.position.clone().addScaledVector(fwd, 60);
+    look.y += Math.sin(D.pitch) * 40;
+    camera.lookAt(look);
+    camera.rotateZ(input.x * 0.35);       // lean into the bank
+  } else {
+    const camTarget = D.group.position.clone().addScaledVector(back, 34).add(new THREE.Vector3(0, 12, 0));
+    camera.position.lerp(camTarget, 0.08);
+    camera.position.add(shakeV);
+    const look = D.group.position.clone().addScaledVector(back, -30);
+    camera.lookAt(look);
+    camera.rotateZ(input.x * 0.08);
+  }
+  renderer.render(scene, camera);
+}
+
+let last = performance.now();
+function loop(now) {
+  requestAnimationFrame(loop);
+  const dt = Math.min((now - last) / 1000, 0.05);
+  last = now;
+  if (S.started || window.SIM.autofly) tick(dt);
+  else { seaUniforms.uT.value = S.t += dt; beamPivot.rotation.y = S.t * 0.45; if (D.mixer) D.mixer.update(dt); }
+  render();
+}
+loop(last);
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
