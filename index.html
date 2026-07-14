@@ -44,6 +44,10 @@
   #arrow{ position:absolute; width:0;height:0; pointer-events:none;
     border-left:11px solid transparent; border-right:11px solid transparent; border-bottom:20px solid var(--teal);
     filter:drop-shadow(0 0 6px rgba(56,230,208,.9)); opacity:.9; }
+  #popup{ position:absolute; top:38%; left:50%; transform:translate(-50%,-50%); font-size:22px; font-weight:800;
+    letter-spacing:2px; color:var(--teal); text-shadow:0 0 18px rgba(56,230,208,.8); opacity:0; }
+  @keyframes pop{ 0%{opacity:0; transform:translate(-50%,-30%) scale(.7);} 25%{opacity:1;}
+    100%{opacity:0; transform:translate(-50%,-120%) scale(1.1);} }
 
   /* ---- overlays (menu / gameover) ---- */
   .screen{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; text-align:center;
@@ -91,7 +95,8 @@
   <div class="panel" id="objTag">reach the next <b>beacon</b> — stay out of the light</div>
   <div id="warn">IN THE LIGHT — DIVE!</div>
   <div id="arrow"></div>
-  <div id="ctrlhint"><b>MOUSE/WASD</b> fly · <b>SPACE</b> flap · <b>ARROWS/Q,E</b> look · <b>V</b> first-person</div>
+  <div id="popup"></div>
+  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> plasma · <b>Q/E</b> look · <b>V</b> view</div>
 </div>
 
 <div class="screen" id="menu">
@@ -101,12 +106,14 @@
     <div class="sub">The keepers sweep the black water with searchlights.<br>
       Ride the fury through the storm to the hidden cove — <b style="color:#c9b6ff">never be seen.</b></div>
     <div class="grid">
-      <div><span class="key">MOUSE</span>steer · pitch & bank</div>
-      <div><span class="key">W A S D</span>fly (alt to mouse)</div>
-      <div><span class="key">SPACE</span>flap — thrust & climb</div>
-      <div><span class="key">↑↓←→ / Q E</span>look around, see wings</div>
+      <div><span class="key">W / S</span>speed up · slow down</div>
+      <div><span class="key">↑ ↓</span>climb · dive</div>
+      <div><span class="key">A / D</span>bank & turn</div>
+      <div><span class="key">SPACE</span>flap — burst of climb</div>
+      <div><span class="key">X</span>plasma blast — kill a light</div>
+      <div><span class="key">Q / E</span>look around, see wings</div>
       <div><span class="key">V</span>first-person ride</div>
-      <div><span class="key">goal</span>hit 8 beacons, unseen</div>
+      <div><span class="key">goal</span>8 beacons, never seen</div>
     </div>
     <div class="btn" id="startBtn">▶ TAKE FLIGHT</div>
     <div class="foot">headphones recommended · dive into shadow to break a lock</div>
@@ -160,6 +167,7 @@ AU.load('ring','audio/ring.mp3',false,0.7);
 AU.load('detected','audio/detected.mp3',false,0.9);
 AU.load('crash','audio/crash.mp3',false,0.9);
 AU.load('thunder','audio/thunder.mp3',false,0.6);
+AU.load('zap','audio/zap.mp3',false,0.55);
 
 /* ============================ RENDERER / SCENE ============================ */
 const renderer = new THREE.WebGLRenderer({ antialias:true });
@@ -275,7 +283,7 @@ function beacon(x,z,baseH,yaw0,rate,warm){
   const cone=new THREE.Mesh(cg,new THREE.MeshBasicMaterial({ color:0xffe6b8, transparent:true, opacity:.09,
     blending:THREE.AdditiveBlending, side:THREE.DoubleSide, depthWrite:false, fog:false }));
   cone.rotation.z=-0.09; pivot.add(cone);
-  const sl={ pivot, cone, lampPos:new THREE.Vector3(x,lampY,z), yaw0, rate, range:720, coneHalf:0.30, lit:0 };
+  const sl={ pivot, cone, lamp, spot, lampPos:new THREE.Vector3(x,lampY,z), yaw0, rate, range:720, coneHalf:0.30, lit:0, disabled:0 };
   searchlights.push(sl); return sl;
 }
 beacon(0,0,42,0,0.42,true);
@@ -337,20 +345,63 @@ loader.load('dragon_rigged.glb',(g)=>{
 
 /* ============================ INPUT ============================ */
 const key={};
-const input={ mx:0, my:0, flap:false };
-addEventListener('mousemove',e=>{ input.mx=(e.clientX/innerWidth)*2-1; input.my=(e.clientY/innerHeight)*2-1; });
+const input={ mx:0, my:0, flap:false, moved:false };
+addEventListener('mousemove',e=>{ input.mx=(e.clientX/innerWidth)*2-1; input.my=(e.clientY/innerHeight)*2-1; input.moved=true; });
 addEventListener('mousedown',()=>{ if(S.started&&!S.done) input.flap=true; });
 addEventListener('mouseup',()=>{ input.flap=false; });
 addEventListener('keydown',e=>{
   key[e.code]=true;
   if(e.code==='Space'){ if(S.started&&!S.done) input.flap=true; e.preventDefault(); }
+  if(e.code==='KeyX'){ if(S.started&&!S.done) shoot(); e.preventDefault(); }
   if(e.code==='KeyV') S.fpv=!S.fpv;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
 });
 addEventListener('keyup',e=>{ key[e.code]=false; if(e.code==='Space') input.flap=false; });
 
 /* ============================ GAME STATE ============================ */
 const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake:0, flapCd:0,
-  camYaw:0, camPitch:0, nextThunder:5, cause:'' };
+  camYaw:0, camPitch:0, nextThunder:5, cause:'', shootCd:0, flash:0 };
+
+/* ---- plasma blasts (X) : fly forward, knock out a searchlight ---- */
+const bolts=[];
+function shoot(){
+  if(S.shootCd>0 || !D.model) return; S.shootCd=0.55;
+  const head=new THREE.Vector3(); (D.headNode||D.group).getWorldPosition(head);
+  const dir=new THREE.Vector3(-Math.sin(D.yaw),Math.sin(D.pitch)*0.9,-Math.cos(D.yaw)).normalize();
+  const m=new THREE.Mesh(new THREE.SphereGeometry(1.5,10,10),
+    new THREE.MeshBasicMaterial({color:0xca7bff, blending:THREE.AdditiveBlending, depthWrite:false}));
+  m.position.copy(head).addScaledVector(dir,6);
+  const lt=new THREE.PointLight(0xb060ff,300,140,2); m.add(lt);
+  scene.add(m); bolts.push({m,lt,vel:dir.clone().multiplyScalar(240),life:2.4});
+  if(D.glow) D.glow.intensity=60;      // muzzle flash on the chest
+  AU.play('zap',0.55); S.flash=Math.max(S.flash,0.18);
+}
+function updateBolts(dt){
+  for(let i=bolts.length-1;i>=0;i--){ const b=bolts[i];
+    b.m.position.addScaledVector(b.vel,dt); b.life-=dt; b.lt.intensity*=0.94;
+    b.m.scale.setScalar(1+ (2.4-b.life)*0.25);
+    for(const sl of searchlights){ if(sl.disabled>0) continue;
+      if(b.m.position.distanceTo(sl.lampPos)<16){ sl.disabled=6.0; sl.lit=0; b.life=0;
+        S.flash=Math.max(S.flash,0.7); AU.play('crash',0.35); break; } }
+    if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); bolts.splice(i,1); }
+  }
+}
+
+/* ---- beacon shockwave + popup juice ---- */
+const shocks=[];
+function shockwave(pos,color){
+  const m=new THREE.Mesh(new THREE.TorusGeometry(RING_R,0.9,8,36),
+    new THREE.MeshBasicMaterial({color, transparent:true, opacity:0.95, blending:THREE.AdditiveBlending, depthWrite:false}));
+  m.position.copy(pos); m.quaternion.copy(camera.quaternion); scene.add(m); shocks.push({m,life:0.6});
+}
+function updateShocks(dt){
+  for(let i=shocks.length-1;i>=0;i--){ const s=shocks[i]; s.life-=dt; const k=1-s.life/0.6;
+    s.m.scale.setScalar(1+k*3.2); s.m.material.opacity=0.95*(1-k); s.m.quaternion.copy(camera.quaternion);
+    if(s.life<=0){ s.m.geometry.dispose(); scene.remove(s.m); shocks.splice(i,1); }
+  }
+}
+const popEl=document.getElementById('popup');
+function popup(text){ popEl.textContent=text; popEl.style.animation='none'; void popEl.offsetWidth; popEl.style.animation='pop 0.9s ease-out'; }
 
 /* ---- searchlight direction + detection ---- */
 const _wq=new THREE.Quaternion(), _dir=new THREE.Vector3(), _toD=new THREE.Vector3();
@@ -378,23 +429,25 @@ function tick(dt){
   if(!S.started){ if(D.mixer) D.mixer.update(dt); return; }
   if(S.done){ if(D.mixer) D.mixer.update(dt); return; }
 
-  /* ---- combined flight input ---- */
-  const pitchCmd=THREE.MathUtils.clamp(-input.my + (key['KeyW']?1:0) - (key['KeyS']?1:0), -1,1);
-  const rollCmd =THREE.MathUtils.clamp( input.mx + (key['KeyD']?1:0) - (key['KeyA']?1:0), -1,1);
+  /* ---- flight input (decoupled: W/S throttle, arrows/mouse pitch, A/D turn) ---- */
+  // resting trackpad cursor stops steering (decays to centre when not moving)
+  if(!input.moved){ input.mx*=0.85; input.my*=0.85; } input.moved=false;
+  const dz=v=>{ const a=Math.abs(v); return a<0.16?0:Math.sign(v)*(a-0.16)/0.84; };
+  const pitchCmd=THREE.MathUtils.clamp((key['ArrowUp']?1:0)-(key['ArrowDown']?1:0) - dz(input.my), -1,1);
+  const turnCmd =THREE.MathUtils.clamp((key['KeyD']?1:0)-(key['KeyA']?1:0)+(key['ArrowRight']?1:0)-(key['ArrowLeft']?1:0) + dz(input.mx), -1,1);
+  const throttle=(key['KeyW']?1:0)-(key['KeyS']?1:0);
 
-  // bank-to-turn + a little direct yaw; authority scales with airspeed
   const auth=0.5+D.speed/40;
-  D.yaw -= rollCmd*dt*1.9*auth;
-  const pitchTarget=pitchCmd*1.15;                       // strong up/down authority
-  D.pitch += (pitchTarget-D.pitch)*Math.min(1,dt*4.0);
-  D.roll  += (rollCmd*0.85 - D.roll)*Math.min(1,dt*5.0);
+  D.yaw -= turnCmd*dt*1.9*auth;
+  D.pitch += (pitchCmd*1.05 - D.pitch)*Math.min(1,dt*4.0);   // clear, explicit climb/dive
+  D.roll  += (turnCmd*0.85 - D.roll)*Math.min(1,dt*5.0);
 
   /* ---- energy + LIFT ---- */
   D.flapping=input.flap && S.flapCd<=0;
-  const CRUISE=22, GRAV=13;
-  const thrust=input.flap?26:0;
-  D.speed += (thrust - Math.sin(D.pitch)*GRAV*1.2 - (D.speed-CRUISE)*0.45)*dt;
-  D.speed = THREE.MathUtils.clamp(D.speed, 4, 60);
+  const CRUISE=26, GRAV=13;
+  const thrust=(input.flap?26:0) + throttle*20;             // W drives forward, flap bursts
+  D.speed += (thrust - Math.sin(D.pitch)*GRAV*1.15 - (D.speed-CRUISE)*0.42)*dt;
+  D.speed = THREE.MathUtils.clamp(D.speed, 13, 62);          // never crawls -> smooth forward feel
   const lift=Math.min(1.35, D.speed/CRUISE);             // aerodynamic lift ratio
   const sink=Math.max(0, (1-lift))*GRAV;                 // below cruise → you sink (real lift feel)
 
@@ -406,7 +459,8 @@ function tick(dt){
   p.y = Math.min(p.y, 240);
 
   if(input.flap && S.flapCd<=0){ AU.play('flap',0.45); S.flapCd=0.42; }
-  S.flapCd-=dt;
+  S.flapCd-=dt; S.shootCd-=dt;
+  updateBolts(dt); updateShocks(dt);
 
   // wind gusts (all directions)
   const gx=Math.sin(S.t*.37+1.7)+.6*Math.sin(S.t*.13), gz=Math.sin(S.t*.29+4.1)+.6*Math.sin(S.t*.17+2.);
@@ -440,8 +494,11 @@ function tick(dt){
   /* ---- STEALTH detection ---- */
   let litNow=0;
   for(const sl of searchlights){
+    if(sl.disabled>0){ sl.disabled-=dt; sl.lit=0; sl.cone.material.opacity=0.02; sl.cone.material.color.setHex(0x7a3cff);
+      sl.lamp.material.emissiveIntensity=0.25; sl.spot.intensity=0; continue; }
+    sl.cone.material.color.setHex(0xffe6b8); sl.lamp.material.emissiveIntensity=2.4; sl.spot.intensity=3200;
     _toD.copy(p).sub(sl.lampPos); const dist=_toD.length();
-    if(dist>sl.range){ sl.lit*= (1-Math.min(1,dt*4)); continue; }
+    if(dist>sl.range){ sl.lit*= (1-Math.min(1,dt*4)); sl.cone.material.opacity=0.07; continue; }
     const bd=beamDir(sl); const ang=bd.angleTo(_toD.normalize());
     let lit=0;
     if(ang<sl.coneHalf && !occluded(sl.lampPos,p)){
@@ -460,11 +517,17 @@ function tick(dt){
   $('litglow').style.opacity = (litNow>0.02? 0.25+litNow*0.55 : Math.max(0, S.detection*0.25)).toFixed(2);
   $('warn').style.opacity = (litNow>0.35? (0.5+0.5*Math.sin(S.t*14)).toFixed(2) : 0);
 
-  /* ---- beacons ---- */
-  for(const r of rings){ r.rotation.z+=dt*.5;
-    if(r.userData.hit) continue;
-    if(p.distanceTo(r.position)<RING_R){ r.userData.hit=true; r.material=ringDone; S.score++; AU.play('ring',0.7);
-      if(S.score===rings.length) escaped(); }
+  /* ---- beacons (idle pulse + juicy pass) ---- */
+  for(const r of rings){ r.rotation.z+=dt*(r.userData.hit?0.25:0.6);
+    if(r.userData.pop>0){ r.userData.pop-=dt*2.6; r.scale.setScalar(1+Math.max(0,r.userData.pop)*0.4); }
+    if(r.userData.hit){ continue; }
+    r.material.emissiveIntensity=2.6+Math.sin(S.t*3+r.position.x*0.1)*0.9;   // breathe
+    if(p.distanceTo(r.position)<RING_R+2){
+      r.userData.hit=true; r.userData.pop=1; r.material=ringDone; S.score++;
+      AU.play('ring',0.75); shockwave(r.position,0x9a5cff); popup('BEACON '+S.score+' / '+rings.length);
+      S.flash=Math.max(S.flash,0.2);
+      if(S.score===rings.length) escaped();
+    }
   }
 
   /* ---- lightning + thunder ---- */
@@ -525,10 +588,12 @@ function begin(){
   S.started=true; $('menu').classList.add('hide');
 }
 function reset(){
-  D.group.position.copy(START); D.yaw=Math.PI; D.pitch=0; D.roll=0; D.speed=20; input.flap=false;
-  S.done=false; S.detection=0; S.score=0; S.t=S.t; S.shake=0; S.fpv=false; S.nextThunder=S.t+5;
-  for(const r of rings){ r.userData.hit=false; r.material=ringBase.clone(); }
-  for(const sl of searchlights) sl.lit=0;
+  D.group.position.copy(START); D.yaw=Math.PI; D.pitch=0; D.roll=0; D.speed=26; input.flap=false;
+  S.done=false; S.detection=0; S.score=0; S.shake=0; S.fpv=false; S.nextThunder=S.t+5; S.shootCd=0;
+  for(const r of rings){ r.userData.hit=false; r.userData.pop=0; r.scale.setScalar(1); r.material=ringBase.clone(); }
+  for(const sl of searchlights){ sl.lit=0; sl.disabled=0; }
+  for(const b of bolts){ scene.remove(b.m); } bolts.length=0;
+  for(const s of shocks){ scene.remove(s.m); } shocks.length=0;
   $('over').classList.add('hide'); $('litglow').style.opacity=0; $('warn').style.opacity=0;
   AU.fadeTo('music',0.4,600); AU.fadeTo('amb',0.5,600);
   S.started=true;
@@ -581,8 +646,9 @@ addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.upd
 /* ---- debug hooks ---- */
 window.SIM={
   state:()=>({t:+S.t.toFixed(1),started:S.started,done:S.done,det:+S.detection.toFixed(2),score:S.score,
-    spd:+D.speed.toFixed(1),pos:D.group.position.toArray().map(v=>+v.toFixed(1)),fpv:S.fpv}),
-  start:begin, reset, setFpv:v=>{S.fpv=!!v}, key:(c,v)=>{key[c]=!!v},
+    spd:+D.speed.toFixed(1),pos:D.group.position.toArray().map(v=>+v.toFixed(1)),fpv:S.fpv,
+    bolts:bolts.length, disabled:searchlights.filter(s=>s.disabled>0).length}),
+  start:begin, reset, setFpv:v=>{S.fpv=!!v}, key:(c,v)=>{key[c]=!!v}, shoot,
   teleport:(x,y,z,yaw)=>{ D.group.position.set(x,y,z); if(yaw!=null)D.yaw=yaw; },
   warp:(dt,steps=60)=>{ for(let i=0;i<steps;i++) tick(dt); render(); },
 };
