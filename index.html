@@ -4,11 +4,28 @@
 <meta charset="utf-8">
 <title>Night Fury: Hidden World</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
 <style>
-  :root{ --purple:#a463ff; --teal:#38e6d0; --warn:#ff5a7a; }
+  :root{ --purple:#a463ff; --teal:#38e6d0; --warn:#ff5a7a;
+    --sc1:rgba(150,100,255,.13); --sc2:rgba(56,230,208,.05);
+    --px:0px; --py:0px;
+    --display:'Cinzel', 'Palatino', serif; --body:'Cormorant Garamond', Georgia, serif;
+    --mono:ui-monospace, "SF Mono", Menlo, monospace; }
   html,body{ margin:0; height:100%; overflow:hidden; background:#04060d;
-    font-family:ui-monospace, "SF Mono", Menlo, monospace; color:#cfe0f5; }
+    font-family:var(--mono); color:#cfe0f5; }
   canvas{ display:block; }
+
+  /* ---- dragon-scale texture (two staggered scallop layers) ---- */
+  .scales{
+    background-image:
+      radial-gradient(circle at 50% 128%, transparent 50%, var(--sc1) 51%, var(--sc1) 60%, transparent 61%),
+      radial-gradient(circle at 50% 128%, transparent 50%, var(--sc1) 51%, var(--sc1) 60%, transparent 61%),
+      radial-gradient(circle at 50% 132%, transparent 55%, var(--sc2) 56%, var(--sc2) 64%, transparent 65%);
+    background-size: 52px 40px, 52px 40px, 26px 20px;
+    background-position: 0 0, 26px 20px, 13px 10px;
+  }
 
   /* ---- vignette + being-lit edge glow ---- */
   #vig{ position:fixed; inset:0; pointer-events:none;
@@ -20,17 +37,30 @@
     background:radial-gradient(ellipse at center, transparent 30%, rgba(30,10,60,.55) 78%, rgba(120,70,255,.35) 100%); }
 
   /* ---- HUD ---- */
-  #hud{ position:fixed; inset:0; pointer-events:none; user-select:none; }
-  .panel{ position:absolute; background:linear-gradient(180deg, rgba(10,14,28,.72), rgba(8,10,22,.5));
+  #hud{ position:fixed; inset:0; pointer-events:none; user-select:none; opacity:0; transition:opacity .8s; }
+  #hud.on{ opacity:1; }
+  .panel{ position:absolute; background:linear-gradient(180deg, rgba(10,14,28,.74), rgba(8,10,22,.52));
     border:1px solid rgba(120,90,200,.35); border-radius:10px; backdrop-filter:blur(3px);
-    padding:9px 13px; box-shadow:0 4px 24px rgba(0,0,0,.4); }
-  #hudTL{ top:14px; left:14px; min-width:190px; }
+    padding:9px 13px; box-shadow:0 4px 24px rgba(0,0,0,.4); overflow:hidden; }
+  .panel::before{ content:''; position:absolute; left:0; right:0; top:0; height:9px; opacity:.6; pointer-events:none;
+    background-image:
+      radial-gradient(circle at 50% 155%, transparent 50%, rgba(150,100,255,.35) 51%, rgba(150,100,255,.35) 68%, transparent 69%),
+      radial-gradient(circle at 50% 155%, transparent 50%, rgba(150,100,255,.22) 51%, rgba(150,100,255,.22) 68%, transparent 69%);
+    background-size:16px 9px,16px 9px; background-position:0 0,8px 5px; }
+  #hudTL{ top:14px; left:14px; min-width:200px; }
   #hudTL .row{ display:flex; justify-content:space-between; font-size:12px; line-height:1.85; letter-spacing:.5px; }
   #hudTL .k{ color:#7d8cad; } #hudTL .v{ color:#dbe7fb; font-weight:600; }
   .bar{ height:7px; border-radius:4px; background:rgba(255,255,255,.08); overflow:hidden; margin-top:3px; }
   .bar > i{ display:block; height:100%; width:0%; border-radius:4px; transition:width .08s linear; }
   #detFill{ background:linear-gradient(90deg,#3aa0ff,var(--purple) 60%,var(--warn)); }
-  #hudTL .title{ font-size:11px; letter-spacing:2px; color:var(--purple); margin:2px 0 7px; font-weight:700; }
+  #plasmaFill{ background:linear-gradient(90deg,#5a2ea6,#a463ff 70%,#e0c6ff); }
+  #hudTL .title{ font-family:var(--display); font-size:12px; letter-spacing:3px; color:var(--purple); margin:4px 0 7px; font-weight:700; }
+  .pips{ display:inline-flex; gap:4px; margin-left:8px; vertical-align:1px; }
+  .pips i{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.14); }
+  .pips i.on{ background:var(--purple); box-shadow:0 0 7px rgba(164,99,255,.9); }
+  #hudTR{ top:14px; right:14px; text-align:right; padding:6px 12px; }
+  #hudTR .mini{ font-size:11px; letter-spacing:1px; color:#7d8cad; }
+  #hudTR .mini b{ color:#dbe7fb; margin-left:7px; font-weight:600; }
 
   #objTag{ top:16px; left:50%; transform:translateX(-50%); text-align:center; font-size:12px;
     letter-spacing:1.5px; color:#b9c8e6; padding:6px 16px; }
@@ -53,31 +83,81 @@
 
   /* ---- overlays (menu / gameover) ---- */
   .screen{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; text-align:center;
-    background:radial-gradient(ellipse at 50% 30%, rgba(40,20,70,.5), rgba(4,6,13,.86) 70%);
     transition:opacity .6s; z-index:5; }
   .screen.hide{ opacity:0; pointer-events:none; }
+  #over{ background:radial-gradient(ellipse at 50% 30%, rgba(40,20,70,.5), rgba(4,6,13,.88) 70%); }
+
+  /* menu: transparent centre so the live dragon shows through; scale-armoured edges */
+  #menu{ background:radial-gradient(ellipse 62% 52% at 50% 47%, transparent 42%, rgba(5,7,16,.62) 74%, rgba(3,4,10,.92) 100%); }
+  #menu::before{ content:''; position:absolute; inset:-60px; pointer-events:none; opacity:.9;
+    transform:translate(var(--px), var(--py));
+    background-image:
+      radial-gradient(circle at 50% 128%, transparent 50%, var(--sc1) 51%, var(--sc1) 60%, transparent 61%),
+      radial-gradient(circle at 50% 128%, transparent 50%, var(--sc1) 51%, var(--sc1) 60%, transparent 61%);
+    background-size:52px 40px, 52px 40px; background-position:0 0, 26px 20px;
+    -webkit-mask-image:radial-gradient(ellipse 58% 50% at 50% 46%, transparent 46%, #000 82%);
+    mask-image:radial-gradient(ellipse 58% 50% at 50% 46%, transparent 46%, #000 82%);
+    animation:scaledrift 26s linear infinite; }
+  #menu::after{ content:''; position:absolute; inset:-60px; pointer-events:none; opacity:.55;
+    transform:translate(calc(var(--px)*2.2), calc(var(--py)*2.2));
+    background-image:
+      radial-gradient(circle at 50% 132%, transparent 54%, var(--sc2) 55%, var(--sc2) 64%, transparent 65%),
+      radial-gradient(circle at 50% 132%, transparent 54%, rgba(150,100,255,.07) 55%, rgba(150,100,255,.07) 64%, transparent 65%);
+    background-size:26px 20px, 26px 20px; background-position:0 0, 13px 10px;
+    -webkit-mask-image:radial-gradient(ellipse 52% 46% at 50% 46%, transparent 52%, #000 90%);
+    mask-image:radial-gradient(ellipse 52% 46% at 50% 46%, transparent 52%, #000 90%);
+    animation:scaledrift 15s linear infinite reverse; }
+  @keyframes scaledrift{ from{ background-position:0 0, 26px 20px; } to{ background-position:0 80px, 26px 100px; } }
+
+  #menu .card{ position:relative; z-index:2; display:flex; flex-direction:column; align-items:center;
+    justify-content:space-between; height:100%; width:100%; max-width:none; padding:4.5vh 20px 3.5vh; box-sizing:border-box; }
   .card{ max-width:640px; padding:0 28px; }
-  .kicker{ font-size:12px; letter-spacing:6px; color:var(--teal); margin-bottom:14px; }
-  h1{ margin:0; font-size:52px; letter-spacing:3px; font-weight:800; line-height:1.05;
-    background:linear-gradient(180deg,#fff,#b79bff 55%,#7a52d8);
+
+  .kicker{ font-family:var(--display); font-size:13px; letter-spacing:.62em; text-indent:.62em; color:var(--teal);
+    margin-bottom:10px; font-weight:500; display:flex; align-items:center; gap:16px; }
+  .kicker::before,.kicker::after{ content:''; width:64px; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(56,230,208,.7)); }
+  .kicker::after{ transform:scaleX(-1); }
+
+  h1{ margin:0; font-family:var(--display); font-weight:900; letter-spacing:.08em;
+    font-size:clamp(54px, 9.5vw, 118px); line-height:.98;
+    background:linear-gradient(178deg, #f6f2ff 8%, #cdb2ff 38%, #8a5cf0 66%, #3d2378 96%);
     -webkit-background-clip:text; background-clip:text; color:transparent;
-    text-shadow:0 0 42px rgba(150,100,255,.35); }
+    -webkit-text-stroke:1px rgba(216,190,255,.16);
+    filter:drop-shadow(0 4px 26px rgba(130,80,240,.42)) drop-shadow(0 1px 0 rgba(0,0,0,.7)); }
+  h1 .fury{ display:block; font-size:.62em; letter-spacing:.42em; text-indent:.42em; font-weight:700;
+    background:linear-gradient(180deg,#a9f5e8 5%, #38b9a6 55%, #0f5a4e 100%);
+    -webkit-background-clip:text; background-clip:text; }
+  h1.bad,h1.good{ font-size:52px; letter-spacing:3px; }
   h1.bad{ background:linear-gradient(180deg,#fff,#ff8a9c 55%,#c53a54); -webkit-background-clip:text; background-clip:text; }
   h1.good{ background:linear-gradient(180deg,#fff,#7fe6c6 55%,#2aa98a); -webkit-background-clip:text; background-clip:text; }
-  .sub{ color:#9fb0d0; font-size:14px; line-height:1.6; margin:14px 0 22px; }
+
+  .ornament{ display:flex; align-items:center; gap:10px; margin:12px 0 0; color:#8f7bd8; font-size:11px; letter-spacing:6px; }
+  .ornament::before,.ornament::after{ content:''; width:110px; height:6px; opacity:.8;
+    background:radial-gradient(circle at 50% 160%, transparent 52%, rgba(150,100,255,.55) 53%, rgba(150,100,255,.55) 66%, transparent 67%);
+    background-size:12px 6px; }
+  .sub{ font-family:var(--body); font-style:italic; color:#b4c0dd; font-size:clamp(15px,1.6vw,19px);
+    line-height:1.55; margin:12px 0 0; max-width:560px; }
+  .sub b{ color:#cdb6ff; font-style:normal; }
+
+  .dock{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:7px 9px; max-width:760px; }
+  .chip{ font-size:11px; letter-spacing:.5px; color:#aab8d6; padding:5px 11px; border-radius:20px;
+    border:1px solid rgba(140,110,220,.28); background:rgba(12,14,30,.55); backdrop-filter:blur(3px); }
+  .chip b{ color:#fff; font-weight:700; margin-right:6px; }
+  .btn{ display:inline-block; margin-top:2px; padding:14px 46px; font-family:var(--display); font-size:15px; font-weight:700;
+    letter-spacing:.34em; text-indent:.34em; color:#fff; cursor:pointer; border-radius:40px; border:1px solid rgba(170,130,255,.65);
+    background:linear-gradient(180deg, rgba(140,90,240,.55), rgba(80,42,160,.55)); transition:transform .15s, box-shadow .15s;
+    box-shadow:0 0 0 rgba(150,100,255,0); animation:pulse 2.2s ease-in-out infinite; }
+  .btn:hover{ transform:translateY(-2px); box-shadow:0 10px 34px rgba(140,90,240,.55); }
+  @keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(150,100,255,.5);} 50%{ box-shadow:0 0 26px 4px rgba(150,100,255,.15);} }
+  .stat{ display:inline-block; margin:0 14px; font-size:13px; color:#c7d5f0; }
+  .stat b{ display:block; font-size:26px; color:#fff; margin-top:2px; font-family:var(--display); }
+  .foot{ font-size:11px; color:#5f6f92; letter-spacing:2px; }
   .grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px 22px; max-width:440px; margin:0 auto 24px;
     font-size:12.5px; color:#aab8d6; text-align:left; }
   .grid .key{ color:#fff; background:rgba(120,90,200,.22); border:1px solid rgba(150,120,230,.4);
     border-radius:5px; padding:1px 7px; margin-right:7px; font-size:11px; }
-  .btn{ display:inline-block; margin-top:6px; padding:12px 34px; font-family:inherit; font-size:14px; font-weight:700;
-    letter-spacing:2px; color:#fff; cursor:pointer; border-radius:30px; border:1px solid rgba(160,120,255,.6);
-    background:linear-gradient(180deg, rgba(140,90,240,.5), rgba(90,50,170,.5)); transition:transform .15s, box-shadow .15s;
-    box-shadow:0 0 0 rgba(150,100,255,0); animation:pulse 2.2s ease-in-out infinite; }
-  .btn:hover{ transform:translateY(-2px); box-shadow:0 8px 28px rgba(140,90,240,.5); }
-  @keyframes pulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(150,100,255,.5);} 50%{ box-shadow:0 0 26px 4px rgba(150,100,255,.15);} }
-  .stat{ display:inline-block; margin:0 14px; font-size:13px; color:#c7d5f0; }
-  .stat b{ display:block; font-size:26px; color:#fff; margin-top:2px; }
-  .foot{ margin-top:20px; font-size:11px; color:#5f6f92; letter-spacing:1px; }
 </style>
 </head>
 <body>
@@ -91,35 +171,46 @@
     <div class="title">◈ NIGHT FURY</div>
     <div class="row"><span class="k">DETECTION</span><span class="v" id="detPct">0%</span></div>
     <div class="bar"><i id="detFill"></i></div>
+    <div class="row" style="margin-top:6px"><span class="k">PLASMA <span class="pips" id="plasmaPips"><i></i><i></i><i></i></span></span><span class="v" id="plasmaV">3</span></div>
+    <div class="bar"><i id="plasmaFill"></i></div>
     <div class="row" style="margin-top:6px"><span class="k">BEACONS</span><span class="v" id="beaconV">0 / 8</span></div>
     <div class="row"><span class="k">ALT</span><span class="v" id="altV">0 m</span></div>
     <div class="row"><span class="k">SPEED</span><span class="v" id="spdV">0</span></div>
+  </div>
+  <div class="panel" id="hudTR">
+    <div class="mini">VIEW<b id="viewTag">CHASE</b></div>
+    <div class="mini">FPS<b id="fpsV">–</b></div>
   </div>
   <div class="panel" id="objTag">reach the next <b>beacon</b> — stay out of the light</div>
   <div id="warn">IN THE LIGHT — DIVE!</div>
   <div id="arrow"></div>
   <div id="popup"></div>
-  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> plasma · <b>Q/E</b> look · <b>V</b> view</div>
+  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> hold=charge plasma · <b>Q/E</b> look · <b>V</b> view</div>
 </div>
 
 <div class="screen" id="menu">
   <div class="card">
-    <div class="kicker">STORM WARDEN · HIDDEN WORLD</div>
-    <h1>NIGHT&nbsp;FURY</h1>
-    <div class="sub">The keepers sweep the black water with searchlights.<br>
-      Ride the fury through the storm to the hidden cove — <b style="color:#c9b6ff">never be seen.</b></div>
-    <div class="grid">
-      <div><span class="key">W / S</span>speed up · slow down</div>
-      <div><span class="key">↑ ↓</span>climb · dive</div>
-      <div><span class="key">A / D</span>bank & turn</div>
-      <div><span class="key">SPACE</span>flap — burst of climb</div>
-      <div><span class="key">X</span>plasma blast — kill a light</div>
-      <div><span class="key">Q / E</span>look around, see wings</div>
-      <div><span class="key">V</span>first-person ride</div>
-      <div><span class="key">goal</span>8 beacons, never seen</div>
+    <div>
+      <div class="kicker">STORM WARDEN · HIDDEN WORLD</div>
+      <h1>NIGHT<span class="fury">FURY</span></h1>
+      <div class="ornament" style="justify-content:center">◈</div>
+      <div class="sub">The keepers sweep the black water with searchlights.<br>
+        Ride the fury through the storm to the hidden cove — <b>never be seen.</b></div>
     </div>
-    <div class="btn" id="startBtn">▶ TAKE FLIGHT</div>
-    <div class="foot">headphones recommended · dive into shadow to break a lock</div>
+    <div class="dock">
+      <div class="chips">
+        <span class="chip"><b>W/S</b>speed</span>
+        <span class="chip"><b>↑↓</b>climb · dive</span>
+        <span class="chip"><b>A/D</b>bank & turn</span>
+        <span class="chip"><b>SPACE</b>flap</span>
+        <span class="chip"><b>X</b>hold to charge plasma</span>
+        <span class="chip"><b>Q/E</b>look around</span>
+        <span class="chip"><b>V</b>ride first-person</span>
+        <span class="chip"><b>GOAL</b>8 beacons, never seen</span>
+      </div>
+      <div class="btn" id="startBtn">TAKE FLIGHT</div>
+      <div class="foot">headphones recommended · dive into shadow to break a lock</div>
+    </div>
   </div>
 </div>
 
@@ -357,44 +448,62 @@ loader.load('dragon_rigged.glb',(g)=>{
 
 /* ============================ INPUT ============================ */
 const key={};
-const input={ mx:0, my:0, flap:false, moved:false };
-addEventListener('mousemove',e=>{ input.mx=(e.clientX/innerWidth)*2-1; input.my=(e.clientY/innerHeight)*2-1; input.moved=true; });
+const input={ flap:false };
+const fdamp=(l,dt)=>1-Math.exp(-l*dt);          // frame-rate independent smoothing
+// mouse only drives the landing-page parallax now — flight is pure keyboard (no cursor drift)
+addEventListener('mousemove',e=>{
+  const nx=(e.clientX/innerWidth)*2-1, ny=(e.clientY/innerHeight)*2-1;
+  document.documentElement.style.setProperty('--px',(nx*-9).toFixed(1)+'px');
+  document.documentElement.style.setProperty('--py',(ny*-6).toFixed(1)+'px');
+});
 addEventListener('mousedown',()=>{ if(S.started&&!S.done) input.flap=true; });
 addEventListener('mouseup',()=>{ input.flap=false; });
 addEventListener('keydown',e=>{
   key[e.code]=true;
   if(e.code==='Space'){ if(S.started&&!S.done) input.flap=true; e.preventDefault(); }
-  if(e.code==='KeyX'){ if(S.started&&!S.done) shoot(); e.preventDefault(); }
+  if(e.code==='KeyX' && !e.repeat){ if(S.started&&!S.done && S.charges>=1 && S.chargeT<0) S.chargeT=0; e.preventDefault(); }
   if(e.code==='KeyV') S.fpv=!S.fpv;
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
 });
-addEventListener('keyup',e=>{ key[e.code]=false; if(e.code==='Space') input.flap=false; });
+addEventListener('keyup',e=>{ key[e.code]=false;
+  if(e.code==='Space') input.flap=false;
+  if(e.code==='KeyX' && S.chargeT>=0){ shoot(Math.min(1,S.chargeT/0.9)); S.chargeT=-1; }
+});
 
 /* ============================ GAME STATE ============================ */
 const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake:0, flapCd:0,
   camYaw:0, camPitch:0, nextThunder:5, cause:'', shootCd:0, flash:0,
-  boost:0, accel:0, prevSpeed:26, boomed:false };
+  boost:0, accel:0, prevSpeed:26, boomed:false,
+  charges:3, chargeT:-1 };                       // plasma pool + hold-to-charge timer (-1 = idle)
 
 /* ---- plasma blasts (X) : fly forward, knock out a searchlight ---- */
 const bolts=[];
-function shoot(){
-  if(S.shootCd>0 || !D.model) return; S.shootCd=0.55;
+function shoot(power=0.35){
+  if(S.shootCd>0 || !D.model || S.charges<1) return; S.shootCd=0.4; S.charges-=1;
   const head=new THREE.Vector3(); (D.headNode||D.group).getWorldPosition(head);
   const dir=new THREE.Vector3(-Math.sin(D.yaw),Math.sin(D.pitch)*0.9,-Math.cos(D.yaw)).normalize();
-  const m=new THREE.Mesh(new THREE.SphereGeometry(1.5,10,10),
+  const R=1.2+power*2.6;
+  const m=new THREE.Mesh(new THREE.SphereGeometry(R,12,12),
     new THREE.MeshBasicMaterial({color:0xca7bff, blending:THREE.AdditiveBlending, depthWrite:false}));
+  // charged core: inner white-hot sphere + trailing ring
+  const core=new THREE.Mesh(new THREE.SphereGeometry(R*0.5,10,10),
+    new THREE.MeshBasicMaterial({color:0xf4eaff, blending:THREE.AdditiveBlending, depthWrite:false}));
+  m.add(core);
   m.position.copy(head).addScaledVector(dir,6);
-  const lt=new THREE.PointLight(0xb060ff,300,140,2); m.add(lt);
-  scene.add(m); bolts.push({m,lt,vel:dir.clone().multiplyScalar(240),life:2.4});
-  if(D.glow) D.glow.intensity=60;      // muzzle flash on the chest
-  AU.play('zap',0.55); S.flash=Math.max(S.flash,0.18);
+  const lt=new THREE.PointLight(0xb060ff,260+power*680,120+power*160,2); m.add(lt);
+  scene.add(m); bolts.push({m,lt,vel:dir.clone().multiplyScalar(230+power*130),life:2.6,power});
+  if(D.glow) D.glow.intensity=60+power*90;
+  const a=AU.el.zap; if(a){ a.playbackRate=1.25-power*0.5; } AU.play('zap',0.4+power*0.4);
+  S.flash=Math.max(S.flash,0.12+power*0.3);
+  if(power>0.85){ shockwave(m.position.clone(),0xca7bff); S.shake=Math.max(S.shake,0.5); }
 }
 function updateBolts(dt){
   for(let i=bolts.length-1;i>=0;i--){ const b=bolts[i];
     b.m.position.addScaledVector(b.vel,dt); b.life-=dt; b.lt.intensity*=0.94;
     b.m.scale.setScalar(1+ (2.4-b.life)*0.25);
     for(const sl of searchlights){ if(sl.disabled>0) continue;
-      if(b.m.position.distanceTo(sl.lampPos)<16){ sl.disabled=6.0; sl.lit=0; b.life=0;
+      if(b.m.position.distanceTo(sl.lampPos)<16){ sl.disabled=4+(b.power||0.4)*7; sl.lit=0; b.life=0;
+        shockwave(sl.lampPos.clone(),0xffc86a);
         S.flash=Math.max(S.flash,0.7); AU.play('crash',0.35); break; } }
     if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); bolts.splice(i,1); }
   }
@@ -442,18 +551,15 @@ function tick(dt){
   if(!S.started){ if(D.mixer) D.mixer.update(dt); return; }
   if(S.done){ if(D.mixer) D.mixer.update(dt); return; }
 
-  /* ---- flight input (decoupled: W/S throttle, arrows/mouse pitch, A/D turn) ---- */
-  // resting trackpad cursor stops steering (decays to centre when not moving)
-  if(!input.moved){ input.mx*=0.85; input.my*=0.85; } input.moved=false;
-  const dz=v=>{ const a=Math.abs(v); return a<0.16?0:Math.sign(v)*(a-0.16)/0.84; };
-  const pitchCmd=THREE.MathUtils.clamp((key['ArrowUp']?1:0)-(key['ArrowDown']?1:0) - dz(input.my), -1,1);
-  const turnCmd =THREE.MathUtils.clamp((key['KeyD']?1:0)-(key['KeyA']?1:0)+(key['ArrowRight']?1:0)-(key['ArrowLeft']?1:0) + dz(input.mx), -1,1);
+  /* ---- flight input: pure keyboard, no cursor drift ---- */
+  const pitchCmd=THREE.MathUtils.clamp((key['ArrowUp']?1:0)-(key['ArrowDown']?1:0), -1,1);
+  const turnCmd =THREE.MathUtils.clamp((key['KeyD']?1:0)-(key['KeyA']?1:0)+(key['ArrowRight']?1:0)-(key['ArrowLeft']?1:0), -1,1);
   const throttle=(key['KeyW']?1:0)-(key['KeyS']?1:0);
 
   const auth=0.5+D.speed/40;
   D.yaw -= turnCmd*dt*1.9*auth;
-  D.pitch += (pitchCmd*1.05 - D.pitch)*Math.min(1,dt*4.0);   // clear, explicit climb/dive
-  D.roll  += (turnCmd*0.85 - D.roll)*Math.min(1,dt*5.0);
+  D.pitch += (pitchCmd*1.05 - D.pitch)*fdamp(4.5,dt);
+  D.roll  += (turnCmd*0.85 - D.roll)*fdamp(5.5,dt);
 
   /* ---- energy + LIFT ---- */
   D.flapping=input.flap && S.flapCd<=0;
@@ -482,6 +588,11 @@ function tick(dt){
 
   if(input.flap && S.flapCd<=0){ AU.play('flap',0.45); S.flapCd=0.42; }
   S.flapCd-=dt; S.shootCd-=dt;
+  // plasma pool: one charge back every 4s; holding X winds up a bigger bolt
+  S.charges=Math.min(3,S.charges+dt/4);
+  if(S.chargeT>=0){ S.chargeT+=dt;
+    if(D.glow) D.glow.intensity=30+Math.min(1,S.chargeT/0.9)*170+Math.sin(S.t*40)*14;
+    S.shake=Math.max(S.shake,Math.min(0.22,S.chargeT*0.18)); }
   updateBolts(dt); updateShocks(dt);
 
   // wind gusts (all directions)
@@ -501,10 +612,11 @@ function tick(dt){
   }
   S.shake=Math.max(0,S.shake-dt*2.4);
 
-  /* ---- orientation ---- */
+  /* ---- orientation: prone, headfirst flight (not upright) ---- */
   D.group.rotation.set(0,D.yaw,0);
-  D.group.rotateX(-D.pitch*0.6);
+  D.group.rotateX(D.pitch*0.75);                 // flight-path pitch: nose up when climbing
   D.group.rotateZ(-D.roll*0.9);
+  if(D.model) D.model.rotation.x += ((-0.85 - D.pitch*0.3) - D.model.rotation.x)*fdamp(5,dt); // body lies flat, dips into dives
 
   /* ---- animation blend ---- */
   if(D.mixer){
@@ -574,6 +686,12 @@ function hud(litNow){
   $('beaconV').textContent=S.score+' / '+rings.length;
   $('altV').textContent=Math.max(0,Math.round(D.group.position.y-waveH(D.group.position.x,D.group.position.z,S.t)))+' m';
   $('spdV').textContent=Math.round(D.speed);
+  const whole=Math.floor(S.charges), frac=S.charges-whole;
+  $('plasmaV').textContent=whole;
+  $('plasmaFill').style.width=((whole>=3?1:frac)*100)+'%';
+  const pp=$('plasmaPips').children;
+  for(let i=0;i<3;i++) pp[i].className=i<whole?'on':'';
+  $('viewTag').textContent=S.fpv?'RIDE':'CHASE';
   // next-beacon arrow projected to screen
   const nb=rings.find(r=>!r.userData.hit);
   const A=$('arrow');
@@ -608,12 +726,12 @@ function begin(){
   if(!AU.on){ AU.on=true; AU.loop('amb'); AU.el.amb.volume=0; AU.fadeTo('amb',0.5,1200);
     AU.loop('music'); AU.el.music.volume=0; AU.fadeTo('music',0.4,1500);
     AU.loop('wind'); AU.el.wind.volume=0.08; }
-  S.started=true; $('menu').classList.add('hide');
+  S.started=true; $('menu').classList.add('hide'); $('hud').classList.add('on');
 }
 function reset(){
   D.group.position.copy(START); D.yaw=Math.PI; D.pitch=0; D.roll=0; D.speed=26; input.flap=false;
   S.done=false; S.detection=0; S.score=0; S.shake=0; S.fpv=false; S.nextThunder=S.t+5; S.shootCd=0;
-  S.boost=0; S.accel=0; S.prevSpeed=26; S.boomed=false;
+  S.boost=0; S.accel=0; S.prevSpeed=26; S.boomed=false; S.charges=3; S.chargeT=-1;
   for(const r of rings){ r.userData.hit=false; r.userData.pop=0; r.scale.setScalar(1); r.material=ringBase.clone(); }
   for(const sl of searchlights){ sl.lit=0; sl.disabled=0; }
   for(const b of bolts){ scene.remove(b.m); } bolts.length=0;
@@ -644,19 +762,27 @@ function updateStreaks(){
   }
   streakGeo.attributes.position.needsUpdate=true;
 }
-function render(){
+function render(dt=1/60){
   sky.position.copy(camera.position);
   // acceleration visuals (decay boost on menu / game-over so FOV eases back)
   if(!S.started||S.done){ S.boost*=0.93; S.accel*=0.9; }
   const fov=60 + S.boost*22 + Math.max(0,S.accel)*8;
-  camera.fov += (fov-camera.fov)*0.12; camera.updateProjectionMatrix();
+  camera.fov += (fov-camera.fov)*fdamp(8,dt); camera.updateProjectionMatrix();
   updateStreaks();
   $('speedvig').style.opacity=(S.boost*0.5).toFixed(2);
-  // camera look-around (arrows / Q,E), returns to center when released
-  const lookX=(key['ArrowLeft']||key['KeyQ']?-1:0)+(key['ArrowRight']||key['KeyE']?1:0);
-  const lookY=(key['ArrowUp']?1:0)+(key['ArrowDown']?-1:0);
-  S.camYaw   += (lookX*2.2 - S.camYaw)*0.12;
-  S.camPitch += (lookY*0.6 - S.camPitch)*0.12;
+
+  // landing page: slow hero orbit around the dragon, centre stage
+  if(!S.started){
+    const dp=D.group.position, a=S.t*0.15;
+    camera.position.set(dp.x+Math.sin(a)*27, dp.y+6.5+Math.sin(S.t*0.33)*2.2, dp.z+Math.cos(a)*27);
+    camera.lookAt(dp.x, dp.y+2.5, dp.z);
+    renderer.render(scene,camera); return;
+  }
+
+  // camera look-around (Q/E), returns to centre when released
+  const lookX=(key['KeyQ']?-1:0)+(key['KeyE']?1:0);
+  S.camYaw   += (lookX*2.2 - S.camYaw)*fdamp(7,dt);
+  S.camPitch += (0 - S.camPitch)*fdamp(7,dt);
 
   const shakeV=new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar((S.shake + S.boost*0.32)*1.6);
 
@@ -673,16 +799,19 @@ function render(){
     const height=9 + S.camPitch*22 - S.boost*2;
     const dist = (S.started? 25 : 40) + S.boost*7;       // slight dolly back as you accelerate
     const camTarget=D.group.position.clone().addScaledVector(back,dist).add(new THREE.Vector3(0,height,0));
-    camera.position.lerp(camTarget, S.started?0.15:0.04); camera.position.add(shakeV);
+    camera.position.lerp(camTarget, fdamp(10,dt)); camera.position.add(shakeV);
     const look=D.group.position.clone().add(new THREE.Vector3(0,2,0));
     camera.lookAt(look); camera.rotateZ(-D.roll*0.10);
   }
   renderer.render(scene,camera);
 }
 
-let last=performance.now();
+let last=performance.now(), fpsE=60, fpsAcc=0;
 function loop(now){ requestAnimationFrame(loop);
-  const dt=Math.min((now-last)/1000,0.05); last=now; tick(dt); render();
+  const dt=Math.min((now-last)/1000,0.05); last=now;
+  fpsE+=(1/Math.max(dt,1e-3)-fpsE)*0.06; fpsAcc+=dt;
+  if(fpsAcc>0.35){ fpsAcc=0; $('fpsV').textContent=Math.round(fpsE); }
+  tick(dt); render(dt);
 }
 loop(last);
 
@@ -693,6 +822,7 @@ addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.upd
 window.SIM={
   state:()=>({t:+S.t.toFixed(1),started:S.started,done:S.done,det:+S.detection.toFixed(2),score:S.score,
     spd:+D.speed.toFixed(1),pos:D.group.position.toArray().map(v=>+v.toFixed(1)),fpv:S.fpv,
+    charges:+S.charges.toFixed(2),
     bolts:bolts.length, disabled:searchlights.filter(s=>s.disabled>0).length}),
   start:begin, reset, setFpv:v=>{S.fpv=!!v}, key:(c,v)=>{key[c]=!!v}, shoot,
   teleport:(x,y,z,yaw)=>{ D.group.position.set(x,y,z); if(yaw!=null)D.yaw=yaw; },
