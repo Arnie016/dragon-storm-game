@@ -54,6 +54,7 @@
   .bar > i{ display:block; height:100%; width:0%; border-radius:4px; transition:width .08s linear; }
   #detFill{ background:linear-gradient(90deg,#3aa0ff,var(--purple) 60%,var(--warn)); }
   #plasmaFill{ background:linear-gradient(90deg,#5a2ea6,#a463ff 70%,#e0c6ff); }
+  #duskFill{ background:linear-gradient(90deg,#ff9a3c,#b96cff 60%,#2a2f66); }
   #hudTL .title{ font-family:var(--display); font-size:12px; letter-spacing:3px; color:var(--purple); margin:4px 0 7px; font-weight:700; }
   .pips{ display:inline-flex; gap:4px; margin-left:8px; vertical-align:1px; }
   .pips i{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.14); }
@@ -274,14 +275,16 @@
     <div class="row" style="margin-top:6px"><span class="k">PLASMA <span class="pips" id="plasmaPips"><i></i><i></i><i></i></span></span><span class="v" id="plasmaV">3</span></div>
     <div class="bar"><i id="plasmaFill"></i></div>
     <div class="row" style="margin-top:6px"><span class="k">BEACONS</span><span class="v" id="beaconV">0 / 8</span></div>
-    <div class="row"><span class="k">ALT</span><span class="v" id="altV">0 m</span></div>
+    <div class="row" style="margin-top:6px"><span class="k">NIGHTFALL</span><span class="v" id="duskV">dusk</span></div>
+    <div class="bar"><i id="duskFill"></i></div>
+    <div class="row" style="margin-top:6px"><span class="k">ALT</span><span class="v" id="altV">0 m</span></div>
     <div class="row"><span class="k">SPEED</span><span class="v" id="spdV">0</span></div>
   </div>
   <div class="panel" id="hudTR">
     <div class="mini">VIEW<b id="viewTag">CHASE</b></div>
     <div class="mini">FPS<b id="fpsV">–</b></div>
   </div>
-  <div class="panel" id="objTag">reach the next <b>beacon</b> — stay out of the light</div>
+  <div class="panel" id="objTag">reach the cove — <b>8 beacons before nightfall</b>, unseen</div>
   <div id="warn">IN THE LIGHT — DIVE!</div>
   <div id="arrow"></div>
   <div id="popup"></div>
@@ -384,57 +387,80 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x0a0a1a, 0.0030);
 const camera = new THREE.PerspectiveCamera(64, innerWidth/innerHeight, 0.5, 6000);
 
-// Hidden-World palette lighting
-const moon = new THREE.DirectionalLight(0x9fb4ff, 1.05); moon.position.set(-200,300,-120); scene.add(moon);
-const rimP = new THREE.DirectionalLight(0xb072ff, 1.25); rimP.position.set(220,120,180); scene.add(rimP);   // purple rim
-const fillT = new THREE.DirectionalLight(0x2fd6c0, 0.5); fillT.position.set(60,-40,-220); scene.add(fillT); // teal underlight
-scene.add(new THREE.AmbientLight(0x2c2a48, 1.7));
+// ---- time-of-day: 0 = sunset, 1 = deep night (drives sky, sea, light, music, danger) ----
+const TOD={ day:0 };
+const uDay={value:0}, uRA={value:0}, uRC={value:new THREE.Vector2(1e5,1e5)}, uRW={value:3200};
 
-/* ---- star + aurora sky dome ---- */
+// Hidden-World palette lighting (colours animated by time-of-day each frame)
+const moon = new THREE.DirectionalLight(0xffd9a0, 1.15); moon.position.set(-260,120,140); scene.add(moon);   // sun@dusk -> moon
+const rimP = new THREE.DirectionalLight(0xb072ff, 0.9); rimP.position.set(220,120,180); scene.add(rimP);
+const fillT = new THREE.DirectionalLight(0x2fd6c0, 0.45); fillT.position.set(60,-40,-220); scene.add(fillT);
+const amb = new THREE.AmbientLight(0x3a2c3a, 1.7); scene.add(amb);
+
+/* ---- star + aurora + sun sky dome ---- */
 const sky = new THREE.Mesh(new THREE.SphereGeometry(2600,32,20), new THREE.ShaderMaterial({
-  side:THREE.BackSide, depthWrite:false, fog:false, uniforms:{uT:{value:0}},
+  side:THREE.BackSide, depthWrite:false, fog:false, uniforms:{uT:{value:0}, uDay},
   vertexShader:`varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
   fragmentShader:`
-    uniform float uT; varying vec3 vP;
+    uniform float uT; uniform float uDay; varying vec3 vP;
     float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
     void main(){
       vec3 d=normalize(vP); float up=clamp(d.y,0.,1.);
-      vec3 col=mix(vec3(0.05,0.045,0.11), vec3(0.015,0.02,0.05), pow(up,0.55));   // horizon purple -> deep top
-      // stars (fade hard near horizon to avoid blocky cells)
+      // sunset gradient (warm) vs night gradient (deep purple)
+      vec3 setC = mix(mix(vec3(0.98,0.46,0.22), vec3(0.62,0.34,0.42), smoothstep(0.0,0.30,up)),
+                      vec3(0.16,0.16,0.36), smoothstep(0.16,0.72,up));
+      vec3 nightC= mix(vec3(0.05,0.045,0.11), vec3(0.012,0.017,0.045), pow(up,0.55));
+      vec3 col=mix(setC, nightC, uDay);
+      // sinking sun near the horizon, fades as night falls
+      vec3 sunDir=normalize(vec3(-0.92, 0.12-0.22*uDay, 0.34));
+      float sd=max(dot(d,sunDir),0.);
+      col+=mix(vec3(1.0,0.62,0.28), vec3(0.0), uDay)*(pow(sd,760.)*2.2 + pow(sd,24.)*0.45)*(1.-uDay);
+      // stars appear at night
       vec2 uv=d.xz/(abs(d.y)+0.7); vec2 gp=floor(uv*70.); float s=hash(gp);
       float star=smoothstep(0.992,1.0,s)*(0.45+0.55*sin(uT*3.0+s*40.));
-      col+=vec3(0.85,0.9,1.0)*star*smoothstep(0.18,0.6,up);
-      // aurora bands
+      col+=vec3(0.85,0.9,1.0)*star*smoothstep(0.18,0.6,up)*uDay;
+      // aurora fades in at night
       float band=exp(-pow((d.y-0.28)*5.2,2.0))*smoothstep(-0.1,0.5,d.y);
       float wav=sin(d.x*2.6+uT*0.32)+sin(d.z*3.4-uT*0.22)+0.5*sin(d.x*6.0+uT*0.5);
       float a=band*(0.45+0.55*sin(wav*1.4));
-      col+=mix(vec3(0.42,0.12,0.7), vec3(0.08,0.55,0.5), 0.5+0.5*sin(wav))*a*0.55;
+      col+=mix(vec3(0.42,0.12,0.7), vec3(0.08,0.55,0.5), 0.5+0.5*sin(wav))*a*0.55*uDay;
       gl_FragColor=vec4(col,1.0);
     }`
 }));
 sky.frustumCulled=false; scene.add(sky);
 
-/* ---- sea ---- */
+/* ---- sea (with a rogue-swell term shared with the JS waveH) ---- */
 const seaUniforms = { uT:{value:0} };
-const sea = new THREE.Mesh(new THREE.PlaneGeometry(4000,4000,200,200), new THREE.ShaderMaterial({
-  uniforms:{ ...seaUniforms, fogColor:{value:scene.fog.color}, fogDensity:{value:scene.fog.density} }, fog:false,
-  vertexShader:`uniform float uT; varying float vH; varying vec3 vW;
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(4000,4000,220,220), new THREE.ShaderMaterial({
+  uniforms:{ ...seaUniforms, fogColor:{value:scene.fog.color}, fogDensity:{value:scene.fog.density},
+             uDay, uRA, uRC, uRW }, fog:false,
+  vertexShader:`uniform float uT; uniform float uRA; uniform vec2 uRC; uniform float uRW;
+    varying float vH; varying vec3 vW;
     float wave(vec2 p,vec2 d,float k,float s,float a){ return a*sin(dot(p,d)*k+uT*s); }
     void main(){ vec3 pos=position;
       float h=wave(pos.xy,vec2(.8,.6),.045,1.25,2.6)+wave(pos.xy,vec2(-.5,.9),.07,1.7,1.5)+wave(pos.xy,vec2(.2,-1.),.11,2.3,.8);
+      float rd2=(pos.x-uRC.x)*(pos.x-uRC.x)+(-pos.y-uRC.y)*(-pos.y-uRC.y);  // local->world xz
+      h += uRA*exp(-rd2/uRW);                                              // menacing rogue swell
       pos.z+=h; vH=h; vec4 w=modelMatrix*vec4(pos,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
-  fragmentShader:`uniform vec3 fogColor; uniform float fogDensity; varying float vH; varying vec3 vW;
-    void main(){ vec3 deep=vec3(.01,.025,.05), crest=vec3(.4,.5,.62);
+  fragmentShader:`uniform vec3 fogColor; uniform float fogDensity; uniform float uDay; varying float vH; varying vec3 vW;
+    void main(){
+      vec3 deep=mix(vec3(.05,.028,.035), vec3(.01,.025,.05), uDay);
+      vec3 crest=mix(vec3(.9,.55,.38), vec3(.4,.5,.62), uDay);
       float foam=smoothstep(2.2,4.2,vH)*.8;
       foam+=step(.985,fract(sin(dot(floor(vW.xz*1.5),vec2(12.9898,78.233)))*43758.55))*.12;
       vec3 col=mix(deep,crest,foam);
-      col+=vec3(0.18,0.05,0.32)*smoothstep(1.0,3.2,vH)*0.4;   // purple crest sheen
+      col+=vec3(0.18,0.05,0.32)*smoothstep(1.0,3.2,vH)*0.4*uDay;          // night crest sheen
+      col+=vec3(1.0,0.5,0.24)*smoothstep(0.4,3.0,vH)*0.28*(1.-uDay);      // sunset crest
       float dd=length(vW-cameraPosition); float f=1.-exp(-fogDensity*fogDensity*dd*dd);
       gl_FragColor=vec4(mix(col,fogColor,f),1.); }`
 }));
 sea.rotation.x=-Math.PI/2; scene.add(sea);
+// rogue swell state (menacing waves that rise and reach toward the dragon)
+const ROG={ amp:0, cx:1e5, cz:1e5, life:0, next:6 };
 function waveH(x,z,t){ const a=x*.8+(-z)*.6, b=x*-.5+(-z)*.9, c=x*.2+(-z)*-1.0;
-  return 2.6*Math.sin(a*.045+t*1.25)+1.5*Math.sin(b*.07+t*1.7)+0.8*Math.sin(c*.11+t*2.3); }
+  let h=2.6*Math.sin(a*.045+t*1.25)+1.5*Math.sin(b*.07+t*1.7)+0.8*Math.sin(c*.11+t*2.3);
+  if(ROG.amp>0.01){ const dx=x-ROG.cx, dz=z-ROG.cz; h+=ROG.amp*Math.exp(-(dx*dx+dz*dz)/uRW.value); }
+  return h; }
 
 /* ---- rocks (collidable) + purple crystal spires ---- */
 const colliders = [];   // {x,z,r,top}
@@ -461,6 +487,24 @@ function crystal(x,z,h){
 }
 crystal(20,18,26); crystal(-44,-8,20); crystal(70,44,30); crystal(-20,-64,22); crystal(-78,40,24);
 
+// large mountainous islands ringing the archipelago (terrain to weave through)
+const mtnMat = new THREE.MeshStandardMaterial({ color:0x232838, roughness:.95, flatShading:true });
+const snowMat = new THREE.MeshStandardMaterial({ color:0xdfe6f2, roughness:.7, flatShading:true });
+function mountain(x,z,r,h){
+  const g=new THREE.ConeGeometry(r,h,9,4), p=g.attributes.position;
+  for(let i=0;i<p.count;i++){ const vx=p.getX(i), vy=p.getY(i), vz=p.getZ(i);
+    const n=(Math.sin(vx*0.15+vz*0.2)+Math.cos(vz*0.13-vx*0.1))*r*0.10;
+    p.setX(i,vx+n); p.setZ(i,vz-n*0.7); if(vy<h*0.45) p.setY(i, vy+Math.sin(vx*0.3)*r*0.05); }
+  g.computeVertexNormals();
+  const m=new THREE.Mesh(g,mtnMat); m.position.set(x,h/2-4,z); m.rotation.y=Math.random()*6; scene.add(m);
+  const cap=new THREE.Mesh(new THREE.ConeGeometry(r*0.34,h*0.28,9), snowMat);
+  cap.position.set(x, h*0.5-4 + h*0.5 - h*0.14, z); cap.rotation.y=m.rotation.y; scene.add(cap);
+  colliders.push({x,z,r:r*0.5,top:h*0.72}); return m;
+}
+mountain(-260,-120,140,220); mountain(300,180,120,190); mountain(120,-360,150,240);
+mountain(-360,220,110,170); mountain(340,-280,100,150); mountain(-140,380,130,200);
+mountain(460,40,90,140);
+
 /* ---- lighthouse + 3 sweeping searchlights ---- */
 const searchlights = [];
 function beacon(x,z,baseH,yaw0,rate,warm){
@@ -486,7 +530,8 @@ function beacon(x,z,baseH,yaw0,rate,warm){
   const cone=new THREE.Mesh(cg,new THREE.MeshBasicMaterial({ color:0xffe6b8, transparent:true, opacity:.09,
     blending:THREE.AdditiveBlending, side:THREE.DoubleSide, depthWrite:false, fog:false }));
   cone.rotation.z=-0.09; pivot.add(cone);
-  const sl={ pivot, cone, lamp, spot, lampPos:new THREE.Vector3(x,lampY,z), yaw0, rate, range:720, coneHalf:0.30, lit:0, disabled:0 };
+  const sl={ group:G, lampGlow, pivot, cone, lamp, spot, lampPos:new THREE.Vector3(x,lampY,z),
+    baseH, yaw0, rate, range:720, coneHalf:0.30, lit:0, disabled:0, destroyed:false, fall:0 };
   searchlights.push(sl); return sl;
 }
 beacon(0,0,42,0,0.42,true);
@@ -535,7 +580,8 @@ for(let i=0;i<N_RINGS;i++){
 /* ============================ DRAGON ============================ */
 const START=new THREE.Vector3(0,58,250);
 const D={ group:new THREE.Group(), model:null, mixer:null, flap:null, glide:null,
-  yaw:Math.PI, pitch:0, roll:0, speed:20, flapping:false, headNode:null, glow:null };
+  yaw:Math.PI, pitch:0, roll:0, speed:20, flapping:false, headNode:null, glow:null,
+  turn:0, pTurn:0, pPitch:0, bones:null, mouth:null, mouthLt:null };
 D.group.position.copy(START); scene.add(D.group);
 const draco=new DRACOLoader().setDecoderPath('./vendor/draco/');
 const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
@@ -547,8 +593,16 @@ loader.load('dragon_rigged.glb',(g)=>{
   D.glide=D.mixer.clipAction(THREE.AnimationClip.findByName(g.animations,'Glide'));
   D.flap.play(); D.glide.play(); D.flap.setEffectiveWeight(0); D.glide.setEffectiveWeight(1);
   D.headNode=model.getObjectByName('head');
+  collectBones(model);
   // purple plasma glow at the chest
   const glow=new THREE.PointLight(0x9a4cff, 0, 60, 2); D.group.add(glow); glow.position.set(0,4,0); D.glow=glow;
+  // mouth charge ball — grows while holding X, consumed on release
+  const mouth=new THREE.Mesh(new THREE.SphereGeometry(1,12,12),
+    new THREE.MeshBasicMaterial({color:0xd7a0ff, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true}));
+  mouth.scale.setScalar(0.001); (D.headNode||model).add(mouth);
+  mouth.position.set(0, -0.02, -0.06);
+  const mlt=new THREE.PointLight(0xc86bff,0,80,2); mouth.add(mlt);
+  D.mouth=mouth; D.mouthLt=mlt;
   // rider
   const chest=model.getObjectByName('chest');
   if(chest){ const rider=new THREE.Group();
@@ -572,6 +626,45 @@ function stageRest(){
   D.group.rotation.set(0,D.yaw,0);
   if(D.model) D.model.rotation.x=-0.12;                 // settled, not prone
   if(D.glide){ D.glide.timeScale=0.12; D.flap.setEffectiveWeight(0); D.glide.setEffectiveWeight(1); }
+}
+
+/* ---- procedural "alive" layer: real spine/tail/neck flex on top of the baked flap+glide ---- */
+function collectBones(model){
+  const by=n=>model.getObjectByName(n)||model.getObjectByName(n.replace('.','_'))||model.getObjectByName(n.replace('.',''));
+  D.bones={ tail:[by('tail1'),by('tail2'),by('tail3'),by('tail4'),by('tail5')],
+    neck:by('neck'), head:by('head'), chest:by('chest'), hips:by('hips'), wings:[] };
+  for(const [n,side] of [['forearm.R',1],['forearm.L',-1],['fingerA.R',1],['fingerA.L',-1],['fingerB.R',1],['fingerB.L',-1]]){
+    const b=by(n); if(b){ b.side=side; D.bones.wings.push(b); } }
+  D.boneReport={ tail:D.bones.tail.filter(Boolean).length, neck:!!D.bones.neck, head:!!D.bones.head,
+    chest:!!D.bones.chest, hips:!!D.bones.hips, wings:D.bones.wings.length };
+}
+// world-space axes of the model, so rotations are predictable regardless of bone roll
+const _mq=new THREE.Quaternion(), _AUP=new THREE.Vector3(), _ART=new THREE.Vector3(), _AFW=new THREE.Vector3();
+let ALIVE=1;
+function applyAlive(dt){
+  if(!D.bones || !D.model || ALIVE<=0) return;
+  D.model.getWorldQuaternion(_mq);
+  _AUP.set(0,1,0).applyQuaternion(_mq); _ART.set(1,0,0).applyQuaternion(_mq); _AFW.set(0,0,-1).applyQuaternion(_mq);
+  const spd=THREE.MathUtils.clamp(D.speed/40,0,1.4), t=S.t, g=ALIVE;
+  D.pTurn += (D.turn - D.pTurn)*fdamp(6,dt);
+  D.pPitch += (D.pitch - D.pPitch)*fdamp(6,dt);
+  // TAIL — traveling swim wave + trails behind the turn (the biggest "alive" cue)
+  const tl=D.bones.tail;
+  for(let i=0;i<tl.length;i++){ const b=tl[i]; if(!b) continue;
+    const sway=(Math.sin(t*3.1 - i*0.8)*(0.05+0.028*i)*(0.55+0.8*spd) - D.pTurn*(0.10+0.055*i))*g;
+    const lift=Math.sin(t*2.5 - i*0.9)*(0.03+0.012*i)*(0.7+spd)*g;
+    b.rotateOnWorldAxis(_AUP, sway); b.rotateOnWorldAxis(_ART, lift);
+  }
+  // NECK + HEAD — bank into the turn, ease with climb/dive, gentle idle
+  if(D.bones.neck){ D.bones.neck.rotateOnWorldAxis(_AUP,(-D.pTurn*0.16+Math.sin(t*1.4)*0.02)*g);
+    D.bones.neck.rotateOnWorldAxis(_ART,(-D.pPitch*0.14)*g); }
+  if(D.bones.head){ D.bones.head.rotateOnWorldAxis(_AUP,(-D.pTurn*0.22)*g);
+    D.bones.head.rotateOnWorldAxis(_ART,(-D.pPitch*0.16+Math.sin(t*1.1)*0.02)*g); }
+  // SPINE — banking flex
+  if(D.bones.chest) D.bones.chest.rotateOnWorldAxis(_AFW,(D.pTurn*0.14)*g);
+  // WINGS — sweep back at speed, extra billow on the beat
+  const sweep=(0.05+spd*0.16)*g;
+  for(const w of D.bones.wings){ w.rotateOnWorldAxis(_AUP, w.side*sweep); }
 }
 
 /* ============================ INPUT ============================ */
@@ -602,38 +695,94 @@ addEventListener('keyup',e=>{ key[e.code]=false;
 const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake:0, flapCd:0,
   camYaw:0, camPitch:0, nextThunder:5, cause:'', shootCd:0, flash:0,
   boost:0, accel:0, prevSpeed:26, boomed:false,
-  charges:3, chargeT:-1 };                       // plasma pool + hold-to-charge timer (-1 = idle)
+  charges:3, chargeT:-1,                          // plasma pool + hold-to-charge timer (-1 = idle)
+  nightfall:230, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
+  turn:0, pTurn:0, pPitch:0 };
 
-/* ---- plasma blasts (X) : fly forward, knock out a searchlight ---- */
-const bolts=[];
+/* ---- plasma lightning (X): a jagged bolt from the mouth that shatters towers ---- */
+const bolts=[], BOLT_SEG=16;
 function shoot(power=0.35){
   if(S.shootCd>0 || !D.model || S.charges<1) return; S.shootCd=0.4; S.charges-=1;
-  const head=new THREE.Vector3(); (D.headNode||D.group).getWorldPosition(head);
-  const dir=new THREE.Vector3(-Math.sin(D.yaw),Math.sin(D.pitch)*0.9,-Math.cos(D.yaw)).normalize();
-  const R=1.2+power*2.6;
+  const head=new THREE.Vector3(); (D.mouth||D.headNode||D.group).getWorldPosition(head);
+  const dir=new THREE.Vector3(-Math.sin(D.yaw),Math.sin(D.pitch)*0.95,-Math.cos(D.yaw)).normalize();
+  const R=0.9+power*2.2;
+  // white-hot plasma head
   const m=new THREE.Mesh(new THREE.SphereGeometry(R,12,12),
-    new THREE.MeshBasicMaterial({color:0xca7bff, blending:THREE.AdditiveBlending, depthWrite:false}));
-  // charged core: inner white-hot sphere + trailing ring
-  const core=new THREE.Mesh(new THREE.SphereGeometry(R*0.5,10,10),
-    new THREE.MeshBasicMaterial({color:0xf4eaff, blending:THREE.AdditiveBlending, depthWrite:false}));
-  m.add(core);
-  m.position.copy(head).addScaledVector(dir,6);
-  const lt=new THREE.PointLight(0xb060ff,260+power*680,120+power*160,2); m.add(lt);
-  scene.add(m); bolts.push({m,lt,vel:dir.clone().multiplyScalar(230+power*130),life:2.6,power});
-  if(D.glow) D.glow.intensity=60+power*90;
-  const a=AU.el.zap; if(a){ a.playbackRate=1.25-power*0.5; } AU.play('zap',0.4+power*0.4);
-  S.flash=Math.max(S.flash,0.12+power*0.3);
-  if(power>0.85){ shockwave(m.position.clone(),0xca7bff); S.shake=Math.max(S.shake,0.5); }
+    new THREE.MeshBasicMaterial({color:0xf0e6ff, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true}));
+  const halo=new THREE.Mesh(new THREE.SphereGeometry(R*2.0,12,12),
+    new THREE.MeshBasicMaterial({color:0xb06bff, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true, opacity:.5}));
+  m.add(halo); m.position.copy(head).addScaledVector(dir,3);
+  const lt=new THREE.PointLight(0xc07bff,300+power*760,160+power*180,2); m.add(lt);
+  // crackling lightning line from muzzle to head (regenerated every frame)
+  const N=BOLT_SEG, lgeo=new THREE.BufferGeometry();
+  lgeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N*3), 3));
+  const line=new THREE.Line(lgeo, new THREE.LineBasicMaterial({color:0xe0ccff, transparent:true,
+    opacity:0.95, blending:THREE.AdditiveBlending, depthWrite:false}));
+  line.frustumCulled=false; scene.add(m); scene.add(line);
+  bolts.push({ m, lt, line, lgeo, origin:head.clone(), vel:dir.clone().multiplyScalar(220+power*150),
+    life:2.4, power, jag:6+power*10 });
+  if(D.glow) D.glow.intensity=70+power*90;
+  if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; }   // discharge the mouth ball
+  const a=AU.el.zap; if(a){ a.playbackRate=1.3-power*0.55; } AU.play('zap',0.45+power*0.4);
+  S.flash=Math.max(S.flash,0.14+power*0.34);
+  if(power>0.8){ S.shake=Math.max(S.shake,0.5); }
+}
+const _b0=new THREE.Vector3(), _b1=new THREE.Vector3(), _bp=new THREE.Vector3(), _perp=new THREE.Vector3();
+function fillBolt(b){
+  const pos=b.lgeo.attributes.position.array, N=BOLT_SEG;
+  _b0.copy(b.origin); _b1.copy(b.m.position);
+  _perp.set(-b.vel.z,0,b.vel.x).normalize();     // a lateral axis
+  for(let i=0;i<N;i++){ const t=i/(N-1);
+    _bp.lerpVectors(_b0,_b1,t);
+    const j=(i>0&&i<N-1)? (Math.random()-0.5)*b.jag : 0;
+    const k=(i>0&&i<N-1)? (Math.random()-0.5)*b.jag : 0;
+    pos[i*3]=_bp.x+_perp.x*j; pos[i*3+1]=_bp.y+k; pos[i*3+2]=_bp.z+_perp.z*j;
+  }
+  b.lgeo.attributes.position.needsUpdate=true;
+}
+function destroyTower(sl,power){
+  if(sl.destroyed) return; sl.destroyed=true; sl.disabled=1e9; sl.lit=0;
+  sl.fall=1; sl.spot.intensity=0; sl.cone.visible=false; sl.lampGlow.intensity=0;
+  sl.lamp.material.emissiveIntensity=0;
+  bigExplosion(sl.lampPos, 0xffb060);
+  // stone debris flung from the tower
+  for(let i=0;i<10;i++){
+    const r=1+Math.random()*2.4;
+    const d=new THREE.Mesh(new THREE.IcosahedronGeometry(r,0),
+      new THREE.MeshStandardMaterial({color:0x6a5a48, roughness:.9, flatShading:true}));
+    d.position.copy(sl.lampPos).add(new THREE.Vector3((Math.random()-.5)*8,(Math.random()-.5)*20,(Math.random()-.5)*8));
+    scene.add(d);
+    debris.push({m:d, v:new THREE.Vector3((Math.random()-.5)*40,10+Math.random()*30,(Math.random()-.5)*40),
+      spin:new THREE.Vector3(Math.random()*6,Math.random()*6,Math.random()*6), life:3.5});
+  }
+  S.flash=Math.max(S.flash,0.85); S.shake=Math.max(S.shake,0.9); AU.play('crash',0.7);
+  popup('TOWER DOWN'); if(D.glow) D.glow.intensity=140;
+}
+const debris=[];
+function updateDebris(dt){
+  for(let i=debris.length-1;i>=0;i--){ const d=debris[i]; d.life-=dt;
+    d.v.y-=42*dt; d.m.position.addScaledVector(d.v,dt);
+    d.m.rotation.x+=d.spin.x*dt; d.m.rotation.y+=d.spin.y*dt;
+    const wh=waveH(d.m.position.x,d.m.position.z,S.t);
+    if(d.m.position.y<wh){ d.m.position.y=wh; d.v.multiplyScalar(0.3); d.v.y=Math.abs(d.v.y)*0.2; }
+    if(d.life<=0){ d.m.geometry.dispose(); scene.remove(d.m); debris.splice(i,1); }
+  }
 }
 function updateBolts(dt){
   for(let i=bolts.length-1;i>=0;i--){ const b=bolts[i];
-    b.m.position.addScaledVector(b.vel,dt); b.life-=dt; b.lt.intensity*=0.94;
-    b.m.scale.setScalar(1+ (2.4-b.life)*0.25);
-    for(const sl of searchlights){ if(sl.disabled>0) continue;
-      if(b.m.position.distanceTo(sl.lampPos)<16){ sl.disabled=4+(b.power||0.4)*7; sl.lit=0; b.life=0;
-        shockwave(sl.lampPos.clone(),0xffc86a);
-        S.flash=Math.max(S.flash,0.7); AU.play('crash',0.35); break; } }
-    if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); bolts.splice(i,1); }
+    b.m.position.addScaledVector(b.vel,dt); b.life-=dt; b.lt.intensity*=0.95;
+    b.m.material.opacity=Math.min(1,b.life*2); b.line.material.opacity=0.5+0.5*Math.random();
+    fillBolt(b);
+    let hit=false;
+    for(const sl of searchlights){ if(sl.destroyed) continue;
+      if(b.m.position.distanceTo(sl.lampPos)<18){
+        if(b.power>0.55) destroyTower(sl,b.power);                 // charged shot shatters it
+        else { sl.disabled=Math.max(sl.disabled,5); sl.lit=0; bigExplosion(sl.lampPos,0xffc86a);
+               S.flash=Math.max(S.flash,0.6); AU.play('crash',0.4); }
+        hit=true; break; }
+    }
+    if(hit) b.life=0;
+    if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.line); b.lgeo.dispose(); bolts.splice(i,1); }
   }
 }
 
@@ -653,6 +802,29 @@ function updateShocks(dt){
 const popEl=document.getElementById('popup');
 function popup(text){ popEl.textContent=text; popEl.style.animation='none'; void popEl.offsetWidth; popEl.style.animation='pop 0.9s ease-out'; }
 
+/* ---- explosion burst (expanding fireball + flash light) ---- */
+const bursts=[];
+function bigExplosion(pos,color){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(2,16,16),
+    new THREE.MeshBasicMaterial({color, transparent:true, opacity:1, blending:THREE.AdditiveBlending, depthWrite:false}));
+  m.position.copy(pos); scene.add(m);
+  const lt=new THREE.PointLight(color, 1600, 260, 2); lt.position.copy(pos); scene.add(lt);
+  bursts.push({m,lt,life:0.7}); shockwave(pos,color);
+}
+function updateBursts(dt){
+  for(let i=bursts.length-1;i>=0;i--){ const b=bursts[i]; b.life-=dt; const k=1-b.life/0.7;
+    b.m.scale.setScalar(1+k*10); b.m.material.opacity=(1-k); b.lt.intensity=1600*(1-k)*(1-k);
+    if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.lt); bursts.splice(i,1); }
+  }
+}
+// towers topple after being shattered
+function updateTowers(dt){
+  for(const sl of searchlights){ if(!sl.destroyed||sl.fall>=2) continue;
+    sl.fall+=dt*0.8; const f=Math.min(1,sl.fall-1<0?0:sl.fall-1);
+    sl.group.rotation.z = -f*1.4; sl.group.position.y = -f*sl.baseH*0.5;
+  }
+}
+
 /* ---- searchlight direction + detection ---- */
 const _wq=new THREE.Quaternion(), _dir=new THREE.Vector3(), _toD=new THREE.Vector3();
 function beamDir(sl){ sl.cone.getWorldQuaternion(_wq); return _dir.set(1,0,0).applyQuaternion(_wq).normalize().clone(); }
@@ -671,13 +843,62 @@ function occluded(lamp,drag){
 }
 
 /* ============================ SIM ============================ */
+const _sun=new THREE.Color(0xffd9a0), _moonC=new THREE.Color(0x9fb4ff);
+const _fogSet=new THREE.Color(0x24151f), _fogNight=new THREE.Color(0x0a0a1a);
+const _ambSet=new THREE.Color(0x4a2c30), _ambNight=new THREE.Color(0x2c2a48);
+function driveTimeOfDay(dt){
+  // during flight the sun sinks over NIGHTFALL seconds; menu holds a warm dusk
+  if(S.started && !S.done) TOD.day=Math.min(1, TOD.day + dt/S.nightfall);
+  else if(!S.started) TOD.day=0.18 + 0.05*Math.sin(S.t*0.2);
+  uDay.value=TOD.day;
+  const d=TOD.day;
+  moon.color.copy(_sun).lerp(_moonC, d); moon.intensity=1.25-0.25*d;
+  moon.position.set(-260+ -0*d, 60+180*d, 140-40*d);       // sun low -> moon high
+  amb.color.copy(_ambSet).lerp(_ambNight, d); amb.intensity=1.9-0.35*d;
+  rimP.intensity=0.5+0.55*d; fillT.intensity=0.35+0.2*d;
+  scene.fog.color.copy(_fogSet).lerp(_fogNight, d);
+  scene.fog.density=0.0026+0.0010*d;
+  renderer.toneMappingExposure=1.5-0.18*d;
+  // music: warm menu bed at dusk -> dark tension at night
+  if(AU.on){ if(AU.el.menu){ AU.el.menu.volume=(1-d)*0.34; if(AU.el.menu.paused&&d<0.95)AU.el.menu.play().catch(()=>{});}
+    if(AU.el.music) AU.el.music.volume=0.16+d*0.34; }
+  // full night without reaching the cove: every keeper wakes
+  if(d>=1 && !S.keepersWoke && S.started && !S.done){ S.keepersWoke=true;
+    if(S.score<rings.length){ popup('THE KEEPERS ARE AWAKE'); S.flash=Math.max(S.flash,0.45); AU.play('detected',0.5); } }
+}
+function driveRogue(dt){
+  const p=D.group.position;
+  ROG.next-=dt;
+  if(ROG.life<=0 && ROG.next<=0 && S.started && !S.done){
+    // a swell rises from the water near the dragon; bigger and more frequent as night deepens
+    const ang=Math.random()*6.28, off=26+Math.random()*40;
+    ROG.cx=p.x+Math.cos(ang)*off; ROG.cz=p.z+Math.sin(ang)*off;
+    ROG.max=9+TOD.day*13+Math.random()*4; ROG.life=1; ROG.dur=2.6+Math.random()*1.2;
+    ROG.next=7+Math.random()*7 - TOD.day*4;
+    AU.play('thunder',0.28);
+  }
+  if(ROG.life>0){
+    ROG.life-=dt/ROG.dur;
+    ROG.amp=ROG.max*Math.sin(Math.max(0,ROG.life)*Math.PI);   // rise then fall
+    uRA.value=ROG.amp; uRC.value.set(ROG.cx,-ROG.cz);
+    // the crest reaches up and taps the dragon if it flies too low near it
+    if(!S.launching){ const hAt=waveH(p.x,p.z,S.t);
+      if(hAt>p.y-4){ S.shake=Math.max(S.shake,0.6); D.speed*=1-0.7*dt;
+        p.y+=(hAt+4-p.y)*Math.min(1,dt*3); if(hAt>p.y+1) crash('THE SEA REARED UP'); } }
+  } else { ROG.amp=0; uRA.value=0; }
+}
+
 function tick(dt){
   S.t+=dt; seaUniforms.uT.value=S.t; sky.material.uniforms.uT.value=S.t;
-  for(const sl of searchlights) sl.pivot.rotation.y=sl.yaw0 + S.t*sl.rate;
+  driveTimeOfDay(dt); driveRogue(dt);
+  // escalation: more keepers wake as night falls (extend beam reach + speed)
+  for(let i=0;i<searchlights.length;i++){ const sl=searchlights[i];
+    sl.pivot.rotation.y=sl.yaw0 + S.t*sl.rate*(1+TOD.day*0.5);
+    sl.range = i===0 ? 720 : 720*THREE.MathUtils.clamp(TOD.day*1.6-0.2,0.15,1); }
 
   // resting-dragon cinematic: breathing, patrol sweep, the moment he's found
   if(!S.started){
-    if(D.mixer) D.mixer.update(dt);
+    if(D.mixer){ D.mixer.update(dt); D.turn=0.28*Math.sin(S.t*0.4); applyAlive(dt); }  // idle tail sway
     if(D.model){
       const b=1+Math.sin(S.t*1.5)*0.011;                       // slow breath
       D.model.scale.setScalar(9*b);
@@ -697,6 +918,7 @@ function tick(dt){
   const pitchCmd=THREE.MathUtils.clamp((key['ArrowUp']?1:0)-(key['ArrowDown']?1:0), -1,1);
   const turnCmd =THREE.MathUtils.clamp((key['KeyD']?1:0)-(key['KeyA']?1:0)+(key['ArrowRight']?1:0)-(key['ArrowLeft']?1:0), -1,1);
   const throttle=(key['KeyW']?1:0)-(key['KeyS']?1:0);
+  D.turn=turnCmd;
 
   const auth=0.5+D.speed/40;
   D.yaw -= turnCmd*dt*1.9*auth;
@@ -714,7 +936,7 @@ function tick(dt){
   const inst=(D.speed-S.prevSpeed)/Math.max(dt,1e-3); S.prevSpeed=D.speed;
   S.boost += (THREE.MathUtils.clamp((D.speed-CRUISE)/(62-CRUISE),0,1) - S.boost)*Math.min(1,dt*4);
   S.accel += (THREE.MathUtils.clamp(inst/45,0,1) - S.accel)*Math.min(1,dt*6);
-  if(AU.el.wind){ AU.el.wind.volume=Math.min(0.6,0.08+S.boost*0.55); AU.el.wind.playbackRate=1+S.boost*0.55; }
+  updateWind();
   if(S.boost>0.82 && !S.boomed){ S.boomed=true; shockwave(D.group.position.clone(),0xb887ff);
     S.flash=Math.max(S.flash,0.28); AU.play('zap',0.3); }
   if(S.boost<0.5) S.boomed=false;
@@ -732,10 +954,15 @@ function tick(dt){
   S.flapCd-=dt; S.shootCd-=dt;
   // plasma pool: one charge back every 4s; holding X winds up a bigger bolt
   S.charges=Math.min(3,S.charges+dt/4);
-  if(S.chargeT>=0){ S.chargeT+=dt;
-    if(D.glow) D.glow.intensity=30+Math.min(1,S.chargeT/0.9)*170+Math.sin(S.t*40)*14;
-    S.shake=Math.max(S.shake,Math.min(0.22,S.chargeT*0.18)); }
-  updateBolts(dt); updateShocks(dt);
+  if(S.chargeT>=0){ S.chargeT+=dt; const cp=Math.min(1,S.chargeT/0.9);
+    if(D.glow) D.glow.intensity=30+cp*170+Math.sin(S.t*40)*14;
+    if(D.mouth){ D.mouth.scale.setScalar(0.6+cp*3.4+Math.sin(S.t*45)*0.25*cp);   // charge ball grows at the mouth
+      D.mouth.material.opacity=0.6+0.4*cp; D.mouthLt.intensity=40+cp*220;
+      D.mouth.material.color.setHSL(0.75-cp*0.08, 1, 0.6+cp*0.35); }
+    S.shake=Math.max(S.shake,Math.min(0.26,S.chargeT*0.2));
+    if(cp>=1 && !S._chargeReady){ S._chargeReady=true; AU.play('flap',0.3); }        // "fully charged" tick
+  } else if(D.mouth && D.mouth.scale.x>0.01){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; S._chargeReady=false; }
+  updateBolts(dt); updateShocks(dt); updateDebris(dt); updateBursts(dt); updateTowers(dt);
 
   // wind gusts (all directions)
   const gx=Math.sin(S.t*.37+1.7)+.6*Math.sin(S.t*.13), gz=Math.sin(S.t*.29+4.1)+.6*Math.sin(S.t*.17+2.);
@@ -760,11 +987,16 @@ function tick(dt){
   D.group.rotateZ(-D.roll*0.9);
   if(D.model) D.model.rotation.x += ((-0.85 - D.pitch*0.3) - D.model.rotation.x)*fdamp(5,dt); // body lies flat, dips into dives
 
-  /* ---- animation blend ---- */
+  /* ---- animation blend + procedural alive layer ---- */
   if(D.mixer){
-    const w=THREE.MathUtils.clamp(D.flap.getEffectiveWeight()+(input.flap?dt*6:-dt*6),0,1);
-    D.flap.setEffectiveWeight(w); D.glide.setEffectiveWeight(1-w); D.flap.timeScale=1.5; D.mixer.update(dt);
-    if(D.glow) D.glow.intensity = 6 + (input.flap?26:0) + S.boost*34 + Math.sin(S.t*8)*2;   // plasma pulse + boost
+    // faster, deeper flapping while climbing/boosting; wings idle-billow in glide
+    const climbing=input.flap||D.pitch>0.15;
+    const w=THREE.MathUtils.clamp(D.flap.getEffectiveWeight()+(climbing?dt*6:-dt*5),0,1);
+    D.flap.setEffectiveWeight(w); D.glide.setEffectiveWeight(1-w);
+    D.flap.timeScale=1.35+D.boost*0.9; D.glide.timeScale=0.85+D.boost*0.5;
+    D.mixer.update(dt);
+    applyAlive(dt);
+    if(D.glow) D.glow.intensity = 6 + (input.flap?26:0) + S.boost*34 + Math.sin(S.t*8)*2;
   }
 
   /* ---- STEALTH detection ---- */
@@ -849,6 +1081,8 @@ function hud(litNow){
   const pp=$('plasmaPips').children;
   for(let i=0;i<3;i++) pp[i].className=i<whole?'on':'';
   $('viewTag').textContent=S.fpv?'RIDE':'CHASE';
+  $('duskFill').style.width=(TOD.day*100)+'%';
+  $('duskV').textContent = TOD.day<0.35?'dusk' : TOD.day<0.7?'twilight' : TOD.day<0.99?'nightfall' : 'NIGHT';
   // next-beacon arrow projected to screen
   const nb=rings.find(r=>!r.userData.hit);
   const A=$('arrow');
@@ -879,17 +1113,38 @@ function escaped(){ if(S.done)return; AU.play('ring',0.9); showOver('ESCAPED','H
   'All eight beacons, unseen. The cove opens and the storm closes behind you.'); }
 
 /* ---- start / restart: armour shutter closes, he leaps, shutter opens on the flight ---- */
+/* WebAudio wind rush: filtered noise whose brightness+level rise with airspeed (better than an mp3) */
+const WIND={ ctx:null, gain:null, bp:null, lp:null };
+function initWind(){
+  try{ const Ctx=window.AudioContext||window.webkitAudioContext; if(!Ctx) return;
+    const ctx=new Ctx(); const N=2*ctx.sampleRate; const buf=ctx.createBuffer(1,N,ctx.sampleRate);
+    const d=buf.getChannelData(0); let last=0;
+    for(let i=0;i<N;i++){ const w=Math.random()*2-1; last=(last+0.02*w)/1.02; d[i]=last*3.2; } // brown-ish noise
+    const src=ctx.createBufferSource(); src.buffer=buf; src.loop=true;
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=500; bp.Q.value=0.7;
+    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1200;
+    const g=ctx.createGain(); g.gain.value=0.0;
+    src.connect(bp); bp.connect(lp); lp.connect(g); g.connect(ctx.destination); src.start();
+    WIND.ctx=ctx; WIND.gain=g; WIND.bp=bp; WIND.lp=lp;
+  }catch(e){}
+}
+function updateWind(){
+  if(!WIND.ctx) return; const b=S.boost, spd=D.speed;
+  WIND.gain.gain.value = 0.02 + b*0.16 + Math.min(0.06, S.shake*0.2);
+  WIND.bp.frequency.value = 320 + spd*22;      // brighter as you go faster
+  WIND.lp.frequency.value = 800 + b*2600;
+}
 function startAudio(){
   if(!AU.on){ AU.on=true; AU.loop('amb'); AU.el.amb.volume=0; AU.fadeTo('amb',0.5,1200);
     AU.loop('music'); AU.el.music.volume=0; AU.fadeTo('music',0.4,1500);
-    AU.loop('wind'); AU.el.wind.volume=0.08; }
+    initWind(); }
 }
 function begin(){
   if(S.launching||S.started) return; S.launching=true;
   startAudio(); triggerRipple();
   $('shutter').classList.add('closed');
   setTimeout(()=>{                                    // staged behind the armour
-    S.started=true; S.grace=3;
+    S.started=true; S.grace=3; TOD.day=0.05; S.keepersWoke=false;
     D.group.position.set(REST.x, REST.y+6, REST.z);
     D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=30; S.prevSpeed=30;
     if(D.model) D.model.scale.setScalar(9);
@@ -906,12 +1161,18 @@ function reset(){
   D.group.position.copy(START); D.yaw=Math.PI; D.pitch=0; D.roll=0; D.speed=26; input.flap=false;
   S.done=false; S.detection=0; S.score=0; S.shake=0; S.fpv=false; S.nextThunder=S.t+5; S.shootCd=0;
   S.boost=0; S.accel=0; S.prevSpeed=26; S.boomed=false; S.charges=3; S.chargeT=-1; S.grace=2.5;
+  TOD.day=0.05; S.keepersWoke=false; ROG.amp=0; ROG.life=0; ROG.next=6; uRA.value=0;
   if(D.model) D.model.scale.setScalar(9);
   if(D.glide) D.glide.timeScale=1;
   for(const r of rings){ r.userData.hit=false; r.userData.pop=0; r.scale.setScalar(1); r.material=ringBase.clone(); }
-  for(const sl of searchlights){ sl.lit=0; sl.disabled=0; }
-  for(const b of bolts){ scene.remove(b.m); } bolts.length=0;
+  for(const sl of searchlights){ sl.lit=0; sl.disabled=0; sl.destroyed=false; sl.fall=0;
+    sl.group.rotation.z=0; sl.group.position.y=0; sl.spot.intensity=3200; sl.cone.visible=true;
+    sl.lampGlow.intensity=500; sl.lamp.material.emissiveIntensity=2.4; }
+  for(const b of bolts){ scene.remove(b.m); scene.remove(b.line); } bolts.length=0;
   for(const s of shocks){ scene.remove(s.m); } shocks.length=0;
+  for(const d of debris){ scene.remove(d.m); } debris.length=0;
+  for(const b of bursts){ scene.remove(b.m); scene.remove(b.lt); } bursts.length=0;
+  if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; } S._chargeReady=false;
   $('over').classList.add('hide'); $('litglow').style.opacity=0; $('warn').style.opacity=0;
   AU.fadeTo('music',0.4,600); AU.fadeTo('amb',0.5,600);
   S.started=true;
@@ -1009,6 +1270,7 @@ window.SIM={
   reset, setFpv:v=>{S.fpv=!!v}, key:(c,v)=>{key[c]=!!v}, shoot, begin,
   teleport:(x,y,z,yaw)=>{ D.group.position.set(x,y,z); if(yaw!=null)D.yaw=yaw; },
   warp:(dt,steps=60)=>{ for(let i=0;i<steps;i++) tick(dt); render(); },
+  bones:()=>D.boneReport, alive:v=>{ALIVE=v;}, setTurn:v=>{D.turn=v;}, day:v=>{TOD.day=v;uDay.value=v;},
 };
 </script>
 </body>
