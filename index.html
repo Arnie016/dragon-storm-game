@@ -411,10 +411,13 @@ const sky = new THREE.Mesh(new THREE.SphereGeometry(2600,32,20), new THREE.Shade
                       vec3(0.16,0.16,0.36), smoothstep(0.16,0.72,up));
       vec3 nightC= mix(vec3(0.05,0.045,0.11), vec3(0.012,0.017,0.045), pow(up,0.55));
       vec3 col=mix(setC, nightC, uDay);
-      // sinking sun near the horizon, fades as night falls
-      vec3 sunDir=normalize(vec3(-0.92, 0.12-0.22*uDay, 0.34));
+      // bright daytime sky at the start, easing into the sunset by uDay ~0.34
+      vec3 dayC = mix(vec3(0.52,0.70,0.93), vec3(0.26,0.49,0.86), smoothstep(0.0,0.7,up));
+      col = mix(dayC, col, smoothstep(0.0,0.34,uDay));
+      // the sun: high & white by day, sinking & warm into the sunset, gone by night
+      vec3 sunDir=normalize(vec3(-0.92, 0.42-0.5*uDay, 0.34));
       float sd=max(dot(d,sunDir),0.);
-      col+=mix(vec3(1.0,0.62,0.28), vec3(0.0), uDay)*(pow(sd,760.)*2.2 + pow(sd,24.)*0.45)*(1.-uDay);
+      col+=mix(vec3(1.0,0.9,0.7), vec3(0.0), uDay)*(pow(sd,760.)*2.2 + pow(sd,20.)*0.4)*(1.-uDay);
       // stars appear at night
       vec2 uv=d.xz/(abs(d.y)+0.7); vec2 gp=floor(uv*70.); float s=hash(gp);
       float star=smoothstep(0.992,1.0,s)*(0.45+0.55*sin(uT*3.0+s*40.));
@@ -647,24 +650,23 @@ function applyAlive(dt){
   _AUP.set(0,1,0).applyQuaternion(_mq); _ART.set(1,0,0).applyQuaternion(_mq); _AFW.set(0,0,-1).applyQuaternion(_mq);
   const spd=THREE.MathUtils.clamp(D.speed/40,0,1.4), t=S.t, g=ALIVE;
   D.pTurn += (D.turn - D.pTurn)*fdamp(6,dt);
-  D.pPitch += (D.pitch - D.pPitch)*fdamp(6,dt);
-  // TAIL — traveling swim wave + trails behind the turn (the biggest "alive" cue)
+  D.pPitch += (D.pitch - D.pPitch)*fdamp(4,dt);
+  // TAIL — ONE slow traveling wave; tiny per-bone so the chain reads as a gentle S, never a whip.
+  // Rotations compound down the parented chain, so keep each bone small and taper toward the tip.
   const tl=D.bones.tail;
   for(let i=0;i<tl.length;i++){ const b=tl[i]; if(!b) continue;
-    const sway=(Math.sin(t*3.1 - i*0.8)*(0.05+0.028*i)*(0.55+0.8*spd) - D.pTurn*(0.10+0.055*i))*g;
-    const lift=Math.sin(t*2.5 - i*0.9)*(0.03+0.012*i)*(0.7+spd)*g;
+    const ph=t*1.5 - i*0.55;
+    const sway=(Math.sin(ph)*0.018*(0.6+0.4*spd) - D.pTurn*0.030)*g;   // idle drift + soft trail into turns
+    const lift=Math.sin(ph+0.6)*0.011*g;
     b.rotateOnWorldAxis(_AUP, sway); b.rotateOnWorldAxis(_ART, lift);
   }
-  // NECK + HEAD — bank into the turn, ease with climb/dive, gentle idle
-  if(D.bones.neck){ D.bones.neck.rotateOnWorldAxis(_AUP,(-D.pTurn*0.16+Math.sin(t*1.4)*0.02)*g);
-    D.bones.neck.rotateOnWorldAxis(_ART,(-D.pPitch*0.14)*g); }
-  if(D.bones.head){ D.bones.head.rotateOnWorldAxis(_AUP,(-D.pTurn*0.22)*g);
-    D.bones.head.rotateOnWorldAxis(_ART,(-D.pPitch*0.16+Math.sin(t*1.1)*0.02)*g); }
-  // SPINE — banking flex
-  if(D.bones.chest) D.bones.chest.rotateOnWorldAxis(_AFW,(D.pTurn*0.14)*g);
-  // WINGS — sweep back at speed, extra billow on the beat
-  const sweep=(0.05+spd*0.16)*g;
-  for(const w of D.bones.wings){ w.rotateOnWorldAxis(_AUP, w.side*sweep); }
+  // NECK + HEAD — look softly into the turn, settle with climb/dive
+  if(D.bones.neck){ D.bones.neck.rotateOnWorldAxis(_AUP,(-D.pTurn*0.055+Math.sin(t*1.0)*0.009)*g);
+    D.bones.neck.rotateOnWorldAxis(_ART,(-D.pPitch*0.045)*g); }
+  if(D.bones.head){ D.bones.head.rotateOnWorldAxis(_AUP,(-D.pTurn*0.075)*g);
+    D.bones.head.rotateOnWorldAxis(_ART,(D.pPitch*0.05+Math.sin(t*0.8)*0.010)*g); }   // head leads the dive
+  // SPINE — a whisper of bank flex (wings left to the baked clip so they don't fight it)
+  if(D.bones.chest) D.bones.chest.rotateOnWorldAxis(_AFW,(D.pTurn*0.045)*g);
 }
 
 /* ============================ INPUT ============================ */
@@ -843,22 +845,22 @@ function occluded(lamp,drag){
 }
 
 /* ============================ SIM ============================ */
-const _sun=new THREE.Color(0xffd9a0), _moonC=new THREE.Color(0x9fb4ff);
-const _fogSet=new THREE.Color(0x24151f), _fogNight=new THREE.Color(0x0a0a1a);
-const _ambSet=new THREE.Color(0x4a2c30), _ambNight=new THREE.Color(0x2c2a48);
+const _sun=new THREE.Color(0xffd9a0), _moonC=new THREE.Color(0x9fb4ff), _sunWhite=new THREE.Color(0xfff2df);
+const _fogSet=new THREE.Color(0x24151f), _fogNight=new THREE.Color(0x0a0a1a), _fogDay=new THREE.Color(0x9fb6cf);
+const _ambSet=new THREE.Color(0x4a2c30), _ambNight=new THREE.Color(0x2c2a48), _ambDay=new THREE.Color(0x6b7690);
 function driveTimeOfDay(dt){
-  // during flight the sun sinks over NIGHTFALL seconds; menu holds a warm dusk
+  // flight begins in daylight and the sun sinks over NIGHTFALL seconds; menu holds a golden dusk
   if(S.started && !S.done) TOD.day=Math.min(1, TOD.day + dt/S.nightfall);
-  else if(!S.started) TOD.day=0.18 + 0.05*Math.sin(S.t*0.2);
+  else if(!S.started) TOD.day=0.34 + 0.04*Math.sin(S.t*0.2);
   uDay.value=TOD.day;
-  const d=TOD.day;
-  moon.color.copy(_sun).lerp(_moonC, d); moon.intensity=1.25-0.25*d;
-  moon.position.set(-260+ -0*d, 60+180*d, 140-40*d);       // sun low -> moon high
-  amb.color.copy(_ambSet).lerp(_ambNight, d); amb.intensity=1.9-0.35*d;
+  const d=TOD.day, dayW=Math.max(0,1-d/0.34);            // 1 = full day, 0 by dusk
+  moon.color.copy(_sun).lerp(_moonC, d).lerp(_sunWhite, dayW); moon.intensity=1.25-0.25*d + dayW*0.9;
+  moon.position.set(-260, 60+180*d, 140-40*d);            // sun low -> moon high
+  amb.color.copy(_ambSet).lerp(_ambNight, d).lerp(_ambDay, dayW); amb.intensity=1.9-0.35*d + dayW*0.5;
   rimP.intensity=0.5+0.55*d; fillT.intensity=0.35+0.2*d;
-  scene.fog.color.copy(_fogSet).lerp(_fogNight, d);
-  scene.fog.density=0.0026+0.0010*d;
-  renderer.toneMappingExposure=1.5-0.18*d;
+  scene.fog.color.copy(_fogSet).lerp(_fogNight, d).lerp(_fogDay, dayW);
+  scene.fog.density=(0.0026+0.0010*d) - dayW*0.0009;      // clearer air by day
+  renderer.toneMappingExposure=1.5-0.18*d + dayW*0.12;
   // music: warm menu bed at dusk -> dark tension at night
   if(AU.on){ if(AU.el.menu){ AU.el.menu.volume=(1-d)*0.34; if(AU.el.menu.paused&&d<0.95)AU.el.menu.play().catch(()=>{});}
     if(AU.el.music) AU.el.music.volume=0.16+d*0.34; }
@@ -870,21 +872,25 @@ function driveRogue(dt){
   const p=D.group.position;
   ROG.next-=dt;
   if(ROG.life<=0 && ROG.next<=0 && S.started && !S.done){
-    // a swell rises from the water near the dragon; bigger and more frequent as night deepens
-    const ang=Math.random()*6.28, off=26+Math.random()*40;
+    // a swell is born in the mid-distance and ROLLS toward the dragon like a real wave reaching out
+    const ang=Math.random()*6.28, off=85+Math.random()*75;
     ROG.cx=p.x+Math.cos(ang)*off; ROG.cz=p.z+Math.sin(ang)*off;
-    ROG.max=9+TOD.day*13+Math.random()*4; ROG.life=1; ROG.dur=2.6+Math.random()*1.2;
-    ROG.next=7+Math.random()*7 - TOD.day*4;
-    AU.play('thunder',0.28);
+    ROG.tx=p.x; ROG.tz=p.z;                                    // it travels toward the dragon
+    ROG.max=8+TOD.day*9+Math.random()*3; ROG.life=1; ROG.dur=5+Math.random()*2;
+    ROG.next=10+Math.random()*8 - TOD.day*4;
+    AU.play('thunder',0.22);
   }
   if(ROG.life>0){
     ROG.life-=dt/ROG.dur;
+    ROG.cx += (ROG.tx-ROG.cx)*Math.min(1,dt*0.45);            // creep in
+    ROG.cz += (ROG.tz-ROG.cz)*Math.min(1,dt*0.45);
     ROG.amp=ROG.max*Math.sin(Math.max(0,ROG.life)*Math.PI);   // rise then fall
     uRA.value=ROG.amp; uRC.value.set(ROG.cx,-ROG.cz);
-    // the crest reaches up and taps the dragon if it flies too low near it
+    // crest grazes you if you skim low: a shove + spray, not instant death
     if(!S.launching){ const hAt=waveH(p.x,p.z,S.t);
-      if(hAt>p.y-4){ S.shake=Math.max(S.shake,0.6); D.speed*=1-0.7*dt;
-        p.y+=(hAt+4-p.y)*Math.min(1,dt*3); if(hAt>p.y+1) crash('THE SEA REARED UP'); } }
+      if(hAt>p.y-6){ S.shake=Math.max(S.shake,0.4); D.speed*=1-0.35*dt;
+        p.y+=(hAt+6-p.y)*Math.min(1,dt*2.0);
+        if(hAt>p.y+2 && p.y<14) crash('THE SEA CLAIMED YOU'); } }   // only if truly in the water
   } else { ROG.amp=0; uRA.value=0; }
 }
 
@@ -1144,7 +1150,7 @@ function begin(){
   startAudio(); triggerRipple();
   $('shutter').classList.add('closed');
   setTimeout(()=>{                                    // staged behind the armour
-    S.started=true; S.grace=3; TOD.day=0.05; S.keepersWoke=false;
+    S.started=true; S.grace=3; TOD.day=0.0; S.keepersWoke=false;
     D.group.position.set(REST.x, REST.y+6, REST.z);
     D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=30; S.prevSpeed=30;
     if(D.model) D.model.scale.setScalar(9);
@@ -1161,7 +1167,7 @@ function reset(){
   D.group.position.copy(START); D.yaw=Math.PI; D.pitch=0; D.roll=0; D.speed=26; input.flap=false;
   S.done=false; S.detection=0; S.score=0; S.shake=0; S.fpv=false; S.nextThunder=S.t+5; S.shootCd=0;
   S.boost=0; S.accel=0; S.prevSpeed=26; S.boomed=false; S.charges=3; S.chargeT=-1; S.grace=2.5;
-  TOD.day=0.05; S.keepersWoke=false; ROG.amp=0; ROG.life=0; ROG.next=6; uRA.value=0;
+  TOD.day=0.0; S.keepersWoke=false; ROG.amp=0; ROG.life=0; ROG.next=6; uRA.value=0;
   if(D.model) D.model.scale.setScalar(9);
   if(D.glide) D.glide.timeScale=1;
   for(const r of rings){ r.userData.hit=false; r.userData.pop=0; r.scale.setScalar(1); r.material=ringBase.clone(); }
