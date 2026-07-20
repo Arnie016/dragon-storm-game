@@ -81,6 +81,14 @@
     letter-spacing:2px; color:var(--teal); text-shadow:0 0 18px rgba(56,230,208,.8); opacity:0; }
   @keyframes pop{ 0%{opacity:0; transform:translate(-50%,-30%) scale(.7);} 25%{opacity:1;}
     100%{opacity:0; transform:translate(-50%,-120%) scale(1.1);} }
+  #storyline{ position:absolute; bottom:16%; left:50%; transform:translateX(-50%); max-width:640px; text-align:center;
+    font-family:var(--body); font-style:italic; font-size:clamp(16px,1.9vw,22px); color:#e3d9f8; opacity:0;
+    text-shadow:0 2px 14px rgba(0,0,0,.9), 0 0 30px rgba(150,100,255,.35); pointer-events:none; }
+  @keyframes storyfade{ 0%{opacity:0; transform:translateX(-50%) translateY(10px);} 12%{opacity:1; transform:translateX(-50%);}
+    80%{opacity:1;} 100%{opacity:0; transform:translateX(-50%) translateY(-8px);} }
+  .gfxrow{ display:flex; gap:6px; align-items:center; font-size:10px; letter-spacing:2px; color:#7f90b3; }
+  .gfxrow b{ cursor:pointer; padding:3px 10px; border-radius:12px; border:1px solid rgba(140,110,220,.3); color:#aab8d6; }
+  .gfxrow b.on{ color:#fff; background:rgba(120,90,200,.35); border-color:rgba(180,150,255,.7); }
 
   /* ---- overlays (menu / gameover) ---- */
   .screen{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; text-align:center;
@@ -288,6 +296,7 @@
   <div id="warn">IN THE LIGHT — DIVE!</div>
   <div id="arrow"></div>
   <div id="popup"></div>
+  <div id="storyline"></div>
   <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> hold=charge plasma · <b>Q/E</b> look · <b>V</b> view</div>
 </div>
 
@@ -320,6 +329,7 @@
         <span class="chip"><b>V</b>ride first-person</span>
         <span class="chip"><b>GOAL</b>8 beacons, never seen</span>
       </div>
+      <div class="gfxrow">GRAPHICS <b data-g="low">LOW</b><b data-g="med">MED</b><b data-g="high" class="on">HIGH</b></div>
       <div class="foot">headphones recommended · dive into shadow to break a lock</div>
     </div>
   </div>
@@ -508,6 +518,35 @@ mountain(-260,-120,140,220); mountain(300,180,120,190); mountain(120,-360,150,24
 mountain(-360,220,110,170); mountain(340,-280,100,150); mountain(-140,380,130,200);
 mountain(460,40,90,140);
 
+/* ---- SERPENT CANYON: a weaving slot of sheer cliffs you can almost kiss (HTTYD-style traverse) ----
+   runs along the beacon 4->6 stretch; gates reward threading it */
+const cliffMat=new THREE.MeshStandardMaterial({ color:0x1b1f2c, roughness:.9, flatShading:true });
+function cliff(x,z,w,h,rotY){
+  const g=new THREE.BoxGeometry(w,h,10,2,4,1), p=g.attributes.position;
+  for(let i=0;i<p.count;i++){ const vx=p.getX(i), vy=p.getY(i);
+    p.setX(i, vx+Math.sin(vy*0.06+x)*3); p.setZ(i, p.getZ(i)+Math.cos(vx*0.2+z)*2.5); }
+  g.computeVertexNormals();
+  const m=new THREE.Mesh(g,cliffMat); m.position.set(x,h/2-4,z); m.rotation.y=rotY;
+  m.receiveShadow=true; scene.add(m);
+  colliders.push({x,z,r:Math.max(7,w*0.28),top:h-6,cliff:true});
+  return m;
+}
+// the serpent: paired walls with a ~26u throat, snaking
+const CAN=[[-60,-150,0.3],[-95,-135,0.7],[-130,-105,1.0],[-155,-65,1.25],[-168,-20,1.5]];
+for(const [cx,cz,a] of CAN){
+  const nx=Math.cos(a)*16, nz=Math.sin(a)*16;
+  cliff(cx+nx, cz+nz, 34, 86+Math.random()*30, a);
+  cliff(cx-nx, cz-nz, 34, 92+Math.random()*30, a);
+}
+// canyon gates (objective 2): thread all three
+const gates=[];
+const gateMat=new THREE.MeshStandardMaterial({ color:0x123a30, emissive:0x2fd6a0, emissiveIntensity:2.2 });
+for(const gi of [0,2,4]){ const [cx,cz]=CAN[gi];
+  const gm=new THREE.Mesh(new THREE.TorusGeometry(10,0.9,8,30), gateMat.clone());
+  gm.position.set(cx, 34, cz); gm.rotation.y=CAN[gi][2]+Math.PI/2; gm.userData.hit=false;
+  gates.push(gm); scene.add(gm);
+}
+
 /* ---- lighthouse + 3 sweeping searchlights ---- */
 const searchlights = [];
 function beacon(x,z,baseH,yaw0,rate,warm){
@@ -590,6 +629,19 @@ const draco=new DRACOLoader().setDecoderPath('./vendor/draco/');
 const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
 loader.load('dragon_rigged.glb',(g)=>{
   const model=g.scene; D.model=model; model.scale.setScalar(9.0); model.rotation.y=Math.PI;
+  // ---- black volcanic obsidian scales: dark PBR + faint ember emissive in the recesses ----
+  model.traverse(o=>{ if(!o.isMesh || !o.material) return;
+    const m=o.material;
+    if(m.map){ m.map.anisotropy=8; }
+    m.color = new THREE.Color(0x14131a);           // near-black; the diffuse map's scale detail + green eyes still read through
+    m.roughness = 0.42;                             // wet obsidian sheen
+    m.metalness = 0.35;
+    m.emissive = new THREE.Color(0x2a0b18);         // faint volcanic ember glow deep in the scales
+    if(m.map){ m.emissiveMap = m.map; m.emissiveIntensity = 0.28; }  // ember + eye-glow follows the scale texture
+    else m.emissiveIntensity = 0.5;
+    m.needsUpdate = true;
+    o.castShadow=true;
+  });
   D.group.add(model);
   D.mixer=new THREE.AnimationMixer(model);
   D.flap=D.mixer.clipAction(THREE.AnimationClip.findByName(g.animations,'Flap'));
@@ -725,6 +777,19 @@ function shoot(power=0.35){
     life:2.4, power, jag:6+power*10 });
   if(D.glow) D.glow.intensity=70+power*90;
   if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; }   // discharge the mouth ball
+  // anime-style muzzle burst: radial spark rays + a fast cut-arc ring around the bolt's path
+  const mz=m.position;
+  for(let i=0;i<10;i++){ const a2=Math.random()*6.283, r2=Math.random()*0.7+0.3;
+    const sg=new THREE.BufferGeometry().setFromPoints([mz.clone(),
+      mz.clone().add(new THREE.Vector3(Math.cos(a2)*(4+power*5)*r2,(Math.random()-0.5)*5*r2,Math.sin(a2)*(4+power*5)*r2))]);
+    const sl2=new THREE.Line(sg,new THREE.LineBasicMaterial({color:0xefe2ff,transparent:true,opacity:0.9,
+      blending:THREE.AdditiveBlending,depthWrite:false}));
+    scene.add(sl2); shocks.push({m:sl2,life:0.22,dur:0.22,noscale:true});
+  }
+  const arc=new THREE.Mesh(new THREE.TorusGeometry(1.6,0.22,6,26),
+    new THREE.MeshBasicMaterial({color:0xd8b8ff,transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false}));
+  arc.position.copy(mz); arc.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir); scene.add(arc);
+  shocks.push({m:arc,life:0.3,dur:0.3,axis:true});
   const a=AU.el.zap; if(a){ a.playbackRate=1.3-power*0.55; } AU.play('zap',0.45+power*0.4);
   S.flash=Math.max(S.flash,0.14+power*0.34);
   if(power>0.8){ S.shake=Math.max(S.shake,0.5); }
@@ -796,26 +861,55 @@ function shockwave(pos,color){
   m.position.copy(pos); m.quaternion.copy(camera.quaternion); scene.add(m); shocks.push({m,life:0.6});
 }
 function updateShocks(dt){
-  for(let i=shocks.length-1;i>=0;i--){ const s=shocks[i]; s.life-=dt; const k=1-s.life/0.6;
-    s.m.scale.setScalar(1+k*3.2); s.m.material.opacity=0.95*(1-k); s.m.quaternion.copy(camera.quaternion);
+  for(let i=shocks.length-1;i>=0;i--){ const s=shocks[i]; s.life-=dt; const k=Math.min(1,1-s.life/(s.dur||0.6));
+    if(!s.noscale) s.m.scale.setScalar(1+k*(s.flat?6:(s.axis?9:3.2)));
+    s.m.material.opacity=0.95*(1-k);
+    if(!s.flat&&!s.axis&&!s.noscale) s.m.quaternion.copy(camera.quaternion);
     if(s.life<=0){ s.m.geometry.dispose(); scene.remove(s.m); shocks.splice(i,1); }
   }
 }
 const popEl=document.getElementById('popup');
 function popup(text){ popEl.textContent=text; popEl.style.animation='none'; void popEl.offsetWidth; popEl.style.animation='pop 0.9s ease-out'; }
+const storyEl=document.getElementById('storyline');
+function storyPop(text,dur=5){ storyEl.textContent=text; storyEl.style.animation='none'; void storyEl.offsetWidth;
+  storyEl.style.animation=`storyfade ${dur}s ease-out`; }
+
+/* ---- the flight is choreographed: three sworn tasks, told as story beats ---- */
+const MISSIONS=[
+  { id:'tower', label:t=>`I · silence a watchtower ${t.towers}/1`, done:false,
+    check:()=>searchlights.some(sl=>sl.destroyed),
+    story:'One light dies screaming. The sea swallows the stones — and remembers the dark.' },
+  { id:'canyon', label:t=>`II · thread the Serpent Canyon ${t.gates}/3`, done:false,
+    check:()=>gates.every(g=>g.userData.hit),
+    story:'Wingtip to stone, stone to wingtip — the canyon lets you pass, this once.' },
+  { id:'beacons', label:t=>`III · light the eight beacons ${t.beacons}/8`, done:false,
+    check:()=>S.score>=rings.length,
+    story:'' },
+];
+function missionTallies(){ return { towers:searchlights.filter(s=>s.destroyed).length,
+  gates:gates.filter(g=>g.userData.hit).length, beacons:S.score }; }
+function driveMissions(){
+  const t=missionTallies();
+  for(const m of MISSIONS){ if(!m.done && m.check()){ m.done=true;
+    if(m.story){ storyPop(m.story); AU.play('ring',0.6); S.flash=Math.max(S.flash,0.25); } } }
+  const cur=MISSIONS.find(m=>!m.done);
+  $('objTag').textContent = cur ? cur.label(t) : 'the cove is open — finish the flight';
+}
 
 /* ---- explosion burst (expanding fireball + flash light) ---- */
 const bursts=[];
-function bigExplosion(pos,color){
-  const m=new THREE.Mesh(new THREE.SphereGeometry(2,16,16),
+function burstAt(pos,color,sc,dur,light){
+  const m=new THREE.Mesh(new THREE.SphereGeometry(2,14,14),
     new THREE.MeshBasicMaterial({color, transparent:true, opacity:1, blending:THREE.AdditiveBlending, depthWrite:false}));
   m.position.copy(pos); scene.add(m);
-  const lt=new THREE.PointLight(color, 1600, 260, 2); lt.position.copy(pos); scene.add(lt);
-  bursts.push({m,lt,life:0.7}); shockwave(pos,color);
+  const lt=new THREE.PointLight(color, light, 260, 2); lt.position.copy(pos); scene.add(lt);
+  bursts.push({m,lt,life:dur,dur,sc,l0:light});
 }
+function bigExplosion(pos,color){ burstAt(pos,color,10,0.7,1600); shockwave(pos,color); }
+function smallBurst(x,y,z,color){ burstAt(new THREE.Vector3(x,y,z),color,2.2,0.3,180); }
 function updateBursts(dt){
-  for(let i=bursts.length-1;i>=0;i--){ const b=bursts[i]; b.life-=dt; const k=1-b.life/0.7;
-    b.m.scale.setScalar(1+k*10); b.m.material.opacity=(1-k); b.lt.intensity=1600*(1-k)*(1-k);
+  for(let i=bursts.length-1;i>=0;i--){ const b=bursts[i]; b.life-=dt; const k=1-b.life/b.dur;
+    b.m.scale.setScalar(1+k*b.sc); b.m.material.opacity=(1-k); b.lt.intensity=b.l0*(1-k)*(1-k);
     if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.lt); bursts.splice(i,1); }
   }
 }
@@ -970,9 +1064,10 @@ function tick(dt){
   } else if(D.mouth && D.mouth.scale.x>0.01){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; S._chargeReady=false; }
   updateBolts(dt); updateShocks(dt); updateDebris(dt); updateBursts(dt); updateTowers(dt);
 
-  // wind gusts (all directions)
+  // wind gusts (all directions) — calmed while you're deliberately skimming a cliff
+  const gustK=S.grazing?0.2:1;
   const gx=Math.sin(S.t*.37+1.7)+.6*Math.sin(S.t*.13), gz=Math.sin(S.t*.29+4.1)+.6*Math.sin(S.t*.17+2.);
-  p.x+=gx*2.6*dt; p.z+=gz*2.6*dt;
+  p.x+=gx*2.6*dt*gustK; p.z+=gz*2.6*dt*gustK;
 
   /* ---- collisions ---- */
   const wh=waveH(p.x,p.z,S.t);
@@ -981,27 +1076,45 @@ function tick(dt){
     if(p.y<wh+1.2){ crash('THE SEA TOOK YOU'); }
     p.y += (wh+3.0-p.y)*Math.min(1,dt*5);
   }
-  if(!S.launching) for(const c of colliders){
-    const dx=p.x-c.x, dz=p.z-c.z, horiz=Math.hypot(dx,dz);
-    if(horiz < c.r+4 && p.y < c.top+3){ crash('DASHED ON THE ROCKS'); break; }
+  if(!S.launching){ let grazing=false;
+    for(const c of colliders){
+      const dx=p.x-c.x, dz=p.z-c.z, horiz=Math.hypot(dx,dz);
+      if(p.y < c.top+2){
+        if(horiz < c.r+1.2){ crash('DASHED ON THE ROCKS'); break; }        // tight box: you CAN kiss it
+        if(horiz < c.r+9 && D.speed>22) grazing=true;                       // …and be rewarded for it
+      }
+    }
+    S.grazing=grazing;
+    if(grazing){ S.grazeT=(S.grazeT||0)-dt;
+      S.detection=Math.max(0,S.detection-0.10*dt);                          // hugging rock breaks the light's lock
+      if(S.grazeT<=0){ S.grazeT=1.4; popup('CLOSE CALL'); S.shake=Math.max(S.shake,0.25);
+        smallBurst(p.x,p.y-2,p.z,0xcfd8ff); AU.play('flap',0.2); }
+    }
   }
   S.shake=Math.max(0,S.shake-dt*2.4);
 
   /* ---- orientation: prone, headfirst flight (not upright) ---- */
   D.group.rotation.set(0,D.yaw,0);
   D.group.rotateX(D.pitch*0.75);                 // flight-path pitch: nose up when climbing
-  D.group.rotateZ(-D.roll*0.9);
-  if(D.model) D.model.rotation.x += ((-0.85 - D.pitch*0.3) - D.model.rotation.x)*fdamp(5,dt); // body lies flat, dips into dives
+  D.group.rotateZ(-D.roll*0.9);   // (model lean handled in the animation-blend block: prone + surge/brake)
 
   /* ---- animation blend + procedural alive layer ---- */
   if(D.mixer){
-    // faster, deeper flapping while climbing/boosting; wings idle-billow in glide
-    const climbing=input.flap||D.pitch>0.15;
+    // faster, deeper flapping while climbing/boosting; AIR-BRAKE flare when shedding speed
+    const braking=key['KeyS']&&D.speed>16;
+    const climbing=input.flap||D.pitch>0.15||braking;
     const w=THREE.MathUtils.clamp(D.flap.getEffectiveWeight()+(climbing?dt*6:-dt*5),0,1);
     D.flap.setEffectiveWeight(w); D.glide.setEffectiveWeight(1-w);
-    D.flap.timeScale=1.35+D.boost*0.9; D.glide.timeScale=0.85+D.boost*0.5;
+    D.flap.timeScale=(braking?1.05:1.35+D.boost*0.9); D.glide.timeScale=0.85+D.boost*0.5;
     D.mixer.update(dt);
     applyAlive(dt);
+    // visible surge & resistance: nose dips on acceleration, body flares up when braking,
+    // and the whole frame trembles slightly against the wind at high speed
+    if(D.model){
+      const lean = THREE.MathUtils.clamp(-S.accel*0.30,-0.26,0) + (braking?0.34:0);
+      D.model.rotation.x += ((-0.85 - D.pitch*0.3 + lean) - D.model.rotation.x)*fdamp(5,dt);
+      D.model.rotation.z = Math.sin(S.t*21)*0.006*S.boost;
+    }
     if(D.glow) D.glow.intensity = 6 + (input.flap?26:0) + S.boost*34 + Math.sin(S.t*8)*2;
   }
 
@@ -1031,6 +1144,25 @@ function tick(dt){
   // lit HUD feedback
   $('litglow').style.opacity = (litNow>0.02? 0.25+litNow*0.55 : Math.max(0, S.detection*0.25)).toFixed(2);
   $('warn').style.opacity = (litNow>0.35? (0.5+0.5*Math.sin(S.t*14)).toFixed(2) : 0);
+
+  /* ---- canyon gates ---- */
+  for(const gm of gates){ if(gm.userData.hit) continue;
+    gm.material.emissiveIntensity=2.0+Math.sin(S.t*4)*0.8;
+    if(p.distanceTo(gm.position)<12){ gm.userData.hit=true; gm.material.emissiveIntensity=0.6;
+      AU.play('ring',0.6); shockwave(gm.position,0x2fd6a0); popup('GATE '+gates.filter(g=>g.userData.hit).length+' / 3');
+      S.detection=Math.max(0,S.detection-0.15); } }                       // the canyon hides you
+  driveMissions();
+
+  /* ---- water splash when skimming ---- */
+  S.splashT=(S.splashT||0)-dt;
+  { const wh2=waveH(p.x,p.z,S.t);
+    if(p.y-wh2<7 && D.speed>18 && S.splashT<=0){ S.splashT=0.16;
+      smallBurst(p.x,(wh2+0.6),p.z,0xbfd8e6);
+      const rr=new THREE.Mesh(new THREE.TorusGeometry(2,0.5,6,20),
+        new THREE.MeshBasicMaterial({color:0xcfe4f0,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false}));
+      rr.position.set(p.x,wh2+0.4,p.z); rr.rotation.x=-Math.PI/2; scene.add(rr);
+      shocks.push({m:rr,life:0.5,flat:true});
+      S.shake=Math.max(S.shake,0.12); } }
 
   /* ---- beacons (idle pulse + juicy pass) ---- */
   for(const r of rings){ r.rotation.z+=dt*(r.userData.hit?0.25:0.6);
@@ -1179,6 +1311,9 @@ function reset(){
   for(const d of debris){ scene.remove(d.m); } debris.length=0;
   for(const b of bursts){ scene.remove(b.m); scene.remove(b.lt); } bursts.length=0;
   if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; } S._chargeReady=false;
+  for(const gm of gates){ gm.userData.hit=false; gm.material.emissiveIntensity=2.2; }
+  for(const m of MISSIONS) m.done=false;
+  S.grazeT=0; S.splashT=0;
   $('over').classList.add('hide'); $('litglow').style.opacity=0; $('warn').style.opacity=0;
   AU.fadeTo('music',0.4,600); AU.fadeTo('amb',0.5,600);
   S.started=true;
@@ -1190,17 +1325,37 @@ $('startBtn').addEventListener('click',e=>{ e.stopPropagation();
 menuEl.addEventListener('click',()=>{ if(!menuEl.classList.contains('live')) spotMoment(); });
 $('againBtn').addEventListener('click',reset);
 
+/* ---- graphics presets: LOW / MED / HIGH (persisted) ---- */
+function applyGfx(level){
+  localStorage.setItem('nf_gfx',level);
+  document.querySelectorAll('.gfxrow b').forEach(b=>b.classList.toggle('on',b.dataset.g===level));
+  const hi=level==='high', med=level==='med';
+  renderer.setPixelRatio(hi?Math.min(devicePixelRatio,2):med?1.5:1);
+  rainGeo.setDrawRange(0,(hi?RAIN_N:med?900:450)*2);
+  streaks.visible=hi||med;
+  renderer.shadowMap.enabled=hi;
+  moon.castShadow=hi;
+  if(hi){ moon.shadow.mapSize.set(1024,1024); const c=moon.shadow.camera;
+    c.left=-260;c.right=260;c.top=260;c.bottom=-260;c.far=1200; moon.shadow.bias=-0.002;
+    moon.target=D.group; }
+  scene.traverse(o=>{ if(o.isMesh&&o.material&&o.material.isMeshStandardMaterial){ o.receiveShadow=hi; } });
+  if(D.model) D.model.traverse(o=>{ if(o.isMesh) o.castShadow=hi; });
+}
+document.querySelectorAll('.gfxrow b').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); applyGfx(b.dataset.g); }));
+applyGfx(localStorage.getItem('nf_gfx')||'high');
+
 /* ============================ CAMERA + LOOP ============================ */
 const _hp=new THREE.Vector3();
 const _sfwd=new THREE.Vector3(), _srt=new THREE.Vector3(), _sup=new THREE.Vector3(), _SUP=new THREE.Vector3(0,1,0);
 function updateStreaks(){
-  const b=S.boost; streaks.material.opacity=Math.min(0.5,b*0.68);
-  if(b<0.03) return;
+  const b=S.boost; streaks.material.opacity=Math.min(0.4, Math.max(0,b-0.14)*0.72);   // only at real speed
+  if(b<0.16){ if(b<0.03) return; }
   _sfwd.set(-Math.sin(D.yaw)*Math.cos(D.pitch),Math.sin(D.pitch),-Math.cos(D.yaw)*Math.cos(D.pitch)).normalize();
   _srt.crossVectors(_sfwd,_SUP).normalize(); _sup.crossVectors(_srt,_sfwd).normalize();
   const cx=camera.position.x, cy=camera.position.y, cz=camera.position.z, len=8+b*48, scroll=S.t*(0.5+b*2.6);
   for(let i=0;i<STREAK_N;i++){ const s=streakSeed[i];
-    const ang=s[0]*6.2832, rad=9+s[1]*44, along=((s[2]-scroll)%1+1)%1, ax=(along-0.5)*180;
+    // keep streaks in a PERIPHERAL ring (min radius 28) so they never slash through the dragon on the axis
+    const ang=s[0]*6.2832, rad=28+s[1]*38, along=((s[2]-scroll)%1+1)%1, ax=(along-0.5)*180;
     const rc=Math.cos(ang)*rad, rs=Math.sin(ang)*rad;
     const bx=cx+_sfwd.x*ax+_srt.x*rc+_sup.x*rs, by=cy+_sfwd.y*ax+_srt.y*rc+_sup.y*rs, bz=cz+_sfwd.z*ax+_srt.z*rc+_sup.z*rs;
     sp[i*6]=bx; sp[i*6+1]=by; sp[i*6+2]=bz;
