@@ -61,6 +61,13 @@
   .pips{ display:inline-flex; gap:4px; margin-left:8px; vertical-align:1px; }
   .pips i{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.14); }
   .pips i.on{ background:var(--purple); box-shadow:0 0 7px rgba(164,99,255,.9); }
+  #hudTL{ min-width:184px; }
+  #objTag .objmeta{ display:block; margin-top:5px; font-size:11px; letter-spacing:1px; color:#8fa0c2; }
+  #objTag .objmeta b{ color:var(--teal); }
+  #hudBR{ bottom:44px; right:14px; display:flex; gap:18px; padding:8px 16px; }
+  #hudBR .inst{ display:flex; flex-direction:column; align-items:center; line-height:1; }
+  #hudBR .iv{ font-family:var(--display); font-size:26px; font-weight:700; color:#eaf1ff; }
+  #hudBR .il{ font-size:9px; letter-spacing:2px; color:#7d8cad; margin-top:3px; }
   #hudTR{ top:14px; right:14px; text-align:right; padding:6px 12px; }
   #hudTR .mini{ font-size:11px; letter-spacing:1px; color:#7d8cad; }
   #hudTR .mini b{ color:#dbe7fb; margin-left:7px; font-weight:600; }
@@ -280,24 +287,23 @@
 
 <div id="hud">
   <div class="panel" id="hudTL">
-    <div class="title">◈ NIGHT FURY</div>
     <div class="row"><span class="k">HEALTH</span><span class="v" id="hpV">100</span></div>
     <div class="bar"><i id="hpFill"></i></div>
-    <div class="row" style="margin-top:6px"><span class="k">DETECTION</span><span class="v" id="detPct">0%</span></div>
+    <div class="row" style="margin-top:5px"><span class="k">DETECTION</span><span class="v" id="detPct">0%</span></div>
     <div class="bar"><i id="detFill"></i></div>
     <div class="row" style="margin-top:6px"><span class="k">PLASMA <span class="pips" id="plasmaPips"><i></i><i></i><i></i></span></span><span class="v" id="plasmaV">3</span></div>
     <div class="bar"><i id="plasmaFill"></i></div>
-    <div class="row" style="margin-top:6px"><span class="k">BEACONS</span><span class="v" id="beaconV">0 / 8</span></div>
-    <div class="row" style="margin-top:6px"><span class="k">NIGHTFALL</span><span class="v" id="duskV">dusk</span></div>
-    <div class="bar"><i id="duskFill"></i></div>
-    <div class="row" style="margin-top:6px"><span class="k">ALT</span><span class="v" id="altV">0 m</span></div>
-    <div class="row"><span class="k">SPEED</span><span class="v" id="spdV">0</span></div>
   </div>
   <div class="panel" id="hudTR">
     <div class="mini">VIEW<b id="viewTag">CHASE</b></div>
     <div class="mini">FPS<b id="fpsV">–</b></div>
   </div>
-  <div class="panel" id="objTag">reach the cove — <b>8 beacons before nightfall</b>, unseen</div>
+  <div class="panel" id="objTag"><span id="objText">reach the cove — <b>8 beacons before nightfall</b></span>
+    <span class="objmeta"><b id="beaconV">0/8</b> beacons · <b id="duskV">dusk</b></span></div>
+  <div class="panel" id="hudBR">
+    <div class="inst"><span class="iv" id="spdV">0</span><span class="il">SPEED</span></div>
+    <div class="inst"><span class="iv" id="altV">0</span><span class="il">ALT m</span></div>
+  </div>
   <div id="warn">IN THE LIGHT — DIVE!</div>
   <div id="arrow"></div>
   <div id="popup"></div>
@@ -646,12 +652,12 @@ loader.load('dragon_rigged.glb',(g)=>{
   model.traverse(o=>{ if(!o.isMesh || !o.material) return;
     const m=o.material;
     if(m.map){ m.map.anisotropy=8; }
-    m.color = new THREE.Color(0x33313e);           // dark slate — keeps the scale/eye detail readable, not a black blob
-    m.roughness = 0.55;
-    m.metalness = 0.22;                            // subtle obsidian sheen without going mirror-dark
-    m.emissive = new THREE.Color(0x3a2440);        // cool violet self-light so scales read even when back-lit
-    if(m.map){ m.emissiveMap = m.map; m.emissiveIntensity = 0.55; }
-    else m.emissiveIntensity = 0.6;
+    m.color = new THREE.Color(0x504c60);           // lit obsidian — reads as a dragon, not a black cutout
+    m.roughness = 0.6;
+    m.metalness = 0.15;
+    m.emissive = new THREE.Color(0x4a3358);        // violet self-light so scales read even when back-lit
+    if(m.map){ m.emissiveMap = m.map; m.emissiveIntensity = 0.7; }
+    else m.emissiveIntensity = 0.7;
     m.needsUpdate = true;
     o.castShadow=true;
   });
@@ -664,6 +670,9 @@ loader.load('dragon_rigged.glb',(g)=>{
   collectBones(model);
   // purple plasma glow at the chest
   const glow=new THREE.PointLight(0x9a4cff, 0, 60, 2); D.group.add(glow); glow.position.set(0,4,0); D.glow=glow;
+  // key lights that always light the dragon so it never sinks into silhouette
+  const key1=new THREE.PointLight(0xcdd6ff, 40, 70, 2); key1.position.set(5,16,-6); D.group.add(key1);
+  const key2=new THREE.PointLight(0x8a6bff, 26, 60, 2); key2.position.set(0,3,7); D.group.add(key2);
   // mouth charge ball — grows while holding X, consumed on release
   const mouth=new THREE.Mesh(new THREE.SphereGeometry(1,12,12),
     new THREE.MeshBasicMaterial({color:0xd7a0ff, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true}));
@@ -700,7 +709,8 @@ function stageRest(){
 function collectBones(model){
   const by=n=>model.getObjectByName(n)||model.getObjectByName(n.replace('.','_'))||model.getObjectByName(n.replace('.',''));
   D.bones={ tail:[by('tail1'),by('tail2'),by('tail3'),by('tail4'),by('tail5')],
-    neck:by('neck'), head:by('head'), chest:by('chest'), hips:by('hips'), wings:[] };
+    neck:by('neck'), head:by('head'), chest:by('chest'), hips:by('hips'), wings:[],
+    thighs:[by('thigh.R'),by('thigh.L')], shins:[by('shin.R'),by('shin.L')] };
   for(const [n,side] of [['forearm.R',1],['forearm.L',-1],['fingerA.R',1],['fingerA.L',-1],['fingerB.R',1],['fingerB.L',-1]]){
     const b=by(n); if(b){ b.side=side; D.bones.wings.push(b); } }
   D.boneReport={ tail:D.bones.tail.filter(Boolean).length, neck:!!D.bones.neck, head:!!D.bones.head,
@@ -732,6 +742,10 @@ function applyAlive(dt){
     D.bones.head.rotateOnWorldAxis(_ART,(D.pPitch*0.05+Math.sin(t*0.8)*0.010)*g); }   // head leads the dive
   // SPINE — a whisper of bank flex (wings left to the baked clip so they don't fight it)
   if(D.bones.chest) D.bones.chest.rotateOnWorldAxis(_AFW,(D.pTurn*0.045)*g);
+  // LEGS — tuck back into a clean streamlined line so they don't dangle as a crumpled lump
+  const tuck=(D.speed>18?1:0.5)*g;
+  if(D.bones.thighs) for(const b of D.bones.thighs){ if(b) b.rotateOnWorldAxis(_ART, -0.55*tuck); }
+  if(D.bones.shins)  for(const b of D.bones.shins){ if(b) b.rotateOnWorldAxis(_ART, 0.5*tuck); }
 }
 
 /* ============================ INPUT ============================ */
@@ -913,7 +927,7 @@ function driveMissions(){
   for(const m of MISSIONS){ if(!m.done && m.check()){ m.done=true;
     if(m.story){ storyPop(m.story); AU.play('ring',0.6); S.flash=Math.max(S.flash,0.25); } } }
   const cur=MISSIONS.find(m=>!m.done);
-  $('objTag').textContent = cur ? cur.label(t) : 'the cove is open — finish the flight';
+  $('objText').textContent = cur ? cur.label(t) : 'the cove is open — finish the flight';
 }
 
 /* ---- explosion burst (expanding fireball + flash light) ---- */
@@ -1016,13 +1030,13 @@ function driveTimeOfDay(dt){
   else if(!S.started) TOD.day=0.34 + 0.04*Math.sin(S.t*0.2);
   uDay.value=TOD.day;
   const d=TOD.day, dayW=Math.max(0,1-d/0.34);            // 1 = full day, 0 by dusk
-  moon.color.copy(_sun).lerp(_moonC, d).lerp(_sunWhite, dayW); moon.intensity=1.25-0.25*d + dayW*0.9;
+  moon.color.copy(_sun).lerp(_moonC, d).lerp(_sunWhite, dayW); moon.intensity=1.7-0.2*d + dayW*0.9;
   moon.position.set(-260, 60+180*d, 140-40*d);            // sun low -> moon high
-  amb.color.copy(_ambSet).lerp(_ambNight, d).lerp(_ambDay, dayW); amb.intensity=1.9-0.35*d + dayW*0.5;
-  rimP.intensity=0.5+0.55*d; fillT.intensity=0.35+0.2*d;
+  amb.color.copy(_ambSet).lerp(_ambNight, d).lerp(_ambDay, dayW); amb.intensity=2.5-0.3*d + dayW*0.6;
+  rimP.intensity=0.7+0.6*d; fillT.intensity=0.5+0.25*d;
   scene.fog.color.copy(_fogSet).lerp(_fogNight, d).lerp(_fogDay, dayW);
-  scene.fog.density=(0.0026+0.0010*d) - dayW*0.0009;      // clearer air by day
-  renderer.toneMappingExposure=1.5-0.18*d + dayW*0.12;
+  scene.fog.density=(0.0021+0.0008*d) - dayW*0.0008;      // less murk overall
+  renderer.toneMappingExposure=1.78-0.14*d + dayW*0.12;   // brighter across the board
   // music: warm menu bed at dusk -> dark tension at night
   if(AU.on){ if(AU.el.menu){ AU.el.menu.volume=(1-d)*0.34; if(AU.el.menu.paused&&d<0.95)AU.el.menu.play().catch(()=>{});}
     if(AU.el.music) AU.el.music.volume=0.16+d*0.34; }
@@ -1286,8 +1300,8 @@ function hud(litNow){
   $('hurt').style.opacity=Math.max(S.hurt, (1-hpf)*0.25).toFixed(2);
   $('detPct').textContent=Math.round(S.detection*100)+'%';
   $('detFill').style.width=(S.detection*100)+'%';
-  $('beaconV').textContent=S.score+' / '+rings.length;
-  $('altV').textContent=Math.max(0,Math.round(D.group.position.y-waveH(D.group.position.x,D.group.position.z,S.t)))+' m';
+  $('beaconV').textContent=S.score+'/'+rings.length;
+  $('altV').textContent=Math.max(0,Math.round(D.group.position.y-waveH(D.group.position.x,D.group.position.z,S.t)));
   $('spdV').textContent=Math.round(D.speed);
   const whole=Math.floor(S.charges), frac=S.charges-whole;
   $('plasmaV').textContent=whole;
@@ -1295,8 +1309,7 @@ function hud(litNow){
   const pp=$('plasmaPips').children;
   for(let i=0;i<3;i++) pp[i].className=i<whole?'on':'';
   $('viewTag').textContent=S.fpv?'RIDE':'CHASE';
-  $('duskFill').style.width=(TOD.day*100)+'%';
-  $('duskV').textContent = TOD.day<0.35?'dusk' : TOD.day<0.7?'twilight' : TOD.day<0.99?'nightfall' : 'NIGHT';
+  $('duskV').textContent = TOD.day<0.35?'dusk' : TOD.day<0.7?'twilight' : TOD.day<0.99?'nightfall' : 'night';
   // next-beacon arrow projected to screen
   const nb=rings.find(r=>!r.userData.hit);
   const A=$('arrow');
@@ -1477,11 +1490,11 @@ function render(dt=1/60){
   } else {
     const ang=D.yaw + S.camYaw;
     const back=new THREE.Vector3(Math.sin(ang),0,Math.cos(ang));
-    const height=9 + S.camPitch*22 - S.boost*2;
-    const dist = (S.started? 25 : 40) + S.boost*7;       // slight dolly back as you accelerate
+    const height=14 + S.camPitch*22 - S.boost*2;         // higher: look down on the open wingspan
+    const dist = (S.started? 27 : 40) + S.boost*7;
     const camTarget=D.group.position.clone().addScaledVector(back,dist).add(new THREE.Vector3(0,height,0));
     camera.position.lerp(camTarget, fdamp(10,dt)); camera.position.add(shakeV);
-    const look=D.group.position.clone().add(new THREE.Vector3(0,2,0));
+    const look=D.group.position.clone().add(new THREE.Vector3(0,-1,0));
     camera.lookAt(look); camera.rotateZ(-D.roll*0.10);
   }
   renderer.render(scene,camera);
