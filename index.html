@@ -53,6 +53,8 @@
   .bar{ height:7px; border-radius:4px; background:rgba(255,255,255,.08); overflow:hidden; margin-top:3px; }
   .bar > i{ display:block; height:100%; width:0%; border-radius:4px; transition:width .08s linear; }
   #detFill{ background:linear-gradient(90deg,#3aa0ff,var(--purple) 60%,var(--warn)); }
+  #hpFill{ background:linear-gradient(90deg,#ff5a4a,#ffb15a 55%,#7fe6c6); width:100%; }
+  #hurt{ position:fixed; inset:0; pointer-events:none; opacity:0; box-shadow:inset 0 0 200px 30px rgba(255,40,40,.7); }
   #plasmaFill{ background:linear-gradient(90deg,#5a2ea6,#a463ff 70%,#e0c6ff); }
   #duskFill{ background:linear-gradient(90deg,#ff9a3c,#b96cff 60%,#2a2f66); }
   #hudTL .title{ font-family:var(--display); font-size:12px; letter-spacing:3px; color:var(--purple); margin:4px 0 7px; font-weight:700; }
@@ -267,6 +269,7 @@
 <div id="speedvig"></div>
 <div id="litglow"></div>
 <div id="flash"></div>
+<div id="hurt"></div>
 <div id="shutter">
   <div class="sh top"></div><div class="sh bot"></div>
   <div id="loadline">
@@ -278,7 +281,9 @@
 <div id="hud">
   <div class="panel" id="hudTL">
     <div class="title">◈ NIGHT FURY</div>
-    <div class="row"><span class="k">DETECTION</span><span class="v" id="detPct">0%</span></div>
+    <div class="row"><span class="k">HEALTH</span><span class="v" id="hpV">100</span></div>
+    <div class="bar"><i id="hpFill"></i></div>
+    <div class="row" style="margin-top:6px"><span class="k">DETECTION</span><span class="v" id="detPct">0%</span></div>
     <div class="bar"><i id="detFill"></i></div>
     <div class="row" style="margin-top:6px"><span class="k">PLASMA <span class="pips" id="plasmaPips"><i></i><i></i><i></i></span></span><span class="v" id="plasmaV">3</span></div>
     <div class="bar"><i id="plasmaFill"></i></div>
@@ -572,8 +577,16 @@ function beacon(x,z,baseH,yaw0,rate,warm){
   const cone=new THREE.Mesh(cg,new THREE.MeshBasicMaterial({ color:0xffe6b8, transparent:true, opacity:.09,
     blending:THREE.AdditiveBlending, side:THREE.DoubleSide, depthWrite:false, fog:false }));
   cone.rotation.z=-0.09; pivot.add(cone);
+  // floating damage bar above the lamp (hidden until first hit)
+  const hbW=14, hbBg=new THREE.Mesh(new THREE.PlaneGeometry(hbW,1.6),
+    new THREE.MeshBasicMaterial({color:0x220608,transparent:true,opacity:0,depthTest:false}));
+  const hbFill=new THREE.Mesh(new THREE.PlaneGeometry(hbW,1.6),
+    new THREE.MeshBasicMaterial({color:0xff5a4a,transparent:true,opacity:0,depthTest:false}));
+  hbBg.position.set(x,lampY+8,z); hbFill.position.set(x,lampY+8,z); hbFill.renderOrder=999; hbBg.renderOrder=998;
+  scene.add(hbBg); scene.add(hbFill);
   const sl={ group:G, lampGlow, pivot, cone, lamp, spot, lampPos:new THREE.Vector3(x,lampY,z),
-    baseH, yaw0, rate, range:720, coneHalf:0.30, lit:0, disabled:0, destroyed:false, fall:0 };
+    baseH, yaw0, rate, range:720, coneHalf:0.30, lit:0, disabled:0, destroyed:false, fall:0,
+    hp:4, maxHp:4, hbBg, hbFill, hbW, hbT:0, fireCd:1.5+Math.random(), alerted:0 };
   searchlights.push(sl); return sl;
 }
 beacon(0,0,42,0,0.42,true);
@@ -633,12 +646,12 @@ loader.load('dragon_rigged.glb',(g)=>{
   model.traverse(o=>{ if(!o.isMesh || !o.material) return;
     const m=o.material;
     if(m.map){ m.map.anisotropy=8; }
-    m.color = new THREE.Color(0x14131a);           // near-black; the diffuse map's scale detail + green eyes still read through
-    m.roughness = 0.42;                             // wet obsidian sheen
-    m.metalness = 0.35;
-    m.emissive = new THREE.Color(0x2a0b18);         // faint volcanic ember glow deep in the scales
-    if(m.map){ m.emissiveMap = m.map; m.emissiveIntensity = 0.28; }  // ember + eye-glow follows the scale texture
-    else m.emissiveIntensity = 0.5;
+    m.color = new THREE.Color(0x33313e);           // dark slate — keeps the scale/eye detail readable, not a black blob
+    m.roughness = 0.55;
+    m.metalness = 0.22;                            // subtle obsidian sheen without going mirror-dark
+    m.emissive = new THREE.Color(0x3a2440);        // cool violet self-light so scales read even when back-lit
+    if(m.map){ m.emissiveMap = m.map; m.emissiveIntensity = 0.55; }
+    else m.emissiveIntensity = 0.6;
     m.needsUpdate = true;
     o.castShadow=true;
   });
@@ -751,6 +764,7 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
   boost:0, accel:0, prevSpeed:26, boomed:false,
   charges:3, chargeT:-1,                          // plasma pool + hold-to-charge timer (-1 = idle)
   nightfall:230, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
+  hp:100, hpMax:100, hurt:0,                        // the dragon can be shot down
   turn:0, pTurn:0, pPitch:0 };
 
 /* ---- plasma lightning (X): a jagged bolt from the mouth that shatters towers ---- */
@@ -793,6 +807,7 @@ function shoot(power=0.35){
   const a=AU.el.zap; if(a){ a.playbackRate=1.3-power*0.55; } AU.play('zap',0.45+power*0.4);
   S.flash=Math.max(S.flash,0.14+power*0.34);
   if(power>0.8){ S.shake=Math.max(S.shake,0.5); }
+  D.recoil=0.4+power*0.6; S.shake=Math.max(S.shake,0.2+power*0.35);   // felt kick when you fire
 }
 const _b0=new THREE.Vector3(), _b1=new THREE.Vector3(), _bp=new THREE.Vector3(), _perp=new THREE.Vector3();
 function fillBolt(b){
@@ -810,6 +825,7 @@ function fillBolt(b){
 function destroyTower(sl,power){
   if(sl.destroyed) return; sl.destroyed=true; sl.disabled=1e9; sl.lit=0;
   sl.fall=1; sl.spot.intensity=0; sl.cone.visible=false; sl.lampGlow.intensity=0;
+  sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0;
   sl.lamp.material.emissiveIntensity=0;
   bigExplosion(sl.lampPos, 0xffb060);
   // stone debris flung from the tower
@@ -843,9 +859,13 @@ function updateBolts(dt){
     let hit=false;
     for(const sl of searchlights){ if(sl.destroyed) continue;
       if(b.m.position.distanceTo(sl.lampPos)<18){
-        if(b.power>0.55) destroyTower(sl,b.power);                 // charged shot shatters it
-        else { sl.disabled=Math.max(sl.disabled,5); sl.lit=0; bigExplosion(sl.lampPos,0xffc86a);
-               S.flash=Math.max(S.flash,0.6); AU.play('crash',0.4); }
+        const dmg = b.power>0.55 ? 3 : 1.4;                         // charged shots hurt far more
+        sl.hp-=dmg; sl.hbT=3.2; sl.disabled=Math.max(sl.disabled,2.2); sl.lit=0;
+        smallBurst(sl.lampPos.x,sl.lampPos.y,sl.lampPos.z,0xffd070);
+        sl.lamp.material.emissiveIntensity=6;                       // hit flash
+        S.flash=Math.max(S.flash,0.4); S.shake=Math.max(S.shake,0.3); AU.play('crash',0.35);
+        popup(sl.hp<=0?'TOWER DOWN':'−'+dmg.toFixed(0)+'  ('+Math.max(0,Math.ceil(sl.hp))+' left)');
+        if(sl.hp<=0) destroyTower(sl,b.power||1);
         hit=true; break; }
     }
     if(hit) b.life=0;
@@ -912,6 +932,54 @@ function updateBursts(dt){
     b.m.scale.setScalar(1+k*b.sc); b.m.material.opacity=(1-k); b.lt.intensity=b.l0*(1-k)*(1-k);
     if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.lt); bursts.splice(i,1); }
   }
+}
+/* ---- enemy fire: an alerted watchtower shoots glowing bolts to bring you down ---- */
+const foeBolts=[];
+const _lead=new THREE.Vector3(), _fdir=new THREE.Vector3();
+function towerFire(sl){
+  _lead.copy(D.group.position).addScaledVector(new THREE.Vector3(-Math.sin(D.yaw),0,-Math.cos(D.yaw)), D.speed*0.6);
+  _fdir.copy(_lead).sub(sl.lampPos).normalize();
+  const m=new THREE.Mesh(new THREE.SphereGeometry(1.3,10,10),
+    new THREE.MeshBasicMaterial({color:0xff7a3a,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
+  m.add(new THREE.Mesh(new THREE.SphereGeometry(2.4,10,10),
+    new THREE.MeshBasicMaterial({color:0xffb060,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.4})));
+  m.position.copy(sl.lampPos);
+  const lt=new THREE.PointLight(0xff8030,220,120,2); m.add(lt);
+  scene.add(m); foeBolts.push({m,vel:_fdir.clone().multiplyScalar(90),life:5});
+  smallBurst(sl.lampPos.x,sl.lampPos.y,sl.lampPos.z,0xff8030); AU.play('zap',0.3);
+}
+function updateFoeBolts(dt){
+  const p=D.group.position;
+  for(let i=foeBolts.length-1;i>=0;i--){ const b=foeBolts[i];
+    b.m.position.addScaledVector(b.vel,dt); b.life-=dt;
+    if(!S.done && !S.launching && S.grace<=0 && b.m.position.distanceTo(p)<6.5){
+      S.hp-=16; S.hurt=1; S.shake=Math.max(S.shake,0.7); S.flash=Math.max(S.flash,0.35);
+      bigExplosion(b.m.position.clone(),0xff7a3a); AU.play('crash',0.5); b.life=0;
+      if(S.hp<=0) crash('SHOT DOWN');
+    }
+    if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); foeBolts.splice(i,1); }
+  }
+}
+// alerted towers track you + shoot; damage bars billboard toward camera
+const _hbUp=new THREE.Vector3();
+function updateTowerCombat(dt){
+  for(const sl of searchlights){
+    // damage-bar reveal + billboard
+    if(sl.hbT>0){ sl.hbT-=dt; const a=Math.min(1,sl.hbT);
+      sl.hbBg.material.opacity=0.7*a; sl.hbFill.material.opacity=0.95*a;
+      const f=Math.max(0,sl.hp)/sl.maxHp; sl.hbFill.scale.x=f;
+      sl.hbFill.position.x=sl.lampPos.x - sl.hbW*(1-f)/2;
+      sl.hbBg.quaternion.copy(camera.quaternion); sl.hbFill.quaternion.copy(camera.quaternion);
+      sl.hbFill.material.color.setHSL(0.02+0.28*f,0.9,0.55);
+    } else { sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; }
+    if(sl.destroyed) continue;
+    // fire back only when it actually has you in the light (rewards staying hidden)
+    const wantFire = sl.lit>0.35 && S.started && !S.done && S.grace<=0;
+    sl.alerted += ((wantFire?1:0)-sl.alerted)*Math.min(1,dt*3);
+    sl.fireCd-=dt;
+    if(wantFire && sl.fireCd<=0){ sl.fireCd=1.3+Math.random()*0.8 - TOD.day*0.5; towerFire(sl); }
+  }
+  updateFoeBolts(dt);
 }
 // towers topple after being shattered
 function updateTowers(dt){
@@ -1062,7 +1130,8 @@ function tick(dt){
     S.shake=Math.max(S.shake,Math.min(0.26,S.chargeT*0.2));
     if(cp>=1 && !S._chargeReady){ S._chargeReady=true; AU.play('flap',0.3); }        // "fully charged" tick
   } else if(D.mouth && D.mouth.scale.x>0.01){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; S._chargeReady=false; }
-  updateBolts(dt); updateShocks(dt); updateDebris(dt); updateBursts(dt); updateTowers(dt);
+  updateBolts(dt); updateShocks(dt); updateDebris(dt); updateBursts(dt); updateTowers(dt); updateTowerCombat(dt);
+  S.hurt=Math.max(0,S.hurt-dt*2); S.hp=Math.min(S.hpMax,S.hp+dt*1.5);   // slow regen between hits
 
   // wind gusts (all directions) — calmed while you're deliberately skimming a cliff
   const gustK=S.grazing?0.2:1;
@@ -1101,19 +1170,22 @@ function tick(dt){
   /* ---- animation blend + procedural alive layer ---- */
   if(D.mixer){
     // faster, deeper flapping while climbing/boosting; AIR-BRAKE flare when shedding speed
+    // EXPANSIVE by default: wings stay spread in a slow majestic glide;
+    // flap ONLY on demand (space) or air-brake — no auto-flap chaos on every climb
     const braking=key['KeyS']&&D.speed>16;
-    const climbing=input.flap||D.pitch>0.15||braking;
+    const climbing=input.flap||braking;
     const w=THREE.MathUtils.clamp(D.flap.getEffectiveWeight()+(climbing?dt*6:-dt*5),0,1);
     D.flap.setEffectiveWeight(w); D.glide.setEffectiveWeight(1-w);
-    D.flap.timeScale=(braking?1.05:1.35+D.boost*0.9); D.glide.timeScale=0.85+D.boost*0.5;
+    D.flap.timeScale=(braking?1.05:1.35+D.boost*0.9); D.glide.timeScale=0.65+D.boost*0.35;
     D.mixer.update(dt);
     applyAlive(dt);
-    // visible surge & resistance: nose dips on acceleration, body flares up when braking,
-    // and the whole frame trembles slightly against the wind at high speed
+    // surge & brake body language, clamped so the silhouette always stays a readable prone glide
     if(D.model){
-      const lean = THREE.MathUtils.clamp(-S.accel*0.30,-0.26,0) + (braking?0.34:0);
-      D.model.rotation.x += ((-0.85 - D.pitch*0.3 + lean) - D.model.rotation.x)*fdamp(5,dt);
-      D.model.rotation.z = Math.sin(S.t*21)*0.006*S.boost;
+      D.recoil=Math.max(0,(D.recoil||0)-dt*1.6);
+      const lean = THREE.MathUtils.clamp(-S.accel*0.22,-0.2,0) + (braking?0.2:0) + D.recoil*0.5;
+      const targetX = THREE.MathUtils.clamp(-0.85 - D.pitch*0.3 + lean, -1.2, -0.45);
+      D.model.rotation.x += (targetX - D.model.rotation.x)*fdamp(5,dt);
+      D.model.rotation.z = 0;
     }
     if(D.glow) D.glow.intensity = 6 + (input.flap?26:0) + S.boost*34 + Math.sin(S.t*8)*2;
   }
@@ -1208,6 +1280,10 @@ function spotMoment(){
 }
 
 function hud(litNow){
+  const hpf=Math.max(0,S.hp)/S.hpMax;
+  $('hpV').textContent=Math.max(0,Math.round(S.hp));
+  $('hpFill').style.width=(hpf*100)+'%';
+  $('hurt').style.opacity=Math.max(S.hurt, (1-hpf)*0.25).toFixed(2);
   $('detPct').textContent=Math.round(S.detection*100)+'%';
   $('detFill').style.width=(S.detection*100)+'%';
   $('beaconV').textContent=S.score+' / '+rings.length;
@@ -1282,7 +1358,8 @@ function begin(){
   startAudio(); triggerRipple();
   $('shutter').classList.add('closed');
   setTimeout(()=>{                                    // staged behind the armour
-    S.started=true; S.grace=3; TOD.day=0.0; S.keepersWoke=false;
+    S.started=true; S.grace=3; TOD.day=0.0; S.keepersWoke=false; S.hp=S.hpMax; S.hurt=0;
+    for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.fireCd=2+Math.random(); }
     D.group.position.set(REST.x, REST.y+6, REST.z);
     D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=30; S.prevSpeed=30;
     if(D.model) D.model.scale.setScalar(9);
@@ -1313,7 +1390,9 @@ function reset(){
   if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; } S._chargeReady=false;
   for(const gm of gates){ gm.userData.hit=false; gm.material.emissiveIntensity=2.2; }
   for(const m of MISSIONS) m.done=false;
-  S.grazeT=0; S.splashT=0;
+  S.grazeT=0; S.splashT=0; S.hp=S.hpMax; S.hurt=0;
+  for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; sl.fireCd=1.5+Math.random(); sl.alerted=0; }
+  for(const b of foeBolts){ scene.remove(b.m); } foeBolts.length=0;
   $('over').classList.add('hide'); $('litglow').style.opacity=0; $('warn').style.opacity=0;
   AU.fadeTo('music',0.4,600); AU.fadeTo('amb',0.5,600);
   S.started=true;
