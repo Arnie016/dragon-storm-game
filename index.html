@@ -616,6 +616,33 @@ const rp=new Float32Array(RAIN_N*6); rainGeo.setAttribute('position',new THREE.B
 scene.add(new THREE.LineSegments(rainGeo,new THREE.LineBasicMaterial({color:0x7488ad,transparent:true,opacity:.28})));
 const rainSeed=Array.from({length:RAIN_N},()=>[Math.random(),Math.random(),Math.random()]);
 
+/* ---- WIND: long drifting streaks that show which way the gale is blowing ---- */
+const WIND_N=110, windBox=300;
+const windGeo=new THREE.BufferGeometry();
+const wp=new Float32Array(WIND_N*6);
+windGeo.setAttribute('position',new THREE.BufferAttribute(wp,3));
+const windLines=new THREE.LineSegments(windGeo,new THREE.LineBasicMaterial({color:0xbcd0e8,
+  transparent:true, opacity:0.16, blending:THREE.AdditiveBlending, depthWrite:false, fog:false}));
+windLines.frustumCulled=false; scene.add(windLines);
+const windSeed=Array.from({length:WIND_N},()=>[Math.random(),Math.random(),Math.random()]);
+const WINDV=new THREE.Vector3();
+function updateWindLines(){
+  // gale direction swings slowly; streaks stretch along it and scroll past the camera
+  const wa=Math.sin(S.t*0.09)*0.9+2.1;
+  WINDV.set(Math.cos(wa),(-0.12+Math.sin(S.t*0.21)*0.1),Math.sin(wa)).normalize();
+  const c=camera.position, len=16+S.boost*26;
+  for(let i=0;i<WIND_N;i++){ const s=windSeed[i];
+    const t=((s[0]-S.t*(0.16+S.boost*0.25))%1+1)%1;
+    const x=c.x+(t-0.5)*windBox*WINDV.x + (s[1]-0.5)*windBox*0.8;
+    const y=c.y+(s[2]-0.5)*windBox*0.45 + (t-0.5)*windBox*WINDV.y;
+    const z=c.z+(t-0.5)*windBox*WINDV.z + (s[2]-0.5)*windBox*0.8;
+    wp[i*6]=x; wp[i*6+1]=y; wp[i*6+2]=z;
+    wp[i*6+3]=x-WINDV.x*len; wp[i*6+4]=y-WINDV.y*len; wp[i*6+5]=z-WINDV.z*len;
+  }
+  windGeo.attributes.position.needsUpdate=true;
+  windLines.material.opacity=0.10+S.boost*0.22+(S.gustPow||0)*0.25;
+}
+
 /* ---- speed-lines (warp streaks) that whoosh past when accelerating ---- */
 const STREAK_N=150; const streakGeo=new THREE.BufferGeometry();
 const sp=new Float32Array(STREAK_N*6); streakGeo.setAttribute('position',new THREE.BufferAttribute(sp,3));
@@ -818,7 +845,11 @@ function shoot(power=0.35){
     new THREE.MeshBasicMaterial({color:0xd8b8ff,transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false}));
   arc.position.copy(mz); arc.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir); scene.add(arc);
   shocks.push({m:arc,life:0.3,dur:0.3,axis:true});
-  const a=AU.el.zap; if(a){ a.playbackRate=1.3-power*0.55; } AU.play('zap',0.45+power*0.4);
+  // lightning CRACK: bright zap + a delayed thunder tail that deepens with charge
+  const a=AU.el.zap; if(a){ a.playbackRate=1.45-power*0.5; } AU.play('zap',0.45+power*0.35);
+  const th=AU.el.thunder;
+  if(th){ setTimeout(()=>{ try{ th.currentTime=0; th.playbackRate=1.5-power*0.7; th.volume=0.2+power*0.45;
+    th.play().catch(()=>{}); }catch(e){} }, 40+power*70); }
   S.flash=Math.max(S.flash,0.14+power*0.34);
   if(power>0.8){ S.shake=Math.max(S.shake,0.5); }
   D.recoil=0.4+power*0.6; S.shake=Math.max(S.shake,0.2+power*0.35);   // felt kick when you fire
@@ -896,7 +927,8 @@ function shockwave(pos,color){
 }
 function updateShocks(dt){
   for(let i=shocks.length-1;i>=0;i--){ const s=shocks[i]; s.life-=dt; const k=Math.min(1,1-s.life/(s.dur||0.6));
-    if(!s.noscale) s.m.scale.setScalar(1+k*(s.flat?6:(s.axis?9:3.2)));
+    if(s.shrink) s.m.scale.setScalar(Math.max(0.05,1-k*0.85));           // converging charge ring
+    else if(!s.noscale) s.m.scale.setScalar(1+k*(s.flat?6:(s.axis?9:3.2)));
     s.m.material.opacity=0.95*(1-k);
     if(!s.flat&&!s.axis&&!s.noscale) s.m.quaternion.copy(camera.quaternion);
     if(s.life<=0){ s.m.geometry.dispose(); scene.remove(s.m); shocks.splice(i,1); }
@@ -1137,11 +1169,32 @@ function tick(dt){
   // plasma pool: one charge back every 4s; holding X winds up a bigger bolt
   S.charges=Math.min(3,S.charges+dt/4);
   if(S.chargeT>=0){ S.chargeT+=dt; const cp=Math.min(1,S.chargeT/0.9);
-    if(D.glow) D.glow.intensity=30+cp*170+Math.sin(S.t*40)*14;
-    if(D.mouth){ D.mouth.scale.setScalar(0.6+cp*3.4+Math.sin(S.t*45)*0.25*cp);   // charge ball grows at the mouth
-      D.mouth.material.opacity=0.6+0.4*cp; D.mouthLt.intensity=40+cp*220;
-      D.mouth.material.color.setHSL(0.75-cp*0.08, 1, 0.6+cp*0.35); }
-    S.shake=Math.max(S.shake,Math.min(0.26,S.chargeT*0.2));
+    if(D.glow) D.glow.intensity=20+cp*70+Math.sin(S.t*40)*8;
+    // NOTE: the orb is parented to the head BONE which inherits the model's 9x scale —
+    // keep local scale tiny or it engulfs the camera and whites out the screen.
+    if(D.mouth){ D.mouth.scale.setScalar(0.035+cp*0.11+Math.sin(S.t*45)*0.010*cp);
+      D.mouth.material.opacity=0.4+0.35*cp; D.mouthLt.intensity=14+cp*70; D.mouthLt.distance=24+cp*26;
+      D.mouth.material.color.setHSL(0.75-cp*0.08, 1, 0.6+cp*0.3); }
+    // readable charge cues AT the mouth: a converging ring + crackling arcs (no screen-wash)
+    S.crackT=(S.crackT||0)-dt;
+    if(D.headNode && S.crackT<=0){ S.crackT=0.07-cp*0.04;
+      const mp=new THREE.Vector3(); (D.mouth||D.headNode).getWorldPosition(mp);
+      const rad=3.2+cp*2.2;
+      for(let i=0;i<2;i++){ const a1=Math.random()*6.283, a2=a1+(Math.random()-0.5)*1.6;
+        const p1=mp.clone().add(new THREE.Vector3(Math.cos(a1)*rad,(Math.random()-0.5)*rad,Math.sin(a1)*rad));
+        const p2=mp.clone().add(new THREE.Vector3(Math.cos(a2)*rad*0.35,(Math.random()-0.5)*rad*0.35,Math.sin(a2)*rad*0.35));
+        const cg=new THREE.BufferGeometry().setFromPoints([p1,p2]);
+        const cl=new THREE.Line(cg,new THREE.LineBasicMaterial({color:0xd9b6ff,transparent:true,opacity:0.9,
+          blending:THREE.AdditiveBlending,depthWrite:false}));
+        scene.add(cl); shocks.push({m:cl,life:0.1,dur:0.1,noscale:true}); }
+      S.ringT=(S.ringT||0)-0.07;
+      if(cp>0.4 && S.ringT<=0){ S.ringT=0.42;                       // one clean pulse, not an onion
+        const ring=new THREE.Mesh(new THREE.TorusGeometry(rad*1.5,0.12,6,22),
+          new THREE.MeshBasicMaterial({color:0xc79bff,transparent:true,opacity:0.55,blending:THREE.AdditiveBlending,depthWrite:false}));
+        ring.position.copy(mp); ring.quaternion.copy(camera.quaternion); scene.add(ring);
+        shocks.push({m:ring,life:0.34,dur:0.34,shrink:true}); }
+    }
+    S.shake=Math.max(S.shake,Math.min(0.18,S.chargeT*0.14));
     if(cp>=1 && !S._chargeReady){ S._chargeReady=true; AU.play('flap',0.3); }        // "fully charged" tick
   } else if(D.mouth && D.mouth.scale.x>0.01){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; S._chargeReady=false; }
   updateBolts(dt); updateShocks(dt); updateDebris(dt); updateBursts(dt); updateTowers(dt); updateTowerCombat(dt);
@@ -1151,6 +1204,17 @@ function tick(dt){
   const gustK=S.grazing?0.2:1;
   const gx=Math.sin(S.t*.37+1.7)+.6*Math.sin(S.t*.13), gz=Math.sin(S.t*.29+4.1)+.6*Math.sin(S.t*.17+2.);
   p.x+=gx*2.6*dt*gustK; p.z+=gz*2.6*dt*gustK;
+  // SQUALLS: periodic hard gusts you can feel — they shove, roll the dragon, and howl
+  S.gustNext=(S.gustNext||6)-dt;
+  if(S.gustNext<=0){ S.gustNext=7+Math.random()*9; S.gustPow=1; S.gustDir=Math.random()*6.283;
+    AU.play('thunder',0.16); }
+  if(S.gustPow>0){ S.gustPow=Math.max(0,S.gustPow-dt*0.55);
+    const e=Math.sin(Math.min(1,S.gustPow)*Math.PI)*gustK;
+    p.x+=Math.cos(S.gustDir)*22*e*dt; p.z+=Math.sin(S.gustDir)*22*e*dt;
+    p.y+=Math.sin(S.t*3.1)*5*e*dt;
+    D.roll += Math.sin(S.gustDir-D.yaw)*0.9*e*dt;              // banked by the squall — you fight it
+    S.shake=Math.max(S.shake,e*0.3);
+  }
 
   /* ---- collisions ---- */
   const wh=waveH(p.x,p.z,S.t);
@@ -1267,7 +1331,7 @@ function tick(dt){
   if(S.t>S.nextThunder){ S.nextThunder=S.t+8+Math.random()*14; S.flash=1; setTimeout(()=>AU.play('thunder',0.55), 250+Math.random()*500); }
   if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
 
-  updateRain();
+  updateRain(); updateWindLines();
 
   hud(litNow);
 }
@@ -1356,10 +1420,10 @@ function initWind(){
   }catch(e){}
 }
 function updateWind(){
-  if(!WIND.ctx) return; const b=S.boost, spd=D.speed;
-  WIND.gain.gain.value = 0.02 + b*0.16 + Math.min(0.06, S.shake*0.2);
-  WIND.bp.frequency.value = 320 + spd*22;      // brighter as you go faster
-  WIND.lp.frequency.value = 800 + b*2600;
+  if(!WIND.ctx) return; const b=S.boost, spd=D.speed, g=S.gustPow||0;
+  WIND.gain.gain.value = 0.03 + b*0.16 + g*0.20 + Math.min(0.06, S.shake*0.2);  // squalls howl
+  WIND.bp.frequency.value = 320 + spd*22 + g*260;   // brighter as you go faster / gust hits
+  WIND.lp.frequency.value = 800 + b*2600 + g*1800;
 }
 function startAudio(){
   if(!AU.on){ AU.on=true; AU.loop('amb'); AU.el.amb.volume=0; AU.fadeTo('amb',0.5,1200);
@@ -1425,6 +1489,7 @@ function applyGfx(level){
   renderer.setPixelRatio(hi?Math.min(devicePixelRatio,2):med?1.5:1);
   rainGeo.setDrawRange(0,(hi?RAIN_N:med?900:450)*2);
   streaks.visible=hi||med;
+  windLines.visible=hi||med;
   renderer.shadowMap.enabled=hi;
   moon.castShadow=hi;
   if(hi){ moon.shadow.mapSize.set(1024,1024); const c=moon.shadow.camera;
