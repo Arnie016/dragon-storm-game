@@ -745,7 +745,7 @@ function collectBones(model){
 }
 // world-space axes of the model, so rotations are predictable regardless of bone roll
 const _mq=new THREE.Quaternion(), _AUP=new THREE.Vector3(), _ART=new THREE.Vector3(), _AFW=new THREE.Vector3();
-let ALIVE=1;
+let ALIVE=0.45;   // gentle: this mesh is ~36k shells on envelope weights — heavy flex tears it apart
 function applyAlive(dt){
   if(!D.bones || !D.model || ALIVE<=0) return;
   D.model.getWorldQuaternion(_mq);
@@ -1397,8 +1397,10 @@ function tick(dt){
     // faster, deeper flapping while climbing/boosting; AIR-BRAKE flare when shedding speed
     // EXPANSIVE by default: wings stay spread in a slow majestic glide;
     // flap ONLY on demand (space) or air-brake — no auto-flap chaos on every climb
+    // NOTE: braking must NOT drive the flap clip — the folded-wing frames shatter into
+    // shards on this envelope-weighted mesh. Braking is body-lean only; wings stay spread.
     const braking=key['KeyS']&&D.speed>16;
-    const climbing=input.flap||braking;
+    const climbing=input.flap;
     const w=THREE.MathUtils.clamp(D.flap.getEffectiveWeight()+(climbing?dt*6:-dt*5),0,1);
     D.flap.setEffectiveWeight(w); D.glide.setEffectiveWeight(1-w);
     D.flap.timeScale=(braking?1.05:1.35+D.boost*0.9); D.glide.timeScale=0.65+D.boost*0.35;
