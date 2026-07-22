@@ -308,7 +308,7 @@
   <div id="arrow"></div>
   <div id="popup"></div>
   <div id="storyline"></div>
-  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> hold=charge plasma · <b>Q/E</b> look · <b>V</b> view</div>
+  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>↓↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view</div>
 </div>
 
 <div class="screen" id="menu">
@@ -792,6 +792,7 @@ addEventListener('keydown',e=>{
   if(e.code==='Space'){ if(S.started&&!S.done) input.flap=true; e.preventDefault(); }
   if(e.code==='KeyX' && !e.repeat){ if(S.started&&!S.done && S.charges>=1 && S.chargeT<0) S.chargeT=0; e.preventDefault(); }
   if(e.code==='KeyV') S.fpv=!S.fpv;
+  if(e.code==='KeyC' && !e.repeat) echoPulse();
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
 });
 addEventListener('keyup',e=>{ key[e.code]=false;
@@ -806,6 +807,8 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
   charges:3, chargeT:-1,                          // plasma pool + hold-to-charge timer (-1 = idle)
   nightfall:230, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
   hp:100, hpMax:100, hurt:0,                        // the dragon can be shot down
+  echoCd:0, echoR:0, echoOn:false,                  // echolocation pulse
+  dive:0, diveFired:false,                          // fury dive -> sonic boom
   turn:0, pTurn:0, pPitch:0 };
 
 /* ---- plasma lightning (X): a jagged bolt from the mouth that shatters towers ---- */
@@ -1027,6 +1030,67 @@ function updateTowerCombat(dt){
   }
   updateFoeBolts(dt);
 }
+/* ================= UNIQUE 1: ECHOLOCATION — a Night Fury sees by sound =================
+   A sonar wave rips outward and pings every beacon / gate / tower it touches, so you can
+   read the map through rain, fog and full dark. */
+const echoMesh=new THREE.Mesh(new THREE.SphereGeometry(1,26,18),
+  new THREE.MeshBasicMaterial({color:0x8fe8ff, transparent:true, opacity:0, wireframe:true,
+    blending:THREE.AdditiveBlending, depthWrite:false, fog:false}));
+echoMesh.visible=false; echoMesh.frustumCulled=false; scene.add(echoMesh);
+function echoPulse(){
+  if(S.echoCd>0 || !S.started || S.done) return;
+  S.echoCd=7; S.echoR=0; S.echoOn=true;
+  for(const r of rings) r.userData._png=false;
+  for(const g of gates) g.userData._png=false;
+  for(const sl of searchlights) sl._png=false;
+  AU.play('ring',0.45); popup('ECHO'); S.flash=Math.max(S.flash,0.1);
+}
+function updateEcho(dt){
+  if(S.echoCd>0) S.echoCd-=dt;
+  if(!S.echoOn){ if(echoMesh.visible) echoMesh.visible=false; return; }
+  S.echoR += 320*dt;
+  const p=D.group.position;
+  echoMesh.visible=true; echoMesh.position.copy(p); echoMesh.scale.setScalar(S.echoR);
+  echoMesh.material.opacity=Math.max(0, 0.42*(1-S.echoR/680));
+  const band=26;
+  const ping=(pos,obj,color)=>{ if(obj._png||obj.userData?._png) return;
+    if(Math.abs(pos.distanceTo(p)-S.echoR)<band){
+      if(obj.userData) obj.userData._png=true; else obj._png=true;
+      smallBurst(pos.x,pos.y,pos.z,color); } };
+  for(const r of rings) ping(r.position,r,0x8fe8ff);
+  for(const g of gates) ping(g.position,g,0x2fd6a0);
+  for(const sl of searchlights){ if(!sl.destroyed) ping(sl.lampPos,sl,0xffa060); }
+  if(S.echoR>680){ S.echoOn=false; echoMesh.visible=false; }
+}
+
+/* ================= UNIQUE 2: FURY DIVE -> SONIC BOOM =================
+   Hold a steep screaming dive to charge it, then pull up hard: the boom blinds
+   every searchlight in range and blows the sea open beneath you. */
+function sonicBoom(){
+  const p=D.group.position.clone();
+  bigExplosion(p, 0xbfe6ff); S.flash=Math.max(S.flash,0.55); S.shake=Math.max(S.shake,1);
+  AU.play('detected',0.45); AU.play('crash',0.35);
+  let blinded=0;
+  for(const sl of searchlights){ if(sl.destroyed) continue;
+    if(sl.lampPos.distanceTo(p)<250){ sl.disabled=Math.max(sl.disabled,6); sl.lit=0; blinded++; } }
+  S.detection=Math.max(0,S.detection-0.35);
+  popup(blinded? 'SONIC BOOM · '+blinded+' BLINDED' : 'SONIC BOOM');
+  const wh=waveH(p.x,p.z,S.t);                       // blow the water open if you bottom out low
+  if(p.y-wh<45){ for(let i=0;i<9;i++){ const a=Math.random()*6.283, r=8+Math.random()*34;
+    smallBurst(p.x+Math.cos(a)*r, wh+1, p.z+Math.sin(a)*r, 0xcfe4f0); } }
+}
+function driveFuryDive(dt){
+  const diving = D.pitch < -0.5 && D.speed > 30;
+  S.dive = THREE.MathUtils.clamp(S.dive + (diving? dt*0.6 : -dt*1.0), 0, 1);
+  if(diving){
+    D.speed += S.dive*24*dt;                          // the scream builds
+    S.shake=Math.max(S.shake, S.dive*0.28);
+    if(WIND.ctx) WIND.bp.frequency.value += S.dive*900;   // rising shriek
+  }
+  if(S.dive>0.5 && D.pitch>-0.12 && !S.diveFired){ S.diveFired=true; sonicBoom(); }
+  if(S.dive<0.12) S.diveFired=false;
+}
+
 // towers topple after being shattered
 function updateTowers(dt){
   for(const sl of searchlights){ if(!sl.destroyed||sl.fall>=2) continue;
@@ -1144,7 +1208,7 @@ function tick(dt){
   const CRUISE=26, GRAV=13;
   const thrust=(input.flap?26:0) + throttle*20;             // W drives forward, flap bursts
   D.speed += (thrust - Math.sin(D.pitch)*GRAV*1.15 - (D.speed-CRUISE)*0.42)*dt;
-  D.speed = THREE.MathUtils.clamp(D.speed, 13, 62);          // never crawls -> smooth forward feel
+  D.speed = THREE.MathUtils.clamp(D.speed, 13, 62 + (S.dive||0)*20);   // fury dive breaks the ceiling
 
   /* ---- acceleration factor drives all the speed FX ---- */
   const inst=(D.speed-S.prevSpeed)/Math.max(dt,1e-3); S.prevSpeed=D.speed;
@@ -1198,6 +1262,7 @@ function tick(dt){
     if(cp>=1 && !S._chargeReady){ S._chargeReady=true; AU.play('flap',0.3); }        // "fully charged" tick
   } else if(D.mouth && D.mouth.scale.x>0.01){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; S._chargeReady=false; }
   updateBolts(dt); updateShocks(dt); updateDebris(dt); updateBursts(dt); updateTowers(dt); updateTowerCombat(dt);
+  updateEcho(dt); driveFuryDive(dt);
   S.hurt=Math.max(0,S.hurt-dt*2); S.hp=Math.min(S.hpMax,S.hp+dt*1.5);   // slow regen between hits
 
   // wind gusts (all directions) — calmed while you're deliberately skimming a cliff
@@ -1468,6 +1533,7 @@ function reset(){
   for(const gm of gates){ gm.userData.hit=false; gm.material.emissiveIntensity=2.2; }
   for(const m of MISSIONS) m.done=false;
   S.grazeT=0; S.splashT=0; S.hp=S.hpMax; S.hurt=0;
+  S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.diveFired=false;
   for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; sl.fireCd=1.5+Math.random(); sl.alerted=0; }
   for(const b of foeBolts){ scene.remove(b.m); } foeBolts.length=0;
   $('over').classList.add('hide'); $('litglow').style.opacity=0; $('warn').style.opacity=0;
