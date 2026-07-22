@@ -338,7 +338,7 @@
         <span class="chip"><b>X</b>hold to charge plasma</span>
         <span class="chip"><b>Q/E</b>look around</span>
         <span class="chip"><b>V</b>ride first-person</span>
-        <span class="chip"><b>GOAL</b>8 beacons, never seen</span>
+        <span class="chip"><b>GOAL</b>follow the beacon road — never be seen</span>
       </div>
       <div class="gfxrow">GRAPHICS <b data-g="low">LOW</b><b data-g="med">MED</b><b data-g="high" class="on">HIGH</b></div>
       <div class="foot">headphones recommended · dive into shadow to break a lock</div>
@@ -529,6 +529,45 @@ mountain(-260,-120,140,220); mountain(300,180,120,190); mountain(120,-360,150,24
 mountain(-360,220,110,170); mountain(340,-280,100,150); mountain(-140,380,130,200);
 mountain(460,40,90,140);
 
+/* ================= FAR REGIONS: the world beyond the lighthouse ================= */
+const charMat=new THREE.MeshStandardMaterial({color:0x17120e,roughness:.95,flatShading:true});
+const woodMat=new THREE.MeshStandardMaterial({color:0x2e2118,roughness:.9,flatShading:true});
+// THE DROWNED VILLAGE — burned longhouses half-sunk in the shallows. Nobody says what happened here.
+function longhouse(x,z,ry,burned){
+  const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=ry;
+  const base=new THREE.Mesh(new THREE.BoxGeometry(16,7,8), burned?charMat:woodMat); base.position.y=2.4; g.add(base);
+  const roof=new THREE.Mesh(new THREE.CylinderGeometry(0.5,6.4,16,3,1), burned?charMat:woodMat);
+  roof.rotation.z=Math.PI/2; roof.rotation.y=Math.PI/2; roof.position.y=8; roof.scale.z=0.72; g.add(roof);
+  if(burned){ roof.scale.y=0.5+Math.random()*0.4; roof.rotation.x=(Math.random()-0.5)*0.5; }
+  scene.add(g); colliders.push({x,z,r:9,top:14}); return g;
+}
+longhouse(470,-430,0.4,true); longhouse(505,-455,1.2,true); longhouse(445,-470,2.2,true);
+longhouse(530,-425,2.8,false);                                  // one stands untouched. why?
+const lastTorch=new THREE.PointLight(0xff9a3c, 300, 120, 2); lastTorch.position.set(530,16,-425); scene.add(lastTorch);
+rock(480,-445,26,18); rock(520,-490,14,12);
+// THE BONE ARCHES — the ribs of something vast, bleached over the sea
+const boneMat=new THREE.MeshStandardMaterial({color:0xcfc8ba,roughness:.85,flatShading:true});
+for(let i=0;i<5;i++){
+  const arch=new THREE.Mesh(new THREE.TorusGeometry(46-i*3,3.4-i*0.3,8,22,Math.PI), boneMat);
+  arch.position.set(-330-i*46,2,-410+i*10); arch.rotation.y=0.3+i*0.12; scene.add(arch);
+  colliders.push({x:-330-i*46+44,z:-410+i*10,r:6,top:50}); colliders.push({x:-330-i*46-44,z:-410+i*10,r:6,top:50});
+}
+const skullRock=rock(-560,-380,30,26);                          // where the head came to rest
+// THE HIDDEN COVE — sea-stack ring, the aurora pours into it like a curtain
+for(let i=0;i<9;i++){ const a=i/9*6.283, r=150;
+  rock(Math.cos(a)*r, 780+Math.sin(a)*r*0.7, 16+(i%3)*5, 60+(i%4)*22); }
+crystal(0,780,44); crystal(-60,820,30); crystal(55,830,34);
+// implicit story: quiet lines when you first cross into each place — no instructions
+const REGIONS=[
+  {x:490,z:-450,r:130,seen:false,line:'Char on the water. Four hearths — and only one was spared.'},
+  {x:-420,z:-400,r:170,seen:false,line:'Ribs like sea-stacks. Whatever hunted the keepers\' fathers... it was real.'},
+  {x:0,z:780,r:200,seen:false,line:'The stacks close ranks behind you. The aurora pours in like a tide. Home?'},
+  {x:530,z:-425,r:40,seen:false,line:'A torch still burns in the standing house. Someone feeds it.'},
+];
+function driveRegions(){ const p=D.group.position;
+  for(const rg of REGIONS){ if(rg.seen) continue;
+    if(Math.hypot(p.x-rg.x,p.z-rg.z)<rg.r){ rg.seen=true; storyPop(rg.line,6); AU.play('ring',0.35); } } }
+
 /* ---- SERPENT CANYON: a weaving slot of sheer cliffs you can almost kiss (HTTYD-style traverse) ----
    runs along the beacon 4->6 stretch; gates reward threading it */
 const cliffMat=new THREE.MeshStandardMaterial({ color:0x1b1f2c, roughness:.9, flatShading:true });
@@ -652,10 +691,13 @@ streaks.frustumCulled=false; scene.add(streaks);
 const streakSeed=Array.from({length:STREAK_N},()=>[Math.random(),Math.random(),Math.random()]);
 
 /* ---- beacons (waypoint rings) : a winding route ---- */
-const rings=[]; const RING_R=13; const N_RINGS=8;
+const rings=[]; const RING_R=13; const N_RINGS=12;
 const ringBase=new THREE.MeshStandardMaterial({ color:0x1a0f38, emissive:0x8b46ff, emissiveIntensity:3.0 });
 const ringDone=new THREE.MeshStandardMaterial({ color:0x0f2e26, emissive:0x2fd6a0, emissiveIntensity:1.4 });
-const route=[[0,44,200],[120,60,120],[150,70,-40],[40,58,-150],[-90,66,-140],[-170,72,-10],[-150,80,120],[-30,90,210]];
+const route=[[0,44,200],[150,70,-40],[-90,66,-150],[-170,72,-10],          // home waters + canyon
+  [140,60,-260],[420,70,-380],[520,64,-470],                                  // out to the Drowned Village
+  [180,80,-560],[-320,90,-420],[-560,96,240],                                 // under the Bone Arches
+  [-260,110,560],[0,120,780]];                                                // north to the Hidden Cove
 for(let i=0;i<N_RINGS;i++){
   const [x,y,z]=route[i];
   const m=new THREE.Mesh(new THREE.TorusGeometry(RING_R,1.3,10,40), ringBase.clone());
@@ -806,7 +848,7 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
   camYaw:0, camPitch:0, nextThunder:5, cause:'', shootCd:0, flash:0,
   boost:0, accel:0, prevSpeed:26, boomed:false,
   charges:3, chargeT:-1,                          // plasma pool + hold-to-charge timer (-1 = idle)
-  nightfall:230, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
+  nightfall:330, dayHold:100, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
   hp:100, hpMax:100, hurt:0,                        // the dragon can be shot down
   echoCd:0, echoR:0, echoOn:false,                  // echolocation pulse
   dive:0, diveFired:false,                          // fury dive -> sonic boom
@@ -856,6 +898,7 @@ function shoot(power=0.35){
   if(th){ setTimeout(()=>{ try{ th.currentTime=0; th.playbackRate=1.5-power*0.7; th.volume=0.2+power*0.45;
     th.play().catch(()=>{}); }catch(e){} }, 40+power*70); }
   S.flash=Math.max(S.flash,0.14+power*0.34);
+  if(power>0.55){ AU.play('crash',0.4+power*0.35); }   // charged shots leave with a bang
   if(power>0.8){ S.shake=Math.max(S.shake,0.5); }
   D.recoil=0.4+power*0.6; S.shake=Math.max(S.shake,0.2+power*0.35);   // felt kick when you fire
 }
@@ -901,6 +944,18 @@ function updateDebris(dt){
     if(d.life<=0){ d.m.geometry.dispose(); scene.remove(d.m); debris.splice(i,1); }
   }
 }
+function plasmaImpact(pos,power){
+  const big=0.6+power*1.6;
+  bigExplosion(pos.clone(), power>0.55?0xffd08a:0xc98bff);
+  for(let i=0;i<Math.round(5+power*10);i++){ const a=Math.random()*6.283, r=Math.random()*10*big;
+    smallBurst(pos.x+Math.cos(a)*r, pos.y+Math.random()*6, pos.z+Math.sin(a)*r, 0xffc98a); }
+  const rr=new THREE.Mesh(new THREE.TorusGeometry(3*big,0.6,8,24),
+    new THREE.MeshBasicMaterial({color:0xffd8a0,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));
+  rr.position.copy(pos); rr.rotation.x=-Math.PI/2; scene.add(rr); shocks.push({m:rr,life:0.5,dur:0.5,flat:true});
+  S.flash=Math.max(S.flash,0.35+power*0.35); S.shake=Math.max(S.shake,0.4+power*0.5);
+  AU.play('crash',0.55+power*0.4);
+  const th=AU.el.thunder; if(th){ try{ th.currentTime=0; th.playbackRate=0.85; th.volume=0.35+power*0.4; th.play().catch(()=>{});}catch(e){} }
+}
 function updateBolts(dt){
   for(let i=bolts.length-1;i>=0;i--){ const b=bolts[i];
     b.m.position.addScaledVector(b.vel,dt); b.life-=dt; b.lt.intensity*=0.95;
@@ -917,6 +972,12 @@ function updateBolts(dt){
         popup(sl.hp<=0?'TOWER DOWN':'−'+dmg.toFixed(0)+'  ('+Math.max(0,Math.ceil(sl.hp))+' left)');
         if(sl.hp<=0) destroyTower(sl,b.power||1);
         hit=true; break; }
+    }
+    if(!hit){                                   // detonate on sea or rock, not just towers
+      const bp=b.m.position, wh2=waveH(bp.x,bp.z,S.t);
+      let land=bp.y<wh2+1.5;
+      if(!land) for(const c of colliders){ if(Math.hypot(bp.x-c.x,bp.z-c.z)<c.r+2 && bp.y<c.top){ land=true; break; } }
+      if(land){ plasmaImpact(bp,b.power||0.35); hit=true; }
     }
     if(hit) b.life=0;
     if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.line); b.lgeo.dispose(); bolts.splice(i,1); }
@@ -953,7 +1014,7 @@ const MISSIONS=[
   { id:'canyon', label:t=>`II · thread the Serpent Canyon ${t.gates}/3`, done:false,
     check:()=>gates.every(g=>g.userData.hit),
     story:'Wingtip to stone, stone to wingtip — the canyon lets you pass, this once.' },
-  { id:'beacons', label:t=>`III · light the eight beacons ${t.beacons}/8`, done:false,
+  { id:'beacons', label:t=>`III · follow the beacon road ${t.beacons}/${rings.length}`, done:false,
     check:()=>S.score>=rings.length,
     story:'' },
 ];
@@ -1204,7 +1265,7 @@ const _fogSet=new THREE.Color(0x24151f), _fogNight=new THREE.Color(0x0a0a1a), _f
 const _ambSet=new THREE.Color(0x4a2c30), _ambNight=new THREE.Color(0x2c2a48), _ambDay=new THREE.Color(0x6b7690);
 function driveTimeOfDay(dt){
   // flight begins in daylight and the sun sinks over NIGHTFALL seconds; menu holds a golden dusk
-  if(S.started && !S.done) TOD.day=Math.min(1, TOD.day + dt/S.nightfall);
+  if(S.started && !S.done && S.t>S.dayHold) TOD.day=Math.min(1, TOD.day + dt/S.nightfall);
   else if(!S.started) TOD.day=0.34 + 0.04*Math.sin(S.t*0.2);
   uDay.value=TOD.day;
   const d=TOD.day, dayW=Math.max(0,1-d/0.34);            // 1 = full day, 0 by dusk
@@ -1281,9 +1342,9 @@ function tick(dt){
   D.turn=turnCmd;
 
   const auth=0.5+D.speed/40;
-  D.yaw -= turnCmd*dt*1.9*auth;
-  D.pitch += (pitchCmd*1.05 - D.pitch)*fdamp(4.5,dt);
-  D.roll  += (turnCmd*0.85 - D.roll)*fdamp(5.5,dt);
+  D.yaw -= turnCmd*dt*2.35*auth;                       // snappier: the dragon answers you
+  D.pitch += (pitchCmd*1.05 - D.pitch)*fdamp(6.5,dt);
+  D.roll  += (turnCmd*1.0 - D.roll)*fdamp(7,dt);
 
   /* ---- energy + LIFT ---- */
   D.flapping=input.flap && S.flapCd<=0;
@@ -1307,7 +1368,8 @@ function tick(dt){
   const p=D.group.position;
   p.addScaledVector(fwd, Math.cos(D.pitch)*D.speed*dt);
   const flapBoost=(input.flap?7:0);
-  p.y += (Math.sin(D.pitch)*D.speed - sink + flapBoost)*dt;
+  const beatHeave = D.flap ? Math.sin(S.t*3.1)*2.4*D.flap.getEffectiveWeight() : 0;  // ride each wingbeat
+  p.y += (Math.sin(D.pitch)*D.speed - sink + flapBoost + beatHeave)*dt;
   p.y = Math.min(p.y, 240);
 
   if(input.flap && S.flapCd<=0){ AU.play('flap',0.45); S.flapCd=0.42; }
@@ -1400,10 +1462,13 @@ function tick(dt){
     // NOTE: braking must NOT drive the flap clip — the folded-wing frames shatter into
     // shards on this envelope-weighted mesh. Braking is body-lean only; wings stay spread.
     const braking=key['KeyS']&&D.speed>16;
-    const climbing=input.flap;
-    const w=THREE.MathUtils.clamp(D.flap.getEffectiveWeight()+(climbing?dt*6:-dt*5),0,1);
+    // Wings ALWAYS beat — steady cruise flap that deepens on climb; weight capped
+    // below the deep-fold frames that shatter this envelope-weighted mesh.
+    const wTarget = input.flap ? 0.85 : (braking ? 0.6 : 0.45);
+    const w=THREE.MathUtils.lerp(D.flap.getEffectiveWeight(), wTarget, fdamp(5,dt));
     D.flap.setEffectiveWeight(w); D.glide.setEffectiveWeight(1-w);
-    D.flap.timeScale=(braking?1.05:1.35+D.boost*0.9); D.glide.timeScale=0.65+D.boost*0.35;
+    D.flap.timeScale = input.flap ? 1.55+D.boost*0.7 : (braking ? 1.9 : 1.0+D.boost*0.5);
+    D.glide.timeScale = 0.7;
     D.mixer.update(dt);
     applyAlive(dt);
     // surge & brake body language, clamped so the silhouette always stays a readable prone glide
@@ -1451,7 +1516,7 @@ function tick(dt){
     if(p.distanceTo(gm.position)<12){ gm.userData.hit=true; gm.material.emissiveIntensity=0.6;
       AU.play('ring',0.6); shockwave(gm.position,0x2fd6a0); popup('GATE '+gates.filter(g=>g.userData.hit).length+' / 3');
       S.detection=Math.max(0,S.detection-0.15); } }                       // the canyon hides you
-  driveMissions();
+  driveMissions(); driveRegions();
 
   /* ---- water splash when skimming ---- */
   S.splashT=(S.splashT||0)-dt;
@@ -1618,6 +1683,7 @@ function reset(){
   for(const gm of gates){ gm.userData.hit=false; gm.material.emissiveIntensity=2.2; }
   for(const m of MISSIONS) m.done=false;
   S.grazeT=0; S.splashT=0; S.hp=S.hpMax; S.hurt=0;
+  for(const rg of REGIONS) rg.seen=false;
   S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.diveFired=false;
   S.strikeT=0; S.strikeNext=12; S.superCharge=0; teleMark.visible=false;
   S.flockCd=0; S.flockT=0; for(const f of flock) scene.remove(f.m); flock.length=0;
