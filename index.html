@@ -308,7 +308,7 @@
   <div id="arrow"></div>
   <div id="popup"></div>
   <div id="storyline"></div>
-  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>↓↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view</div>
+  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> call flock · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view</div>
 </div>
 
 <div class="screen" id="menu">
@@ -793,6 +793,7 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyX' && !e.repeat){ if(S.started&&!S.done && S.charges>=1 && S.chargeT<0) S.chargeT=0; e.preventDefault(); }
   if(e.code==='KeyV') S.fpv=!S.fpv;
   if(e.code==='KeyC' && !e.repeat) echoPulse();
+  if(e.code==='KeyF' && !e.repeat) callFlock();
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
 });
 addEventListener('keyup',e=>{ key[e.code]=false;
@@ -815,6 +816,7 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
 const bolts=[], BOLT_SEG=16;
 function shoot(power=0.35){
   if(S.shootCd>0 || !D.model || S.charges<1) return; S.shootCd=0.4; S.charges-=1;
+  if(S.superCharge){ power=1.25; S.superCharge=0; popup('STORMFIRE'); }   // harvested lightning
   const head=new THREE.Vector3(); (D.mouth||D.headNode||D.group).getWorldPosition(head);
   const dir=new THREE.Vector3(-Math.sin(D.yaw),Math.sin(D.pitch)*0.95,-Math.cos(D.yaw)).normalize();
   const R=0.9+power*2.2;
@@ -1091,6 +1093,86 @@ function driveFuryDive(dt){
   if(S.dive<0.12) S.diveFired=false;
 }
 
+/* ================= UNIQUE 3: STORM LIGHTNING HARVEST =================
+   The storm throws real bolts at the sea. A column telegraphs where it will land —
+   fly INTO it and you drink the strike: full plasma + a supercharged blast, but it
+   lights you up like a flare for every keeper watching. */
+const teleMark=new THREE.Mesh(new THREE.CylinderGeometry(9,9,340,14,1,true),
+  new THREE.MeshBasicMaterial({color:0x9fd8ff,transparent:true,opacity:0,side:THREE.DoubleSide,
+    blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
+teleMark.visible=false; scene.add(teleMark);
+function fireStrike(){
+  const x=S.strikeX, z=S.strikeZ, topY=330, wh=waveH(x,z,S.t);
+  const N=18, pts=[];
+  for(let i=0;i<N;i++){ const t=i/(N-1);
+    pts.push(new THREE.Vector3(x+(i&&i<N-1?(Math.random()-0.5)*22:0), topY+(wh-topY)*t, z+(i&&i<N-1?(Math.random()-0.5)*22:0))); }
+  const lg=new THREE.BufferGeometry().setFromPoints(pts);
+  const ln=new THREE.Line(lg,new THREE.LineBasicMaterial({color:0xeaf6ff,transparent:true,opacity:1,
+    blending:THREE.AdditiveBlending,depthWrite:false}));
+  scene.add(ln); shocks.push({m:ln,life:0.3,dur:0.3,noscale:true});
+  bigExplosion(new THREE.Vector3(x,wh+2,z),0xbfe0ff);
+  S.flash=Math.max(S.flash,0.75); AU.play('thunder',0.7);
+  // did the dragon fly into it?
+  const p=D.group.position;
+  if(Math.hypot(p.x-x,p.z-z)<42 && !S.done && S.grace<=0){
+    S.charges=3; S.superCharge=1; S.detection=Math.min(1,S.detection+0.22);
+    S.shake=Math.max(S.shake,0.9); S.flash=Math.max(S.flash,1);
+    if(D.glow) D.glow.intensity=200;
+    popup('LIGHTNING HARVESTED'); storyPop('The storm gives up its fire — and every eye turns to you.',3.5);
+  }
+}
+function updateStorm(dt){
+  if(!S.started||S.done){ teleMark.visible=false; return; }
+  S.strikeNext=(S.strikeNext??12)-dt;
+  if(S.strikeNext<=0 && S.strikeT<=0){
+    S.strikeNext=13+Math.random()*12;
+    const p=D.group.position, a=Math.random()*6.283, r=55+Math.random()*130;
+    S.strikeX=p.x+Math.cos(a)*r; S.strikeZ=p.z+Math.sin(a)*r; S.strikeT=1.4;
+  }
+  if(S.strikeT>0){
+    S.strikeT-=dt;
+    teleMark.visible=true; teleMark.position.set(S.strikeX,160,S.strikeZ);
+    teleMark.material.opacity=0.10+0.28*Math.abs(Math.sin(S.t*22))*(1-S.strikeT/1.4);
+    if(S.strikeT<=0){ teleMark.visible=false; fireStrike(); }
+  }
+}
+
+/* ================= UNIQUE 4: DRAGON CALL — the wild flock answers (F) =================
+   Shapes rise out of the dark and wheel around you. While they fly with you the
+   keepers can't pick you out of the swarm — detection barely builds. */
+const flock=[];
+function makeFlockDragon(){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.ConeGeometry(0.9,4.4,4),
+    new THREE.MeshStandardMaterial({color:0x15131c,roughness:.9,emissive:0x241536,emissiveIntensity:.5,flatShading:true}));
+  body.rotation.x=Math.PI/2; g.add(body);
+  const wm=new THREE.MeshStandardMaterial({color:0x191622,roughness:.95,side:THREE.DoubleSide,flatShading:true});
+  for(const s of [1,-1]){ const w=new THREE.Mesh(new THREE.PlaneGeometry(5.2,2.6),wm);
+    w.position.set(s*3.0,0,0); w.rotation.x=-Math.PI/2; g.add(w); w.userData.side=s; }   // spread flat like wings
+  const eye=new THREE.PointLight(0x7fe0b0,6,26,2); eye.position.set(0,0,-2.2); g.add(eye);
+  return g;
+}
+function callFlock(){
+  if(S.flockCd>0 || !S.started || S.done) return;
+  S.flockCd=34; S.flockT=17;
+  for(let i=0;i<7;i++){ const m=makeFlockDragon(); scene.add(m);
+    flock.push({m, ph:Math.random()*6.283, rad:15+Math.random()*18, h:-5+Math.random()*12, sp:0.5+Math.random()*0.6}); }
+  AU.play('flap',0.55); popup('THE FLOCK ANSWERS');
+  storyPop('Shapes lift out of the black water. You are not alone tonight.',3.5);
+}
+function updateFlock(dt){
+  if(S.flockCd>0) S.flockCd-=dt;
+  if(S.flockT>0){
+    S.flockT-=dt; const p=D.group.position;
+    for(const f of flock){ f.ph+=dt*f.sp;
+      f.m.position.set(p.x+Math.cos(f.ph)*f.rad, p.y+f.h+Math.sin(f.ph*2.2)*2.4, p.z+Math.sin(f.ph)*f.rad);
+      f.m.rotation.y=-f.ph+Math.PI/2;
+      for(const c of f.m.children){ if(c.userData.side) c.rotation.z=Math.sin(S.t*7+f.ph)*0.55*c.userData.side; }
+    }
+    if(S.flockT<=0){ for(const f of flock) scene.remove(f.m); flock.length=0; }
+  }
+}
+
 // towers topple after being shattered
 function updateTowers(dt){
   for(const sl of searchlights){ if(!sl.destroyed||sl.fall>=2) continue;
@@ -1262,7 +1344,7 @@ function tick(dt){
     if(cp>=1 && !S._chargeReady){ S._chargeReady=true; AU.play('flap',0.3); }        // "fully charged" tick
   } else if(D.mouth && D.mouth.scale.x>0.01){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; S._chargeReady=false; }
   updateBolts(dt); updateShocks(dt); updateDebris(dt); updateBursts(dt); updateTowers(dt); updateTowerCombat(dt);
-  updateEcho(dt); driveFuryDive(dt);
+  updateEcho(dt); driveFuryDive(dt); updateStorm(dt); updateFlock(dt);
   S.hurt=Math.max(0,S.hurt-dt*2); S.hp=Math.min(S.hpMax,S.hp+dt*1.5);   // slow regen between hits
 
   // wind gusts (all directions) — calmed while you're deliberately skimming a cliff
@@ -1351,7 +1433,8 @@ function tick(dt){
     sl.cone.material.opacity = 0.07 + sl.lit*0.14;
   }
   if(S.grace>0){ S.grace-=dt; litNow=0; }              // takeoff grace: the armour bought you time
-  if(litNow>0.02){ S.detection += litNow*0.55*dt; }
+  const flockHide = S.flockT>0 ? 0.25 : 1;                 // lost in the swarm
+  if(litNow>0.02){ S.detection += litNow*0.55*dt*flockHide; }
   else { S.detection -= 0.30*dt; }
   S.detection=THREE.MathUtils.clamp(S.detection,0,1);
   if(S.detection>=1) detected();
@@ -1534,6 +1617,8 @@ function reset(){
   for(const m of MISSIONS) m.done=false;
   S.grazeT=0; S.splashT=0; S.hp=S.hpMax; S.hurt=0;
   S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.diveFired=false;
+  S.strikeT=0; S.strikeNext=12; S.superCharge=0; teleMark.visible=false;
+  S.flockCd=0; S.flockT=0; for(const f of flock) scene.remove(f.m); flock.length=0;
   for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; sl.fireCd=1.5+Math.random(); sl.alerted=0; }
   for(const b of foeBolts){ scene.remove(b.m); } foeBolts.length=0;
   $('over').classList.add('hide'); $('litglow').style.opacity=0; $('warn').style.opacity=0;
@@ -1655,6 +1740,8 @@ window.SIM={
   teleport:(x,y,z,yaw)=>{ D.group.position.set(x,y,z); if(yaw!=null)D.yaw=yaw; },
   warp:(dt,steps=60)=>{ for(let i=0;i<steps;i++) tick(dt); render(); },
   bones:()=>D.boneReport, alive:v=>{ALIVE=v;}, setTurn:v=>{D.turn=v;}, day:v=>{TOD.day=v;uDay.value=v;},
+  echo:echoPulse, flockCall:callFlock,
+  strike:()=>{ const p=D.group.position; S.strikeX=p.x; S.strikeZ=p.z; S.strikeT=0.04; },   // force a bolt on us (test)
 };
 </script>
 </body>
