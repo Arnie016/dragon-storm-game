@@ -54,7 +54,10 @@
   .bar > i{ display:block; height:100%; width:0%; border-radius:4px; transition:width .08s linear; }
   #detFill{ background:linear-gradient(90deg,#3aa0ff,var(--purple) 60%,var(--warn)); }
   #hpFill{ background:linear-gradient(90deg,#ff5a4a,#ffb15a 55%,#7fe6c6); width:100%; }
-  #hurt{ position:fixed; inset:0; pointer-events:none; opacity:0; box-shadow:inset 0 0 200px 30px rgba(255,40,40,.7); }
+  #hurt{ position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity .25s;
+    box-shadow:inset 0 0 200px 30px rgba(255,40,40,.7); }
+  #wetlens{ position:fixed; inset:0; pointer-events:none; opacity:0; transition:opacity .5s;
+    background:radial-gradient(ellipse at 50% 42%, transparent 46%, rgba(120,150,190,.20) 100%); }
   #plasmaFill{ background:linear-gradient(90deg,#5a2ea6,#a463ff 70%,#e0c6ff); }
   #duskFill{ background:linear-gradient(90deg,#ff9a3c,#b96cff 60%,#2a2f66); }
   #hudTL .title{ font-family:var(--display); font-size:12px; letter-spacing:3px; color:var(--purple); margin:4px 0 7px; font-weight:700; }
@@ -98,6 +101,18 @@
     letter-spacing:2px; color:var(--teal); text-shadow:0 0 18px rgba(56,230,208,.8); opacity:0; }
   @keyframes pop{ 0%{opacity:0; transform:translate(-50%,-30%) scale(.7);} 25%{opacity:1;}
     100%{opacity:0; transform:translate(-50%,-120%) scale(1.1);} }
+  #chargeHud{ position:absolute; opacity:0; transition:opacity .12s; pointer-events:none; text-align:center;
+    transform:translate(-50%,-50%); }
+  #chargeHud.on{ opacity:1; }
+  #chargeRing{ width:74px; height:74px; border-radius:50%; position:relative;
+    background:conic-gradient(var(--purple) calc(var(--cp)*1%), rgba(255,255,255,.10) 0);
+    -webkit-mask:radial-gradient(circle, transparent 56%, #000 58%);
+    mask:radial-gradient(circle, transparent 56%, #000 58%);
+    filter:drop-shadow(0 0 10px rgba(164,99,255,.85)); }
+  #chargeTxt{ margin-top:5px; font-size:10px; letter-spacing:3px; color:#e2d3ff;
+    text-shadow:0 0 10px rgba(164,99,255,.9); font-weight:700; }
+  #chargeHud.full #chargeRing{ filter:drop-shadow(0 0 18px rgba(255,190,90,1)); }
+  #chargeHud.full #chargeTxt{ color:#ffd08a; }
   #storyline{ position:absolute; bottom:16%; left:50%; transform:translateX(-50%); max-width:640px; text-align:center;
     font-family:var(--body); font-style:italic; font-size:clamp(16px,1.9vw,22px); color:#e3d9f8; opacity:0;
     text-shadow:0 2px 14px rgba(0,0,0,.9), 0 0 30px rgba(150,100,255,.35); pointer-events:none; }
@@ -285,6 +300,7 @@
 <div id="litglow"></div>
 <div id="flash"></div>
 <div id="hurt"></div>
+<div id="wetlens"></div>
 <div id="shutter">
   <div class="sh top"></div><div class="sh bot"></div>
   <div id="loadline">
@@ -321,6 +337,7 @@
   <div id="arrow"></div>
   <div id="popup"></div>
   <div id="storyline"></div>
+  <div id="chargeHud"><div id="chargeRing"><i></i></div><div id="chargeTxt">SPIT</div></div>
   <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view</div>
 </div>
 
@@ -499,6 +516,84 @@ function waveH(x,z,t){ const a=x*.8+(-z)*.6, b=x*-.5+(-z)*.9, c=x*.2+(-z)*-1.0;
   if(ROG.amp>0.01){ const dx=x-ROG.cx, dz=z-ROG.cz; h+=ROG.amp*Math.exp(-(dx*dx+dz*dz)/uRW.value); }
   return h; }
 
+/* ================= SEA LIFE & FAUNA ================= */
+const whales=[], sharks=[], birds=[];
+const whaleMat=new THREE.MeshStandardMaterial({color:0x2b3340,roughness:.85,flatShading:true});
+const bellyMat=new THREE.MeshStandardMaterial({color:0x8f9bab,roughness:.8,flatShading:true});
+function makeWhale(x,z){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.CapsuleGeometry(9,34,5,10), whaleMat);
+  body.rotation.z=Math.PI/2; g.add(body);
+  const belly=new THREE.Mesh(new THREE.CapsuleGeometry(6.4,26,4,8), bellyMat);
+  belly.rotation.z=Math.PI/2; belly.position.y=-4.4; belly.scale.y=0.55; g.add(belly);
+  const fluke=new THREE.Mesh(new THREE.ConeGeometry(11,3,4), whaleMat);
+  fluke.position.set(-26,0,0); fluke.rotation.z=Math.PI/2; fluke.scale.z=2.6; g.add(fluke);
+  for(const sx of [1,-1]){ const fin=new THREE.Mesh(new THREE.ConeGeometry(4,13,4), whaleMat);
+    fin.position.set(4,-2,sx*9); fin.rotation.x=sx*0.6; fin.rotation.z=0.5; g.add(fin); }
+  g.position.set(x,-24,z); scene.add(g);
+  whales.push({g, x, z, ph:Math.random()*6.283, next:8+Math.random()*22, up:0, dir:Math.random()*6.283});
+}
+makeWhale(-180,340); makeWhale(320,-140); makeWhale(-60,-330); makeWhale(560,420);
+const sharkMat=new THREE.MeshStandardMaterial({color:0x1d2a24,roughness:.7,emissive:0x1c5a3a,emissiveIntensity:.55,flatShading:true});
+function makeShark(x,z){
+  const g=new THREE.Group();
+  const b=new THREE.Mesh(new THREE.CapsuleGeometry(1.5,7,3,6), sharkMat); b.rotation.z=Math.PI/2; g.add(b);
+  const fin=new THREE.Mesh(new THREE.ConeGeometry(1.5,4,3), sharkMat); fin.position.y=2.2; g.add(fin);
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(2,3,3), sharkMat);
+  tail.position.x=-5.5; tail.rotation.z=Math.PI/2; g.add(tail);
+  scene.add(g); sharks.push({g, cx:x, cz:z, ph:Math.random()*6.283, r:18+Math.random()*26, sp:0.35+Math.random()*0.5});
+}
+for(const [sx,sz] of [[90,90],[-140,10],[240,-200],[-260,180],[40,-420],[420,-320],[-420,-120],[150,520]]) makeShark(sx,sz);
+const birdMat=new THREE.MeshBasicMaterial({color:0x20242e, side:THREE.DoubleSide});
+function makeBirds(x,z,cnt){
+  for(let i=0;i<cnt;i++){
+    const g=new THREE.Group();
+    for(const sx of [1,-1]){ const w=new THREE.Mesh(new THREE.PlaneGeometry(2.4,0.7), birdMat);
+      w.position.x=sx*1.2; w.userData.side=sx; g.add(w); }
+    g.position.set(x+(Math.random()-0.5)*70, 30+Math.random()*40, z+(Math.random()-0.5)*70);
+    scene.add(g); birds.push({g, ph:Math.random()*6.283, r:22+Math.random()*30, cx:x, cz:z, h:g.position.y, sp:0.5+Math.random()*0.7});
+  }
+}
+makeBirds(60,120,7); makeBirds(-220,-60,6); makeBirds(400,-380,7); makeBirds(-100,600,6);
+function updateSeaLife(dt){
+  const p=D.group.position;
+  for(const wl of whales){
+    wl.next-=dt;
+    if(wl.next<=0 && wl.up<=0){ wl.up=1; wl.next=26+Math.random()*30; }
+    if(wl.up>0){                                  // BREACH: rises, rolls, crashes back
+      wl.up-=dt*0.28;
+      const k=Math.sin(Math.max(0,wl.up)*Math.PI);
+      wl.g.position.y=-24+k*44;
+      wl.g.rotation.z=k*0.7; wl.g.rotation.y=wl.dir;
+      if(k>0.55 && !wl.splashed){ wl.splashed=true;
+        const wh=waveH(wl.x,wl.z,S.t);
+        for(let i=0;i<16;i++){ const a=Math.random()*6.283, r=Math.random()*26;
+          smallBurst(wl.x+Math.cos(a)*r, wh+2+Math.random()*20, wl.z+Math.sin(a)*r, 0xdCEaF2); }
+        AU.play('thunder',0.20);
+        if(Math.hypot(p.x-wl.x,p.z-wl.z)<70) S.shake=Math.max(S.shake,0.55);
+      }
+      if(wl.up<=0){ wl.splashed=false; wl.g.position.y=-24; }
+    } else wl.g.position.y=-24+Math.sin(S.t*0.5+wl.ph)*2;
+  }
+  for(const sk of sharks){
+    sk.ph+=dt*sk.sp;
+    const wh=waveH(sk.cx,sk.cz,S.t);
+    sk.g.position.set(sk.cx+Math.cos(sk.ph)*sk.r, wh+0.8, sk.cz+Math.sin(sk.ph)*sk.r);
+    sk.g.rotation.y=-sk.ph+Math.PI/2;
+    if(!S.done && S.grace<=0 && p.y<wh+7 && Math.hypot(p.x-sk.g.position.x,p.z-sk.g.position.z)<11){
+      S.hp-=13*dt*6; S.hurt=1; S.poison=2.2; S.shake=Math.max(S.shake,0.6);   // venom
+      if(S.hp<=0) crash('DRAGGED UNDER BY THE VENOM');
+    }
+  }
+  for(const b of birds){
+    b.ph+=dt*b.sp;
+    b.g.position.set(b.cx+Math.cos(b.ph)*b.r, b.h+Math.sin(b.ph*1.7)*4, b.cz+Math.sin(b.ph)*b.r);
+    b.g.rotation.y=-b.ph;
+    for(const w of b.g.children) w.rotation.z=Math.sin(S.t*11+b.ph)*0.8*w.userData.side;
+  }
+  if(S.poison>0){ S.poison-=dt; S.hp-=dt*2.2; if(S.hp<=0 && !S.done) crash('THE VENOM TOOK YOU'); }
+}
+
 /* ---- SHORELINE: foam collars so land meets sea with a real edge, not a flat seam ---- */
 const shores=[];
 const shoreMat=new THREE.MeshBasicMaterial({color:0xdCEaF2, transparent:true, opacity:0.34,
@@ -563,6 +658,10 @@ function mountain(x,z,r,h){
 mountain(-260,-120,140,220); mountain(300,180,120,190); mountain(120,-360,150,240);
 mountain(-360,220,110,170); mountain(340,-280,100,150); mountain(-140,380,130,200);
 mountain(460,40,90,140);
+// connective archipelago — stepping stones so the regions read as one sea, not islands of content
+for(const [ix,iz,ir,ih] of [[240,-180,9,14],[330,-300,11,17],[60,-300,8,12],[-180,-260,10,15],
+  [-300,-140,9,13],[-420,60,11,16],[-460,340,10,15],[-320,470,9,13],[-140,640,11,17],[120,660,9,14],
+  [260,300,10,15],[380,140,8,12],[-60,420,9,13],[180,-480,10,16],[520,-180,9,14]]) rock(ix,iz,ir,ih);
 
 /* ================= FAR REGIONS: the world beyond the lighthouse ================= */
 const charMat=new THREE.MeshStandardMaterial({color:0x17120e,roughness:.95,flatShading:true});
@@ -878,7 +977,12 @@ addEventListener('mousedown',()=>{ if(S.started&&!S.done) input.flap=true; });
 addEventListener('mouseup',()=>{ input.flap=false; });
 addEventListener('keydown',e=>{
   key[e.code]=true;
-  if(e.code==='Space'){ if(S.started&&!S.done) input.flap=true; e.preventDefault(); }
+  if(e.code==='Space'){ if(S.started&&!S.done){ input.flap=true;
+      if(!e.repeat){ S.lift=Math.min(20,(S.lift||0)+13); S.beatCd=0.30;   // every TAP lifts you
+        S.shake=Math.max(S.shake,0.2); AU.play('flap',0.55);
+        if(D.flap) D.flap.setEffectiveWeight(1);
+        const pp=D.group.position; for(const sx of [-1,1]) smallBurst(pp.x+sx*7,pp.y-3,pp.z,0xbcd0e8); } }
+    e.preventDefault(); }
   if(e.code==='KeyX' && !e.repeat){ if(S.started&&!S.done && S.charges>=1 && S.chargeT<0) S.chargeT=0; e.preventDefault(); }
   if(e.code==='KeyV') S.fpv=!S.fpv;
   if(e.code==='KeyC' && !e.repeat) echoPulse();
@@ -897,7 +1001,7 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
   charges:3, chargeT:-1,                          // plasma pool + hold-to-charge timer (-1 = idle)
   nightfall:330, dayHold:100, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
   hp:100, hpMax:100, hurt:0,                        // the dragon can be shot down
-  echoCd:0, echoR:0, echoOn:false, lift:0, beatCd:0, spiral:0, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
+  echoCd:0, echoR:0, echoOn:false, lift:0, beatCd:0, poison:0, spiral:0, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
   dive:0, diveFired:false,                          // fury dive -> sonic boom
   turn:0, pTurn:0, pPitch:0 };
 
@@ -1062,7 +1166,7 @@ function updateBolts(dt){
     fillBolt(b);
     let hit=false;
     for(const sl of searchlights){ if(sl.destroyed) continue;
-      if(b.m.position.distanceTo(sl.lampPos)<18){
+      if(b.m.position.distanceTo(sl.lampPos)< (18 + (b.power||0.3)*26)){   // charged = wider kill radius
         const dmg = b.power>0.55 ? 3 : 1.4;                         // charged shots hurt far more
         sl.hp-=dmg; sl.hbT=3.2; sl.disabled=Math.max(sl.disabled,2.2); sl.lit=0;
         smallBurst(sl.lampPos.x,sl.lampPos.y,sl.lampPos.z,0xffd070);
@@ -1236,7 +1340,16 @@ function sonicBoom(){
   AU.play('detected',0.45); AU.play('crash',0.35);
   let blinded=0;
   for(const sl of searchlights){ if(sl.destroyed) continue;
-    if(sl.lampPos.distanceTo(p)<250){ sl.disabled=Math.max(sl.disabled,6); sl.lit=0; blinded++; } }
+    const d=sl.lampPos.distanceTo(p);
+    if(d<250){ sl.disabled=Math.max(sl.disabled,6); sl.lit=0; blinded++;
+      const dmg = d<120 ? 2.5 : 1.2;                      // the boom HURTS towers
+      sl.hp-=dmg; sl.hbT=3.2; bigExplosion(sl.lampPos.clone(),0xbfe6ff);
+      if(sl.hp<=0) destroyTower(sl,1);
+    } }
+  for(const c of colliders){                               // shatter rock faces nearby
+    if(Math.hypot(p.x-c.x,p.z-c.z)<140){
+      for(let i=0;i<3;i++){ const a=Math.random()*6.283;
+        smallBurst(c.x+Math.cos(a)*c.r, 6+Math.random()*c.top*0.5, c.z+Math.sin(a)*c.r, 0x9aa4b4); } } }
   S.detection=Math.max(0,S.detection-0.35);
   popup(blinded? 'SONIC BOOM · '+blinded+' BLINDED' : 'SONIC BOOM');
   const wh=waveH(p.x,p.z,S.t);                       // blow the water open if you bottom out low
@@ -1572,6 +1685,15 @@ function tick(dt){
       }
     }
     S.grazing=grazing;
+    // the dragon reads the rock and eases you off it — you keep control, it just helps
+    let av=null, avd=1e9;
+    for(const c of colliders){ const dx=p.x-c.x, dz=p.z-c.z, h=Math.hypot(dx,dz);
+      if(p.y<c.top+6 && h<c.r+30 && h<avd){ avd=h; av={dx,dz,h,c}; } }
+    if(av){ const push=THREE.MathUtils.clamp(1-(av.h-av.c.r)/30,0,1);
+      p.x += (av.dx/av.h)*push*15*dt; p.z += (av.dz/av.h)*push*15*dt;
+      D.roll += (av.dx*Math.cos(D.yaw)-av.dz*Math.sin(D.yaw))>0 ? push*0.9*dt : -push*0.9*dt;
+      if(push>0.45){ $('warn').textContent='PULL AWAY'; $('warn').style.opacity=(0.4+0.4*Math.sin(S.t*12)).toFixed(2); }
+    }
     if(grazing){ S.grazeT=(S.grazeT||0)-dt;
       S.detection=Math.max(0,S.detection-0.10*dt);                          // hugging rock breaks the light's lock
       if(S.grazeT<=0){ S.grazeT=1.4; popup('CLOSE CALL'); S.shake=Math.max(S.shake,0.25);
@@ -1677,7 +1799,7 @@ function tick(dt){
   if(S.t>S.nextThunder){ S.nextThunder=S.t+8+Math.random()*14; S.flash=1; setTimeout(()=>AU.play('thunder',0.55), 250+Math.random()*500); }
   if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
 
-  updateRain(); updateWindLines(); updateShores();
+  updateRain(); updateWindLines(); updateShores(); updateSeaLife(dt);
 
   hud(litNow);
 }
@@ -1722,6 +1844,25 @@ function hud(litNow){
   $('abEcho').className='ab'+(S.echoCd<=0?' rdy':'');
   $('abFlock').className='ab'+(S.flockCd<=0?' rdy':'')+(S.flockT>0?' hot':'');
   $('abSpiral').className='ab'+(S.spiral>0.15?' hot':(D.speed>28?' rdy':''));
+  // --- charge meter pinned beside the dragon, only while holding X ---
+  const ch=$('chargeHud');
+  if(S.chargeT>=0){
+    const cp=Math.min(1,S.chargeT/0.9);
+    const v=D.group.position.clone().project(camera);
+    ch.style.left=((v.x*0.5+0.5)*innerWidth+70)+'px';
+    ch.style.top=((-v.y*0.5+0.5)*innerHeight-40)+'px';
+    ch.style.setProperty('--cp',(cp*100).toFixed(0));
+    ch.className='on'+(cp>=1?' full':'');
+    $('chargeTxt').textContent = cp>0.85?'FURY BLAST' : cp>0.45?'BOLT' : 'SPIT';
+  } else ch.className='';
+  // --- damage + rain lens ---
+  const hpf2=Math.max(0,S.hp)/S.hpMax;
+  $('wetlens').style.opacity=(0.25+(1-hpf2)*0.5+(S.poison>0?0.3:0)).toFixed(2);
+  $('hurt').style.opacity=Math.max(S.hurt,(1-hpf2)*0.42,(S.poison>0?0.28:0)).toFixed(2);
+  // --- detection reads as a threat level, not just a % ---
+  const dp=Math.round(S.detection*100);
+  $('detPct').textContent = dp>=70?dp+'% SEEN' : dp>=35?dp+'% HUNTED' : dp+'%';
+  $('detPct').style.color = dp>=70?'#ff5a7a' : dp>=35?'#ffbe6a' : '#dbe7fb';
   $('duskV').textContent = TOD.day<0.35?'dusk' : TOD.day<0.7?'twilight' : TOD.day<0.99?'nightfall' : 'night';
   // next-beacon arrow projected to screen
   const nb=rings.find(r=>!r.userData.hit);
@@ -1819,7 +1960,7 @@ function reset(){
   S.grazeT=0; S.splashT=0; S.hp=S.hpMax; S.hurt=0;
   for(const rg of REGIONS) rg.seen=false;
   S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.diveFired=false;
-  S.spiral=0; S.spiralFired=false; S.spiralMax=false; S.lift=0; S.beatCd=0;
+  S.spiral=0; S.spiralFired=false; S.spiralMax=false; S.lift=0; S.beatCd=0; S.poison=0;
   S.strikeT=0; S.strikeNext=12; S.superCharge=0; teleMark.visible=false;
   S.flockCd=0; S.flockT=0; for(const f of flock) scene.remove(f.m); flock.length=0;
   for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; sl.fireCd=1.5+Math.random(); sl.alerted=0; }
@@ -1935,7 +2076,7 @@ addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.upd
 window.SIM={
   state:()=>({t:+S.t.toFixed(1),started:S.started,done:S.done,det:+S.detection.toFixed(2),score:S.score,
     spd:+D.speed.toFixed(1),pos:D.group.position.toArray().map(v=>+v.toFixed(1)),fpv:S.fpv,
-    charges:+S.charges.toFixed(2),
+    charges:+S.charges.toFixed(2), chargeT:+(S.chargeT||0).toFixed(2),
     bolts:bolts.length, disabled:searchlights.filter(s=>s.disabled>0).length}),
   start:()=>{ startAudio(); S.started=true; S.grace=3; menuEl.classList.add('hide','live');
     $('hud').classList.add('on'); },
