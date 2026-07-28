@@ -800,7 +800,7 @@ function collectBones(model){
 }
 // world-space axes of the model, so rotations are predictable regardless of bone roll
 const _mq=new THREE.Quaternion(), _AUP=new THREE.Vector3(), _ART=new THREE.Vector3(), _AFW=new THREE.Vector3();
-let ALIVE=0.45;   // gentle: this mesh is ~36k shells on envelope weights — heavy flex tears it apart
+let ALIVE=1.0;    // RE-SKINNED: smooth blended weights (0 uncovered verts) — full flex is safe now
 function applyAlive(dt){
   if(!D.bones || !D.model || ALIVE<=0) return;
   D.model.getWorldQuaternion(_mq);
@@ -931,7 +931,35 @@ function shoot(power=0.35){
   D.recoil=0.4+power*0.6; S.shake=Math.max(S.shake,0.2+power*0.35);   // felt kick when you fire
 }
 const _b0=new THREE.Vector3(), _b1=new THREE.Vector3(), _bp=new THREE.Vector3(), _perp=new THREE.Vector3();
+// --- recursive branching arc: subdivide-and-displace, children fork off the trunk ---
+function arcPoints(a,b,gen,amp,out){
+  if(gen<=0){ out.push([a.clone(),b.clone()]); return; }
+  const mid=a.clone().lerp(b,0.5);
+  const off=new THREE.Vector3((Math.random()-0.5),(Math.random()-0.5),(Math.random()-0.5))
+    .normalize().multiplyScalar(amp);
+  mid.add(off);
+  arcPoints(a,mid,gen-1,amp*0.55,out);
+  arcPoints(mid,b,gen-1,amp*0.55,out);
+  if(gen>1 && Math.random()<0.55){                       // fork a child branch
+    const dir=b.clone().sub(a).multiplyScalar(0.4+Math.random()*0.5);
+    dir.applyAxisAngle(new THREE.Vector3(Math.random(),Math.random(),Math.random()).normalize(), 0.5+Math.random());
+    arcPoints(mid, mid.clone().add(dir), gen-2, amp*0.5, out);
+  }
+}
+function buildArc(from,to,power){
+  const segs=[]; arcPoints(from,to, 5, 2.2+power*4.5, segs);
+  const pos=new Float32Array(segs.length*6);
+  segs.forEach(([p,q],i)=>{ pos.set([p.x,p.y,p.z,q.x,q.y,q.z], i*6); });
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  return g;
+}
 function fillBolt(b){
+  if(b.arc){ scene.remove(b.arc); b.arc.geometry.dispose(); }
+  b.arc=new THREE.LineSegments(buildArc(b.origin,b.m.position,b.power||0.3),
+    new THREE.LineBasicMaterial({color:0xe6d4ff,transparent:true,opacity:0.55+0.45*Math.random(),
+      blending:THREE.AdditiveBlending,depthWrite:false}));
+  b.arc.frustumCulled=false; scene.add(b.arc);
+  return;
   const pos=b.lgeo.attributes.position.array, N=BOLT_SEG;
   _b0.copy(b.origin); _b1.copy(b.m.position);
   _perp.set(-b.vel.z,0,b.vel.x).normalize();     // a lateral axis
@@ -1014,7 +1042,9 @@ function updateBolts(dt){
       if(land){ plasmaImpact(bp,b.power||0.35); hit=true; }
     }
     if(hit) b.life=0;
-    if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.line); b.lgeo.dispose(); bolts.splice(i,1); }
+    if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.line); b.lgeo.dispose();
+      if(b.arc){ scene.remove(b.arc); b.arc.geometry.dispose(); }
+      bolts.splice(i,1); }
   }
 }
 
@@ -1519,7 +1549,7 @@ function tick(dt){
     const braking=key['KeyS']&&D.speed>16;
     // Wings ALWAYS beat — steady cruise flap that deepens on climb; weight capped
     // below the deep-fold frames that shatter this envelope-weighted mesh.
-    const wTarget = input.flap ? 0.85 : (braking ? 0.6 : 0.45);
+    const wTarget = input.flap ? 1.0 : (braking ? 0.85 : 0.55);   // full beat: the re-skin holds
     const w=THREE.MathUtils.lerp(D.flap.getEffectiveWeight(), wTarget, fdamp(5,dt));
     D.flap.setEffectiveWeight(w); D.glide.setEffectiveWeight(1-w);
     D.flap.timeScale = input.flap ? 1.55+D.boost*0.7 : (braking ? 1.9 : 1.0+D.boost*0.5);
