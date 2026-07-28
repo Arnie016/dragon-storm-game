@@ -64,6 +64,14 @@
   #hudTL{ min-width:184px; }
   #objTag .objmeta{ display:block; margin-top:5px; font-size:11px; letter-spacing:1px; color:#8fa0c2; }
   #objTag .objmeta b{ color:var(--teal); }
+  #abil{ bottom:44px; left:14px; display:flex; gap:8px; padding:7px 12px; }
+  #abil .ab{ font-size:10px; letter-spacing:1.5px; color:#4d5876; display:flex; align-items:center; gap:5px;
+    transition:color .2s, text-shadow .2s; }
+  #abil .ab b{ font-size:10px; padding:2px 6px; border-radius:5px; background:rgba(255,255,255,.05);
+    border:1px solid rgba(140,110,220,.2); color:#6b7796; }
+  #abil .ab.rdy{ color:#cbd9f5; text-shadow:0 0 12px rgba(150,110,255,.55); }
+  #abil .ab.rdy b{ color:#fff; background:rgba(140,100,240,.34); border-color:rgba(180,150,255,.65); }
+  #abil .ab.hot{ color:#ffd08a; text-shadow:0 0 14px rgba(255,170,80,.7); }
   #hudBR{ bottom:44px; right:14px; display:flex; gap:18px; padding:8px 16px; }
   #hudBR .inst{ display:flex; flex-direction:column; align-items:center; line-height:1; }
   #hudBR .iv{ font-family:var(--display); font-size:26px; font-weight:700; color:#eaf1ff; }
@@ -300,6 +308,11 @@
   </div>
   <div class="panel" id="objTag"><span id="objText">reach the cove — <b>8 beacons before nightfall</b></span>
     <span class="objmeta"><b id="beaconV">0/8</b> beacons · <b id="duskV">dusk</b></span></div>
+  <div class="panel" id="abil">
+    <span class="ab" id="abEcho"><b>C</b>ECHO</span>
+    <span class="ab" id="abFlock"><b>F</b>FLOCK</span>
+    <span class="ab" id="abSpiral"><b>A/D</b>SPIRAL</span>
+  </div>
   <div class="panel" id="hudBR">
     <div class="inst"><span class="iv" id="spdV">0</span><span class="il">SPEED</span></div>
     <div class="inst"><span class="iv" id="altV">0</span><span class="il">ALT m</span></div>
@@ -308,7 +321,7 @@
   <div id="arrow"></div>
   <div id="popup"></div>
   <div id="storyline"></div>
-  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> call flock · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view</div>
+  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view</div>
 </div>
 
 <div class="screen" id="menu">
@@ -809,8 +822,20 @@ function applyAlive(dt){
     D.bones.neck.rotateOnWorldAxis(_ART,(-D.pPitch*0.045)*g); }
   if(D.bones.head){ D.bones.head.rotateOnWorldAxis(_AUP,(-D.pTurn*0.075)*g);
     D.bones.head.rotateOnWorldAxis(_ART,(D.pPitch*0.05+Math.sin(t*0.8)*0.010)*g); }   // head leads the dive
-  // SPINE — a whisper of bank flex (wings left to the baked clip so they don't fight it)
+  // SPINE — bank flex
   if(D.bones.chest) D.bones.chest.rotateOnWorldAxis(_AFW,(D.pTurn*0.045)*g);
+  // WINGS — real articulation: they sweep with speed, cup on the climb, and the inside
+  // wing tucks / outside wing extends through a turn (differential, like a real banking bird)
+  if(D.bones.wings){
+    const sweep = -0.12 - Math.min(0.5, D.speed/62)*0.30;        // faster = swept back
+    const cup   = THREE.MathUtils.clamp(D.pPitch,-1,1)*0.22;      // climb = cupped air
+    const brake = (key['KeyS']&&D.speed>16) ? 0.45 : 0;           // air-brake spread
+    for(const w of D.bones.wings){
+      const diff = -D.pTurn*w.side*0.34;                          // inside tucks, outside extends
+      w.rotateOnWorldAxis(_AUP, (sweep+diff+brake*0.5)*g*w.side);
+      w.rotateOnWorldAxis(_AFW, (cup - brake*0.35)*g*w.side*0.6);
+    }
+  }
   // LEGS — tuck back into a clean streamlined line so they don't dangle as a crumpled lump
   const tuck=(D.speed>18?1:0.5)*g;
   if(D.bones.thighs) for(const b of D.bones.thighs){ if(b) b.rotateOnWorldAxis(_ART, -0.55*tuck); }
@@ -850,7 +875,7 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
   charges:3, chargeT:-1,                          // plasma pool + hold-to-charge timer (-1 = idle)
   nightfall:330, dayHold:100, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
   hp:100, hpMax:100, hurt:0,                        // the dragon can be shot down
-  echoCd:0, echoR:0, echoOn:false,                  // echolocation pulse
+  echoCd:0, echoR:0, echoOn:false, spiral:0, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
   dive:0, diveFired:false,                          // fury dive -> sonic boom
   turn:0, pTurn:0, pPitch:0 };
 
@@ -858,6 +883,9 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
 const bolts=[], BOLT_SEG=16;
 function shoot(power=0.35){
   if(S.shootCd>0 || !D.model || S.charges<1) return; S.shootCd=0.4; S.charges-=1;
+  // three distinct tiers: SPIT (fast, cheap) / BOLT / FURYBLAST (screen-shaking)
+  S.tier = power>0.85 ? 2 : (power>0.45 ? 1 : 0);
+  if(S.tier===2){ popup('FURY BLAST'); S.shootCd=0.65; }
   if(S.superCharge){ power=1.25; S.superCharge=0; popup('STORMFIRE'); }   // harvested lightning
   const head=new THREE.Vector3(); (D.mouth||D.headNode||D.group).getWorldPosition(head);
   const dir=new THREE.Vector3(-Math.sin(D.yaw),Math.sin(D.pitch)*0.95,-Math.cos(D.yaw)).normalize();
@@ -946,6 +974,12 @@ function updateDebris(dt){
 }
 function plasmaImpact(pos,power){
   const big=0.6+power*1.6;
+  // FURY BLAST leaves a crater ring of fire and a lingering scorch flash
+  if(power>0.85){
+    for(let i=0;i<14;i++){ const a=i/14*6.283;
+      smallBurst(pos.x+Math.cos(a)*13, pos.y+1, pos.z+Math.sin(a)*13, 0xff9a3c); }
+    S.flash=Math.max(S.flash,0.9); S.shake=Math.max(S.shake,1.1);
+  }
   bigExplosion(pos.clone(), power>0.55?0xffd08a:0xc98bff);
   for(let i=0;i<Math.round(5+power*10);i++){ const a=Math.random()*6.283, r=Math.random()*10*big;
     smallBurst(pos.x+Math.cos(a)*r, pos.y+Math.random()*6, pos.z+Math.sin(a)*r, 0xffc98a); }
@@ -1141,6 +1175,27 @@ function sonicBoom(){
   const wh=waveH(p.x,p.z,S.t);                       // blow the water open if you bottom out low
   if(p.y-wh<45){ for(let i=0;i<9;i++){ const a=Math.random()*6.283, r=8+Math.random()*34;
     smallBurst(p.x+Math.cos(a)*r, wh+1, p.z+Math.sin(a)*r, 0xcfe4f0); } }
+}
+// SPIRAL ACCELERATION: hold a hard turn at speed and the dragon corkscrews, winding up
+// a burst of ultra-acceleration (HTTYD's spiral dive). Release the turn to fire out of it.
+function driveSpiral(dt){
+  const hard = Math.abs(D.turn)>0.85 && D.speed>28;
+  S.spiral = THREE.MathUtils.clamp(S.spiral + (hard? dt*0.55 : -dt*1.1), 0, 1);
+  if(hard){
+    D.roll += D.turn*1.5*S.spiral*dt;                    // wind into the corkscrew
+    D.speed += S.spiral*16*dt;
+    S.shake=Math.max(S.shake,S.spiral*0.22);
+    if(S.spiral>0.35 && (S.spinT=(S.spinT||0)-dt)<=0){ S.spinT=0.08;
+      const p=D.group.position; smallBurst(p.x+(Math.random()-.5)*8,p.y+(Math.random()-.5)*6,p.z+(Math.random()-.5)*8,0xa9d8ff); }
+    if(S.spiral>=1 && !S.spiralMax){ S.spiralMax=true; popup('SPIRAL LOCKED'); }
+  }
+  if(S.spiral>0.6 && !hard && !S.spiralFired){          // release = ULTRA burst
+    S.spiralFired=true; D.speed=Math.min(96, D.speed+34);
+    S.boost=1; S.flash=Math.max(S.flash,0.4); S.shake=Math.max(S.shake,0.8);
+    popup('ULTRA'); AU.play('zap',0.5);
+    const p=D.group.position; shockwave(p.clone(),0x9fd8ff);
+  }
+  if(S.spiral<0.15){ S.spiralFired=false; S.spiralMax=false; }
 }
 function driveFuryDive(dt){
   const diving = D.pitch < -0.5 && D.speed > 30;
@@ -1351,7 +1406,7 @@ function tick(dt){
   const CRUISE=26, GRAV=13;
   const thrust=(input.flap?26:0) + throttle*20;             // W drives forward, flap bursts
   D.speed += (thrust - Math.sin(D.pitch)*GRAV*1.15 - (D.speed-CRUISE)*0.42)*dt;
-  D.speed = THREE.MathUtils.clamp(D.speed, 13, 62 + (S.dive||0)*20);   // fury dive breaks the ceiling
+  D.speed = THREE.MathUtils.clamp(D.speed, 13, 62 + (S.dive||0)*20 + (S.spiral||0)*34);   // fury dive breaks the ceiling
 
   /* ---- acceleration factor drives all the speed FX ---- */
   const inst=(D.speed-S.prevSpeed)/Math.max(dt,1e-3); S.prevSpeed=D.speed;
@@ -1406,7 +1461,7 @@ function tick(dt){
     if(cp>=1 && !S._chargeReady){ S._chargeReady=true; AU.play('flap',0.3); }        // "fully charged" tick
   } else if(D.mouth && D.mouth.scale.x>0.01){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; S._chargeReady=false; }
   updateBolts(dt); updateShocks(dt); updateDebris(dt); updateBursts(dt); updateTowers(dt); updateTowerCombat(dt);
-  updateEcho(dt); driveFuryDive(dt); updateStorm(dt); updateFlock(dt);
+  updateEcho(dt); driveFuryDive(dt); driveSpiral(dt); updateStorm(dt); updateFlock(dt);
   S.hurt=Math.max(0,S.hurt-dt*2); S.hp=Math.min(S.hpMax,S.hp+dt*1.5);   // slow regen between hits
 
   // wind gusts (all directions) — calmed while you're deliberately skimming a cliff
@@ -1588,6 +1643,9 @@ function hud(litNow){
   const pp=$('plasmaPips').children;
   for(let i=0;i<3;i++) pp[i].className=i<whole?'on':'';
   $('viewTag').textContent=S.fpv?'RIDE':'CHASE';
+  $('abEcho').className='ab'+(S.echoCd<=0?' rdy':'');
+  $('abFlock').className='ab'+(S.flockCd<=0?' rdy':'')+(S.flockT>0?' hot':'');
+  $('abSpiral').className='ab'+(S.spiral>0.15?' hot':(D.speed>28?' rdy':''));
   $('duskV').textContent = TOD.day<0.35?'dusk' : TOD.day<0.7?'twilight' : TOD.day<0.99?'nightfall' : 'night';
   // next-beacon arrow projected to screen
   const nb=rings.find(r=>!r.userData.hit);
@@ -1685,6 +1743,7 @@ function reset(){
   S.grazeT=0; S.splashT=0; S.hp=S.hpMax; S.hurt=0;
   for(const rg of REGIONS) rg.seen=false;
   S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.diveFired=false;
+  S.spiral=0; S.spiralFired=false; S.spiralMax=false;
   S.strikeT=0; S.strikeNext=12; S.superCharge=0; teleMark.visible=false;
   S.flockCd=0; S.flockT=0; for(const f of flock) scene.remove(f.m); flock.length=0;
   for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; sl.fireCd=1.5+Math.random(); sl.alerted=0; }
