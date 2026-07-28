@@ -499,6 +499,28 @@ function waveH(x,z,t){ const a=x*.8+(-z)*.6, b=x*-.5+(-z)*.9, c=x*.2+(-z)*-1.0;
   if(ROG.amp>0.01){ const dx=x-ROG.cx, dz=z-ROG.cz; h+=ROG.amp*Math.exp(-(dx*dx+dz*dz)/uRW.value); }
   return h; }
 
+/* ---- SHORELINE: foam collars so land meets sea with a real edge, not a flat seam ---- */
+const shores=[];
+const shoreMat=new THREE.MeshBasicMaterial({color:0xdCEaF2, transparent:true, opacity:0.34,
+  side:THREE.DoubleSide, depthWrite:false, blending:THREE.AdditiveBlending, fog:false});
+const wetMat=new THREE.MeshStandardMaterial({color:0x2a2e36, roughness:0.35, metalness:0.1});
+function shoreline(x,z,r){
+  const wet=new THREE.Mesh(new THREE.RingGeometry(r*0.86, r*1.30, 40), wetMat);
+  wet.rotation.x=-Math.PI/2; wet.position.set(x,0.35,z); scene.add(wet);      // dark wet apron
+  const foam=new THREE.Mesh(new THREE.RingGeometry(r*1.02, r*1.34, 44), shoreMat.clone());
+  foam.rotation.x=-Math.PI/2; foam.position.set(x,0.55,z); scene.add(foam);
+  shores.push({foam, wet, x, z, r});
+}
+function updateShores(){
+  for(const sh of shores){
+    const w=waveH(sh.x, sh.z, S.t);
+    sh.foam.position.y = 0.5 + w*0.55;                                        // foam rides the swell
+    const k = 0.30 + 0.22*Math.sin(S.t*1.6 + sh.x*0.05) + Math.max(0,w)*0.05;
+    sh.foam.material.opacity = k;
+    sh.foam.scale.setScalar(1 + 0.035*Math.sin(S.t*1.1 + sh.z*0.04));         // breathing surf line
+  }
+}
+
 /* ---- rocks (collidable) + purple crystal spires ---- */
 const colliders = [];   // {x,z,r,top}
 const rockMat = new THREE.MeshStandardMaterial({ color:0x111318, roughness:.92, flatShading:true });
@@ -509,7 +531,7 @@ function rock(x,z,r,h){
     v.add(n); v.y*=h/r; p.setXYZ(i,v.x,v.y,v.z); }
   g.computeVertexNormals();
   const m=new THREE.Mesh(g,rockMat); m.position.set(x,2,z); scene.add(m);
-  colliders.push({x,z,r:r*0.82,top:h*1.0+4}); return m;
+  colliders.push({x,z,r:r*0.82,top:h*1.0+4}); shoreline(x,z,r*0.95); return m;
 }
 rock(0,0,34,42); rock(58,32,18,28); rock(-64,-22,16,34); rock(34,-58,13,20);
 rock(-30,70,14,24); rock(90,-30,12,18);
@@ -536,7 +558,7 @@ function mountain(x,z,r,h){
   const m=new THREE.Mesh(g,mtnMat); m.position.set(x,h/2-4,z); m.rotation.y=Math.random()*6; scene.add(m);
   const cap=new THREE.Mesh(new THREE.ConeGeometry(r*0.34,h*0.28,9), snowMat);
   cap.position.set(x, h*0.5-4 + h*0.5 - h*0.14, z); cap.rotation.y=m.rotation.y; scene.add(cap);
-  colliders.push({x,z,r:r*0.5,top:h*0.72}); return m;
+  colliders.push({x,z,r:r*0.5,top:h*0.72}); shoreline(x,z,r*0.62); return m;
 }
 mountain(-260,-120,140,220); mountain(300,180,120,190); mountain(120,-360,150,240);
 mountain(-360,220,110,170); mountain(340,-280,100,150); mountain(-140,380,130,200);
@@ -875,7 +897,7 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
   charges:3, chargeT:-1,                          // plasma pool + hold-to-charge timer (-1 = idle)
   nightfall:330, dayHold:100, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
   hp:100, hpMax:100, hurt:0,                        // the dragon can be shot down
-  echoCd:0, echoR:0, echoOn:false, spiral:0, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
+  echoCd:0, echoR:0, echoOn:false, lift:0, beatCd:0, spiral:0, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
   dive:0, diveFired:false,                          // fury dive -> sonic boom
   turn:0, pTurn:0, pPitch:0 };
 
@@ -1002,6 +1024,21 @@ function updateDebris(dt){
 }
 function plasmaImpact(pos,power){
   const big=0.6+power*1.6;
+  const wh=waveH(pos.x,pos.z,S.t);
+  if(pos.y < wh+4){                       // water strike: geyser column + spreading wave ring
+    for(let i=0;i<Math.round(10+power*14);i++){
+      const a=Math.random()*6.283, r=Math.random()*7*big;
+      smallBurst(pos.x+Math.cos(a)*r, wh+1+Math.random()*16*big, pos.z+Math.sin(a)*r, 0xdcecf6);
+    }
+    for(const rr of [1,2]){
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(4*big*rr,0.5,8,26),
+        new THREE.MeshBasicMaterial({color:0xcfe4f0,transparent:true,opacity:.75,
+          blending:THREE.AdditiveBlending,depthWrite:false}));
+      ring.position.set(pos.x, wh+0.6, pos.z); ring.rotation.x=-Math.PI/2; scene.add(ring);
+      shocks.push({m:ring,life:0.55+rr*0.2,dur:0.55+rr*0.2,flat:true});
+    }
+    S.shake=Math.max(S.shake,0.5+power*0.4);
+  }
   // FURY BLAST leaves a crater ring of fire and a lingering scorch flash
   if(power>0.85){
     for(let i=0;i<14;i++){ const a=i/14*6.283;
@@ -1454,7 +1491,16 @@ function tick(dt){
   p.addScaledVector(fwd, Math.cos(D.pitch)*D.speed*dt);
   const flapBoost=(input.flap?7:0);
   const beatHeave = D.flap ? Math.sin(S.t*3.1)*2.4*D.flap.getEffectiveWeight() : 0;  // ride each wingbeat
-  p.y += (Math.sin(D.pitch)*D.speed - sink + flapBoost + beatHeave)*dt;
+  // SPACE = a real downbeat: a punched impulse that decays, so you feel yourself
+  // powering up against gravity rather than just floating higher
+  if(input.flap && (S.beatCd=(S.beatCd||0)-dt)<=0){
+    S.beatCd=0.46; S.lift=Math.min(16, (S.lift||0)+11);          // impulse per stroke
+    S.shake=Math.max(S.shake,0.18); AU.play('flap',0.5);
+    const pp=D.group.position;                                    // downwash puff off each wingtip
+    for(const sx of [-1,1]) smallBurst(pp.x+sx*7, pp.y-3, pp.z, 0xbcd0e8);
+  }
+  S.lift=Math.max(0,(S.lift||0)-dt*13);
+  p.y += (Math.sin(D.pitch)*D.speed - sink + flapBoost + beatHeave + (S.lift||0))*dt;
   p.y = Math.min(p.y, 240);
 
   if(input.flap && S.flapCd<=0){ AU.play('flap',0.45); S.flapCd=0.42; }
@@ -1497,16 +1543,16 @@ function tick(dt){
   // wind gusts (all directions) — calmed while you're deliberately skimming a cliff
   const gustK=S.grazing?0.2:1;
   const gx=Math.sin(S.t*.37+1.7)+.6*Math.sin(S.t*.13), gz=Math.sin(S.t*.29+4.1)+.6*Math.sin(S.t*.17+2.);
-  p.x+=gx*2.6*dt*gustK; p.z+=gz*2.6*dt*gustK;
+  p.x+=gx*1.1*dt*gustK; p.z+=gz*1.1*dt*gustK;      // gentler ambient drift: control stays yours
   // SQUALLS: periodic hard gusts you can feel — they shove, roll the dragon, and howl
   S.gustNext=(S.gustNext||6)-dt;
   if(S.gustNext<=0){ S.gustNext=7+Math.random()*9; S.gustPow=1; S.gustDir=Math.random()*6.283;
     AU.play('thunder',0.16); }
   if(S.gustPow>0){ S.gustPow=Math.max(0,S.gustPow-dt*0.55);
     const e=Math.sin(Math.min(1,S.gustPow)*Math.PI)*gustK;
-    p.x+=Math.cos(S.gustDir)*22*e*dt; p.z+=Math.sin(S.gustDir)*22*e*dt;
-    p.y+=Math.sin(S.t*3.1)*5*e*dt;
-    D.roll += Math.sin(S.gustDir-D.yaw)*0.9*e*dt;              // banked by the squall — you fight it
+    p.x+=Math.cos(S.gustDir)*12*e*dt; p.z+=Math.sin(S.gustDir)*12*e*dt;
+    p.y+=Math.sin(S.t*3.1)*2.5*e*dt;
+    D.roll += Math.sin(S.gustDir-D.yaw)*0.45*e*dt;              // banked by the squall — you fight it
     S.shake=Math.max(S.shake,e*0.3);
   }
 
@@ -1631,7 +1677,7 @@ function tick(dt){
   if(S.t>S.nextThunder){ S.nextThunder=S.t+8+Math.random()*14; S.flash=1; setTimeout(()=>AU.play('thunder',0.55), 250+Math.random()*500); }
   if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
 
-  updateRain(); updateWindLines();
+  updateRain(); updateWindLines(); updateShores();
 
   hud(litNow);
 }
@@ -1773,7 +1819,7 @@ function reset(){
   S.grazeT=0; S.splashT=0; S.hp=S.hpMax; S.hurt=0;
   for(const rg of REGIONS) rg.seen=false;
   S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.diveFired=false;
-  S.spiral=0; S.spiralFired=false; S.spiralMax=false;
+  S.spiral=0; S.spiralFired=false; S.spiralMax=false; S.lift=0; S.beatCd=0;
   S.strikeT=0; S.strikeNext=12; S.superCharge=0; teleMark.visible=false;
   S.flockCd=0; S.flockT=0; for(const f of flock) scene.remove(f.m); flock.length=0;
   for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; sl.fireCd=1.5+Math.random(); sl.alerted=0; }
