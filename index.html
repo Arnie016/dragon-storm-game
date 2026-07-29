@@ -101,6 +101,46 @@
     letter-spacing:2px; color:var(--teal); text-shadow:0 0 18px rgba(56,230,208,.8); opacity:0; }
   @keyframes pop{ 0%{opacity:0; transform:translate(-50%,-30%) scale(.7);} 25%{opacity:1;}
     100%{opacity:0; transform:translate(-50%,-120%) scale(1.1);} }
+  #book{ position:fixed; inset:0; z-index:7; display:flex; align-items:center; justify-content:center;
+    background:rgba(4,6,13,.55); opacity:0; pointer-events:none; transition:opacity .28s; }
+  #book.on{ opacity:1; pointer-events:auto; }
+  #bookInner{ width:min(90vw,760px); max-height:88vh; overflow:auto; padding:26px 30px 22px;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(120,90,40,.16), transparent 55%),
+      radial-gradient(ellipse at 80% 90%, rgba(90,60,25,.18), transparent 55%),
+      linear-gradient(160deg,#e8d9b4,#d9c69b 55%,#c9b184);
+    color:#3a2c18; border-radius:5px; position:relative;
+    box-shadow:0 30px 80px rgba(0,0,0,.75), inset 0 0 60px rgba(120,80,30,.28);
+    transform:rotate(-.5deg) scale(.94); transition:transform .3s cubic-bezier(.2,.9,.25,1);
+    font-family:var(--body); }
+  #book.on #bookInner{ transform:rotate(-.5deg) scale(1); }
+  #bookInner::before{ content:''; position:absolute; left:0; right:0; top:-6px; height:26px;
+    background:linear-gradient(180deg,#3c2a17,#5a3f22); border-radius:3px;
+    box-shadow:0 3px 10px rgba(0,0,0,.5); }
+  .bk-head{ text-align:center; margin-top:14px; border-bottom:2px solid rgba(90,60,25,.45); padding-bottom:10px; }
+  .bk-rune{ font-size:16px; color:#8a5a22; }
+  .bk-title{ font-family:var(--display); font-size:clamp(22px,3.6vw,34px); font-weight:900;
+    letter-spacing:.14em; color:#4a3418; }
+  .bk-sub{ font-size:12px; font-style:italic; color:#6c5432; margin-top:3px; }
+  .bk-sub b{ color:#3a2c18; }
+  .bk-card{ margin:14px auto 6px; max-width:420px; text-align:center; border:2px solid rgba(90,60,25,.5);
+    border-radius:4px; padding:10px 14px; background:rgba(255,245,220,.32); }
+  .bk-name{ font-family:var(--display); font-weight:700; letter-spacing:.22em; font-size:15px; }
+  .bk-art{ font-size:40px; line-height:1.1; filter:grayscale(.4) sepia(.5); }
+  .bk-stats{ display:grid; grid-template-columns:1fr 1fr; gap:2px 16px; font-size:12px;
+    font-family:var(--mono); margin-top:6px; }
+  .bk-stats span{ display:flex; justify-content:space-between; border-bottom:1px dotted rgba(90,60,25,.4); }
+  .bk-stats b{ font-weight:700; }
+  .bk-note{ font-size:11.5px; font-style:italic; color:#6c5432; margin-top:7px; }
+  .bk-skills{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:8px 18px; margin-top:14px; }
+  .bk-skill{ display:flex; gap:9px; align-items:baseline; font-size:13px; }
+  .bk-skill .k{ font-family:var(--mono); font-size:11px; font-weight:700; padding:2px 7px; border-radius:3px;
+    background:rgba(60,40,18,.85); color:#f0e2c2; letter-spacing:1px; white-space:nowrap; }
+  .bk-skill.locked{ opacity:.42; }
+  .bk-skill.locked .k{ background:rgba(60,40,18,.30); }
+  .bk-skill .d{ font-size:11.5px; color:#6c5432; font-style:italic; }
+  .bk-foot{ margin-top:14px; text-align:center; font-size:11.5px; font-style:italic; color:#6c5432;
+    border-top:1px dotted rgba(90,60,25,.5); padding-top:9px; }
   #chargeHud{ position:absolute; opacity:0; transition:opacity .12s; pointer-events:none; text-align:center;
     transform:translate(-50%,-50%); }
   #chargeHud.on{ opacity:1; }
@@ -337,8 +377,28 @@
   <div id="arrow"></div>
   <div id="popup"></div>
   <div id="storyline"></div>
+  <div id="book">
+    <div id="bookInner">
+      <div class="bk-head">
+        <div class="bk-rune">◈</div>
+        <div class="bk-title">BOOK OF DRAGONS</div>
+        <div class="bk-sub">strapped to the saddle · <b>TAB</b> to close</div>
+      </div>
+      <div class="bk-card">
+        <div class="bk-name">NIGHT FURY</div>
+        <div class="bk-art">🐉</div>
+        <div class="bk-stats">
+          <span>⚔ ATTACK<b id="stAtk">14</b></span><span>➤ SPEED<b id="stSpd">18</b></span>
+          <span>⛨ ARMOUR<b id="stArm">10</b></span><span>✸ FIREPOWER<b id="stFire">15</b></span>
+        </div>
+        <div class="bk-note">"the unholy offspring of lightning and death itself"</div>
+      </div>
+      <div class="bk-skills" id="bkSkills"></div>
+      <div class="bk-foot" id="bkFoot">skills reveal themselves as you earn them</div>
+    </div>
+  </div>
   <div id="chargeHud"><div id="chargeRing"><i></i></div><div id="chargeTxt">SPIT</div></div>
-  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view</div>
+  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> book</div>
 </div>
 
 <div class="screen" id="menu">
@@ -618,7 +678,9 @@ function updateShores(){
 
 /* ---- rocks (collidable) + purple crystal spires ---- */
 const colliders = [];   // {x,z,r,top}
-const rockMat = new THREE.MeshStandardMaterial({ color:0x111318, roughness:.92, flatShading:true });
+const rockMat = new THREE.MeshStandardMaterial({ color:0x141922, roughness:.72, metalness:.10, flatShading:true });
+const iceMat  = new THREE.MeshStandardMaterial({ color:0xbcd6e8, roughness:.22, metalness:.18,
+  transparent:true, opacity:.55, flatShading:true });
 function rock(x,z,r,h){
   const g=new THREE.IcosahedronGeometry(r,2), p=g.attributes.position;
   for(let i=0;i<p.count;i++){ const v=new THREE.Vector3().fromBufferAttribute(p,i);
@@ -626,7 +688,10 @@ function rock(x,z,r,h){
     v.add(n); v.y*=h/r; p.setXYZ(i,v.x,v.y,v.z); }
   g.computeVertexNormals();
   const m=new THREE.Mesh(g,rockMat); m.position.set(x,2,z); scene.add(m);
-  colliders.push({x,z,r:r*0.82,top:h*1.0+4}); shoreline(x,z,r*0.95); return m;
+  colliders.push({x,z,r:r*0.82,top:h*1.0+4}); shoreline(x,z,r*0.95);
+  if(r>12){ const cap=new THREE.Mesh(new THREE.IcosahedronGeometry(r*0.52,1), iceMat);
+    cap.position.set(x,h*0.78,z); cap.scale.y=0.42; scene.add(cap); }
+  return m;
 }
 rock(0,0,34,42); rock(58,32,18,28); rock(-64,-22,16,34); rock(34,-58,13,20);
 rock(-30,70,14,24); rock(90,-30,12,18);
@@ -987,6 +1052,7 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyV') S.fpv=!S.fpv;
   if(e.code==='KeyC' && !e.repeat) echoPulse();
   if(e.code==='KeyF' && !e.repeat) callFlock();
+  if(e.code==='Tab'){ e.preventDefault(); if(S.started) toggleBook(); }
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
 });
 addEventListener('keyup',e=>{ key[e.code]=false;
@@ -1001,7 +1067,8 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
   charges:3, chargeT:-1,                          // plasma pool + hold-to-charge timer (-1 = idle)
   nightfall:330, dayHold:100, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
   hp:100, hpMax:100, hurt:0,                        // the dragon can be shot down
-  echoCd:0, echoR:0, echoOn:false, lift:0, beatCd:0, poison:0, spiral:0, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
+  echoCd:0, echoR:0, echoOn:false, lift:0, beatCd:0, poison:0, spiral:0,
+  bookOpen:false, bookLost:false, violence:0, violenceWarned:false, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
   dive:0, diveFired:false,                          // fury dive -> sonic boom
   turn:0, pTurn:0, pPitch:0 };
 
@@ -1052,7 +1119,7 @@ function shoot(power=0.35){
   if(th){ setTimeout(()=>{ try{ th.currentTime=0; th.playbackRate=1.5-power*0.7; th.volume=0.2+power*0.45;
     th.play().catch(()=>{}); }catch(e){} }, 40+power*70); }
   S.flash=Math.max(S.flash,0.14+power*0.34);
-  if(power>0.55){ AU.play('crash',0.4+power*0.35); }   // charged shots leave with a bang
+  if(power>0.55){ AU.play('crash',0.4+power*0.35); addViolence(0.55); }  // fury blasts strain the strap
   if(power>0.8){ S.shake=Math.max(S.shake,0.5); }
   D.recoil=0.4+power*0.6; S.shake=Math.max(S.shake,0.2+power*0.35);   // felt kick when you fire
 }
@@ -1098,7 +1165,7 @@ function fillBolt(b){
   b.lgeo.attributes.position.needsUpdate=true;
 }
 function destroyTower(sl,power){
-  if(sl.destroyed) return; sl.destroyed=true; sl.disabled=1e9; sl.lit=0;
+  if(sl.destroyed) return; addViolence(3.2); sl.destroyed=true; sl.disabled=1e9; sl.lit=0;
   sl.fall=1; sl.spot.intensity=0; sl.cone.visible=false; sl.lampGlow.intensity=0;
   sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0;
   sl.lamp.material.emissiveIntensity=0;
@@ -1210,6 +1277,52 @@ function popup(text){ popEl.textContent=text; popEl.style.animation='none'; void
 const storyEl=document.getElementById('storyline');
 function storyPop(text,dur=5){ storyEl.textContent=text; storyEl.style.animation='none'; void storyEl.offsetWidth;
   storyEl.style.animation=`storyfade ${dur}s ease-out`; }
+
+const SKILLS=[
+  {k:'W / S',   name:'Beat & Brake',  d:'drive the wings, spill the air',        have:()=>true},
+  {k:'SPACE',   name:'Downbeat',      d:'each stroke lifts you against gravity', have:()=>true},
+  {k:'UP / DOWN',name:'Climb & Dive', d:'read the wind with your body',          have:()=>true},
+  {k:'X',       name:'Plasma Breath', d:'hold to charge: spit, bolt, fury',      have:()=>true},
+  {k:'V',       name:"Rider's Eye",   d:'ride first-person',                     have:()=>true},
+  {k:'C',       name:'Echolocation',  d:'see the world by sound',                have:()=>S.score>=1},
+  {k:'HOLD A/D',name:'Spiral to Ultra',d:'wind the corkscrew, then release',     have:()=>S.score>=2},
+  {k:'DOWN,UP', name:'Fury Dive',     d:'scream down, pull up: sonic boom',      have:()=>S.score>=3},
+  {k:'F',       name:'Dragon Call',   d:'the wild flock hides you',              have:()=>S.score>=4},
+];
+function renderBook(){
+  const el=$('bkSkills'); if(!el) return;
+  el.innerHTML=SKILLS.map(sk=>{ const got=sk.have();
+    return '<div class="bk-skill'+(got?'':' locked')+'"><span class="k">'+(got?sk.k:'? ? ?')+'</span>'+
+      '<span><b>'+(got?sk.name:'not yet learned')+'</b><br><span class="d">'+
+      (got?sk.d:'fly further to earn it')+'</span></span></div>'; }).join('');
+  $('stAtk').textContent = 12+Math.min(6,searchlights.filter(t=>t.destroyed).length*2);
+  $('stSpd').textContent = Math.round(D.speed);
+  $('stArm').textContent = Math.max(1,Math.round(S.hp/10));
+  $('stFire').textContent = 12+Math.round(S.charges||0);
+  $('bkFoot').textContent = S.bookLost
+    ? 'the pages are gone, torn away over the water. fly from memory.'
+    : 'skills reveal themselves as you earn them';
+}
+function toggleBook(){
+  if(S.bookLost){ popup('THE BOOK IS GONE'); return; }
+  S.bookOpen=!S.bookOpen; $('book').classList.toggle('on',S.bookOpen);
+  if(S.bookOpen) renderBook();
+  AU.play('flap',0.25);
+}
+function addViolence(v){
+  if(S.bookLost) return;
+  S.violence=(S.violence||0)+v;
+  if(S.violence>=7){
+    S.bookLost=true; S.bookOpen=false; $('book').classList.remove('on');
+    popup('THE BOOK IS TORN AWAY');
+    storyPop('The strap gives. Pages scatter over the black water, every one of them gone. You fly from memory now.',6.5);
+    S.flash=Math.max(S.flash,0.5); S.shake=Math.max(S.shake,0.8); AU.play('crash',0.5);
+    const p=D.group.position;
+    for(let i=0;i<16;i++) smallBurst(p.x+(Math.random()-.5)*30,p.y+(Math.random()-.5)*20,p.z+(Math.random()-.5)*30,0xe8d9b4);
+  } else if(S.violence>=4 && !S.violenceWarned){
+    S.violenceWarned=true; storyPop('The saddle strap is fraying. Every reckless blast loosens it further.',5);
+  }
+}
 
 /* ---- the flight is choreographed: three sworn tasks, told as story beats ---- */
 const MISSIONS=[
@@ -1863,6 +1976,7 @@ function hud(litNow){
   const dp=Math.round(S.detection*100);
   $('detPct').textContent = dp>=70?dp+'% SEEN' : dp>=35?dp+'% HUNTED' : dp+'%';
   $('detPct').style.color = dp>=70?'#ff5a7a' : dp>=35?'#ffbe6a' : '#dbe7fb';
+  if(S.bookOpen && (S.bookT=(S.bookT||0)-1)<=0){ S.bookT=20; renderBook(); }
   $('duskV').textContent = TOD.day<0.35?'dusk' : TOD.day<0.7?'twilight' : TOD.day<0.99?'nightfall' : 'night';
   // next-beacon arrow projected to screen
   const nb=rings.find(r=>!r.userData.hit);
@@ -1961,6 +2075,7 @@ function reset(){
   for(const rg of REGIONS) rg.seen=false;
   S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.diveFired=false;
   S.spiral=0; S.spiralFired=false; S.spiralMax=false; S.lift=0; S.beatCd=0; S.poison=0;
+  S.bookLost=false; S.violence=0; S.violenceWarned=false; S.bookOpen=false; $('book').classList.remove('on');
   S.strikeT=0; S.strikeNext=12; S.superCharge=0; teleMark.visible=false;
   S.flockCd=0; S.flockT=0; for(const f of flock) scene.remove(f.m); flock.length=0;
   for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; sl.fireCd=1.5+Math.random(); sl.alerted=0; }
