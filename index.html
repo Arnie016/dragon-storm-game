@@ -101,14 +101,64 @@
     letter-spacing:2px; color:var(--teal); text-shadow:0 0 18px rgba(56,230,208,.8); opacity:0; }
   @keyframes pop{ 0%{opacity:0; transform:translate(-50%,-30%) scale(.7);} 25%{opacity:1;}
     100%{opacity:0; transform:translate(-50%,-120%) scale(1.1);} }
+  #shop{ position:fixed; inset:0; z-index:7; display:flex; align-items:center; justify-content:center;
+    background:rgba(4,6,13,.6); opacity:0; pointer-events:none; transition:opacity .28s; }
+  #shop.on{ opacity:1; pointer-events:auto; }
+  #shopInner{ width:min(92vw,700px); max-height:86vh; overflow:auto; padding:30px 38px 26px;
+    color:#3a2c18; font-family:var(--body); position:relative; border-radius:4px;
+    background:
+      radial-gradient(circle at 20% 70%, rgba(90,60,20,.22), transparent 22%),
+      repeating-linear-gradient(92deg, rgba(120,90,45,.05) 0 2px, transparent 2px 5px),
+      linear-gradient(160deg,#e3d2a8,#c9b184);
+    clip-path:polygon(1% 4%,10% 0.5%,25% 2%,40% 0.4%,58% 2%,74% 0.5%,90% 2%,100% 1%,99% 20%,
+      100% 40%,99% 60%,100% 80%,99% 99%,84% 97.5%,68% 99.5%,50% 97.5%,32% 99.5%,16% 97.5%,1% 99%,
+      0.5% 78%,1.5% 58%,0.5% 38%,1.5% 18%);
+    box-shadow:0 30px 80px rgba(0,0,0,.75); }
+  .up{ display:flex; align-items:center; gap:14px; padding:11px 4px; border-bottom:1px dotted rgba(90,60,25,.45); }
+  .up .nm{ flex:1; }
+  .up .nm b{ font-family:var(--display); font-size:17px; letter-spacing:.05em; }
+  .up .nm i{ display:block; font-size:13px; color:#6c5432; }
+  .up .lv{ font-family:var(--mono); font-size:12px; color:#6c5432; }
+  .up button{ font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:1px; cursor:pointer;
+    padding:7px 14px; border-radius:4px; border:1px solid #6b4a20; background:#3c2a17; color:#f4e6c6; }
+  .up button:disabled{ opacity:.35; cursor:default; }
+  #ach{ position:fixed; left:50%; top:26%; transform:translate(-50%,-50%); z-index:8; opacity:0;
+    pointer-events:none; text-align:center; }
+  #ach.on{ animation:achpop 4s cubic-bezier(.2,.9,.25,1) forwards; }
+  @keyframes achpop{ 0%{opacity:0; transform:translate(-50%,-50%) scale(.6) rotate(-4deg);}
+    12%{opacity:1; transform:translate(-50%,-50%) scale(1.06);}
+    18%{transform:translate(-50%,-50%) scale(1);} 82%{opacity:1;}
+    100%{opacity:0; transform:translate(-50%,-58%) scale(1.02);} }
+  .ach-in{ padding:22px 46px; position:relative;
+    background:linear-gradient(160deg, rgba(232,217,180,.97), rgba(198,172,126,.97));
+    clip-path:polygon(2% 6%,8% 0,22% 5%,38% 0,54% 5%,70% 0,86% 5%,97% 1%,100% 12%,98% 30%,
+      100% 50%,98% 70%,100% 88%,95% 99%,80% 95%,64% 100%,48% 95%,32% 100%,16% 95%,3% 99%,0 84%,2% 62%,0 40%,2% 20%);
+    box-shadow:0 20px 70px rgba(0,0,0,.7), 0 0 90px rgba(255,190,90,.35); }
+  .ach-k{ font-family:var(--mono); font-size:11px; letter-spacing:.5em; color:#8a5a22; }
+  .ach-n{ font-family:var(--display); font-size:clamp(26px,4.4vw,44px); font-weight:900;
+    letter-spacing:.08em; color:#3d2a12; margin:4px 0 2px; }
+  .ach-d{ font-family:var(--body); font-style:italic; font-size:15px; color:#6c5432; }
+  .ach-key{ display:inline-block; margin-top:9px; font-family:var(--mono); font-size:15px; font-weight:700;
+    letter-spacing:2px; padding:5px 15px; border-radius:4px; background:#3c2a17; color:#f4e6c6; }
   #book{ position:fixed; inset:0; z-index:7; display:flex; align-items:center; justify-content:center;
     background:rgba(4,6,13,.55); opacity:0; pointer-events:none; transition:opacity .28s; }
   #book.on{ opacity:1; pointer-events:auto; }
-  #bookInner{ width:min(90vw,760px); max-height:88vh; overflow:auto; padding:26px 30px 22px;
+  #bookInner{ width:min(92vw,820px); max-height:88vh; overflow:auto; padding:34px 40px 30px;
+    clip-path:polygon(0% 2%,4% 0.4%,11% 1.6%,19% 0.2%,28% 1.8%,37% 0.5%,46% 1.9%,55% 0.3%,
+      64% 1.7%,73% 0.4%,82% 1.8%,91% 0.6%,97% 1.9%,100% 1%,99.2% 9%,100% 18%,98.8% 27%,
+      100% 36%,99% 45%,100% 54%,98.9% 63%,100% 72%,99.1% 81%,100% 90%,99% 98%,
+      92% 99.6%,83% 98.2%,74% 99.7%,65% 98.3%,56% 99.6%,47% 98.1%,38% 99.5%,29% 98.2%,
+      20% 99.6%,11% 98.4%,3% 99.7%,0.6% 92%,1.7% 83%,0.3% 74%,1.6% 65%,0.4% 56%,
+      1.8% 47%,0.5% 38%,1.9% 29%,0.6% 20%,1.8% 11%);
     background:
       radial-gradient(ellipse at 20% 10%, rgba(120,90,40,.16), transparent 55%),
       radial-gradient(ellipse at 80% 90%, rgba(90,60,25,.18), transparent 55%),
-      linear-gradient(160deg,#e8d9b4,#d9c69b 55%,#c9b184);
+      radial-gradient(circle at 12% 62%, rgba(90,60,20,.22), transparent 22%),
+      radial-gradient(circle at 78% 24%, rgba(110,75,30,.20), transparent 18%),
+      radial-gradient(circle at 44% 88%, rgba(80,52,18,.24), transparent 20%),
+      repeating-linear-gradient(94deg, rgba(120,90,45,.05) 0 2px, transparent 2px 5px),
+      repeating-linear-gradient(2deg, rgba(120,90,45,.045) 0 3px, transparent 3px 7px),
+      linear-gradient(160deg,#e3d2a8,#d2bb8c 55%,#bda372);
     color:#3a2c18; border-radius:5px; position:relative;
     box-shadow:0 30px 80px rgba(0,0,0,.75), inset 0 0 60px rgba(120,80,30,.28);
     transform:rotate(-.5deg) scale(.94); transition:transform .3s cubic-bezier(.2,.9,.25,1);
@@ -119,26 +169,26 @@
     box-shadow:0 3px 10px rgba(0,0,0,.5); }
   .bk-head{ text-align:center; margin-top:14px; border-bottom:2px solid rgba(90,60,25,.45); padding-bottom:10px; }
   .bk-rune{ font-size:16px; color:#8a5a22; }
-  .bk-title{ font-family:var(--display); font-size:clamp(22px,3.6vw,34px); font-weight:900;
-    letter-spacing:.14em; color:#4a3418; }
-  .bk-sub{ font-size:12px; font-style:italic; color:#6c5432; margin-top:3px; }
+  .bk-title{ font-family:var(--display); font-size:clamp(30px,5.2vw,52px); font-weight:900;
+    letter-spacing:.16em; color:#3d2a12; text-shadow:0 1px 0 rgba(255,240,210,.5); }
+  .bk-sub{ font-size:15px; font-style:italic; color:#6c5432; margin-top:5px; }
   .bk-sub b{ color:#3a2c18; }
   .bk-card{ margin:14px auto 6px; max-width:420px; text-align:center; border:2px solid rgba(90,60,25,.5);
     border-radius:4px; padding:10px 14px; background:rgba(255,245,220,.32); }
-  .bk-name{ font-family:var(--display); font-weight:700; letter-spacing:.22em; font-size:15px; }
+  .bk-name{ font-family:var(--display); font-weight:700; letter-spacing:.24em; font-size:22px; }
   .bk-art{ font-size:40px; line-height:1.1; filter:grayscale(.4) sepia(.5); }
-  .bk-stats{ display:grid; grid-template-columns:1fr 1fr; gap:2px 16px; font-size:12px;
+  .bk-stats{ display:grid; grid-template-columns:1fr 1fr; gap:4px 20px; font-size:15px;
     font-family:var(--mono); margin-top:6px; }
   .bk-stats span{ display:flex; justify-content:space-between; border-bottom:1px dotted rgba(90,60,25,.4); }
   .bk-stats b{ font-weight:700; }
-  .bk-note{ font-size:11.5px; font-style:italic; color:#6c5432; margin-top:7px; }
+  .bk-note{ font-size:14px; font-style:italic; color:#6c5432; margin-top:9px; }
   .bk-skills{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:8px 18px; margin-top:14px; }
-  .bk-skill{ display:flex; gap:9px; align-items:baseline; font-size:13px; }
-  .bk-skill .k{ font-family:var(--mono); font-size:11px; font-weight:700; padding:2px 7px; border-radius:3px;
+  .bk-skill{ display:flex; gap:10px; align-items:baseline; font-size:16px; }
+  .bk-skill .k{ font-family:var(--mono); font-size:13px; font-weight:700; padding:3px 9px; border-radius:3px;
     background:rgba(60,40,18,.85); color:#f0e2c2; letter-spacing:1px; white-space:nowrap; }
   .bk-skill.locked{ opacity:.42; }
   .bk-skill.locked .k{ background:rgba(60,40,18,.30); }
-  .bk-skill .d{ font-size:11.5px; color:#6c5432; font-style:italic; }
+  .bk-skill .d{ font-size:13px; color:#6c5432; font-style:italic; }
   .bk-foot{ margin-top:14px; text-align:center; font-size:11.5px; font-style:italic; color:#6c5432;
     border-top:1px dotted rgba(90,60,25,.5); padding-top:9px; }
   #chargeHud{ position:absolute; opacity:0; transition:opacity .12s; pointer-events:none; text-align:center;
@@ -361,6 +411,7 @@
   <div class="panel" id="hudTR">
     <div class="mini">VIEW<b id="viewTag">CHASE</b></div>
     <div class="mini">FPS<b id="fpsV">–</b></div>
+    <div class="mini">SCALES<b id="scalesV">0</b></div>
   </div>
   <div class="panel" id="objTag"><span id="objText">reach the cove — <b>8 beacons before nightfall</b></span>
     <span class="objmeta"><b id="beaconV">0/8</b> beacons · <b id="duskV">dusk</b></span></div>
@@ -377,6 +428,13 @@
   <div id="arrow"></div>
   <div id="popup"></div>
   <div id="storyline"></div>
+  <div id="shop"><div id="shopInner">
+    <div class="bk-head"><div class="bk-rune">⚒</div>
+      <div class="bk-title">THE FORGE</div>
+      <div class="bk-sub">Gobber's saddle-work · <b>B</b> to close · <b id="shScales">0</b> scales</div></div>
+    <div id="shopList"></div>
+    <div class="bk-foot">every fitting makes her answer faster</div>
+  </div></div>
   <div id="book">
     <div id="bookInner">
       <div class="bk-head">
@@ -397,8 +455,11 @@
       <div class="bk-foot" id="bkFoot">skills reveal themselves as you earn them</div>
     </div>
   </div>
+  <div id="ach"><div class="ach-in"><div class="ach-k">SKILL LEARNED</div>
+    <div class="ach-n" id="achName">—</div><div class="ach-d" id="achDesc">—</div>
+    <div class="ach-key" id="achKey">—</div></div></div>
   <div id="chargeHud"><div id="chargeRing"><i></i></div><div id="chargeTxt">SPIT</div></div>
-  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> book</div>
+  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> book · <b>B</b> forge</div>
 </div>
 
 <div class="screen" id="menu">
@@ -1043,7 +1104,7 @@ addEventListener('mouseup',()=>{ input.flap=false; });
 addEventListener('keydown',e=>{
   key[e.code]=true;
   if(e.code==='Space'){ if(S.started&&!S.done){ input.flap=true;
-      if(!e.repeat){ S.lift=Math.min(20,(S.lift||0)+13); S.beatCd=0.30;   // every TAP lifts you
+      if(!e.repeat){ S.lift=Math.min(20,(S.lift||0)+9+upLv('stirrup')*2.2); S.beatCd=0.30;   // every TAP lifts you
         S.shake=Math.max(S.shake,0.2); AU.play('flap',0.55);
         if(D.flap) D.flap.setEffectiveWeight(1);
         const pp=D.group.position; for(const sx of [-1,1]) smallBurst(pp.x+sx*7,pp.y-3,pp.z,0xbcd0e8); } }
@@ -1053,6 +1114,7 @@ addEventListener('keydown',e=>{
   if(e.code==='KeyC' && !e.repeat) echoPulse();
   if(e.code==='KeyF' && !e.repeat) callFlock();
   if(e.code==='Tab'){ e.preventDefault(); if(S.started) toggleBook(); }
+  if(e.code==='KeyB' && !e.repeat && S.started) toggleShop();
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
 });
 addEventListener('keyup',e=>{ key[e.code]=false;
@@ -1068,7 +1130,8 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
   nightfall:330, dayHold:100, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
   hp:100, hpMax:100, hurt:0,                        // the dragon can be shot down
   echoCd:0, echoR:0, echoOn:false, lift:0, beatCd:0, poison:0, spiral:0,
-  bookOpen:false, bookLost:false, violence:0, violenceWarned:false, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
+  bookOpen:false, bookLost:false, violence:0, violenceWarned:false, shopOpen:false, scales:0,
+  chapter:0, tutDone:false, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
   dive:0, diveFired:false,                          // fury dive -> sonic boom
   turn:0, pTurn:0, pPitch:0 };
 
@@ -1165,7 +1228,7 @@ function fillBolt(b){
   b.lgeo.attributes.position.needsUpdate=true;
 }
 function destroyTower(sl,power){
-  if(sl.destroyed) return; addViolence(3.2); sl.destroyed=true; sl.disabled=1e9; sl.lit=0;
+  if(sl.destroyed) return; addViolence(3.2); S.scales=(S.scales||0)+5; sl.destroyed=true; sl.disabled=1e9; sl.lit=0;
   sl.fall=1; sl.spot.intensity=0; sl.cone.visible=false; sl.lampGlow.intensity=0;
   sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0;
   sl.lamp.material.emissiveIntensity=0;
@@ -1278,6 +1341,54 @@ const storyEl=document.getElementById('storyline');
 function storyPop(text,dur=5){ storyEl.textContent=text; storyEl.style.animation='none'; void storyEl.offsetWidth;
   storyEl.style.animation=`storyfade ${dur}s ease-out`; }
 
+/* ================= THE FORGE: scales, saddle fittings, and earned mastery ================= */
+const UPGRADES=[
+  {id:'strap', nm:'Reinforced Strap',  i:'the book rides out rougher flying', lv:0, max:3, cost:l=>3+l*3},
+  {id:'rudder',nm:'Tail Rudder Fin',   i:'sharper turns, tighter lines',      lv:0, max:3, cost:l=>4+l*3},
+  {id:'stirrup',nm:'Deep Stirrups',    i:'stronger downbeat, more lift',      lv:0, max:3, cost:l=>4+l*3},
+  {id:'gland', nm:'Plasma Gland',      i:'faster charge, hotter fire',        lv:0, max:3, cost:l=>5+l*4},
+  {id:'scaleplate',nm:'Scale Plating', i:'thicker hide, harder to fell',      lv:0, max:3, cost:l=>5+l*4},
+];
+const UP={}; for(const u of UPGRADES) UP[u.id]=0;
+function upLv(id){ return UP[id]||0; }
+function award(amount,why){
+  S.scales=(S.scales||0)+amount;
+  popup('+'+amount+' SCALES'); if(why) storyPop(why,3.5);
+}
+function renderShop(){
+  const el=$('shopList'); if(!el) return;
+  $('shScales').textContent=Math.floor(S.scales||0);
+  el.innerHTML=UPGRADES.map(u=>{
+    const lv=upLv(u.id), maxed=lv>=u.max, c=u.cost(lv);
+    const afford=(S.scales||0)>=c && !maxed;
+    return '<div class="up"><div class="nm"><b>'+u.nm+'</b><i>'+u.i+'</i></div>'+
+      '<div class="lv">'+'●'.repeat(lv)+'○'.repeat(u.max-lv)+'</div>'+
+      '<button data-up="'+u.id+'"'+(afford?'':' disabled')+'>'+(maxed?'MASTERED':c+' ⬡')+'</button></div>';
+  }).join('');
+  el.querySelectorAll('button[data-up]').forEach(b=>b.addEventListener('click',e=>{
+    e.stopPropagation(); const u=UPGRADES.find(x=>x.id===b.dataset.up); const lv=upLv(u.id);
+    const c=u.cost(lv); if(lv>=u.max || (S.scales||0)<c) return;
+    S.scales-=c; UP[u.id]=lv+1; AU.play('ring',0.5); S.flash=Math.max(S.flash,0.2);
+    achievement(u.nm+' · '+(lv+1), u.i, 'FITTED');
+    renderShop();
+  }));
+}
+function toggleShop(){ S.shopOpen=!S.shopOpen; $('shop').classList.toggle('on',S.shopOpen);
+  if(S.shopOpen) renderShop(); AU.play('flap',0.25); }
+function achievement(name,desc,key){
+  $('achName').textContent=name; $('achDesc').textContent=desc; $('achKey').textContent=key;
+  const el=$('ach'); el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+  AU.play('ring',0.75); S.flash=Math.max(S.flash,0.3);
+}
+// watch for newly-earned skills and fanfare them
+function checkSkillUnlocks(){
+  for(const sk of SKILLS){
+    if(!sk._had && sk.have()){ sk._had=true;
+      if(S.started && S.t>4) achievement(sk.name, sk.d, sk.k);
+    }
+  }
+}
+
 const SKILLS=[
   {k:'W / S',   name:'Beat & Brake',  d:'drive the wings, spill the air',        have:()=>true},
   {k:'SPACE',   name:'Downbeat',      d:'each stroke lifts you against gravity', have:()=>true},
@@ -1312,7 +1423,7 @@ function toggleBook(){
 function addViolence(v){
   if(S.bookLost) return;
   S.violence=(S.violence||0)+v;
-  if(S.violence>=7){
+  if(S.violence>=7+upLv('strap')*3){
     S.bookLost=true; S.bookOpen=false; $('book').classList.remove('on');
     popup('THE BOOK IS TORN AWAY');
     storyPop('The strap gives. Pages scatter over the black water, every one of them gone. You fly from memory now.',6.5);
@@ -1325,16 +1436,47 @@ function addViolence(v){
 }
 
 /* ---- the flight is choreographed: three sworn tasks, told as story beats ---- */
+/* ---- CHAPTER I: the tutorial cove — three low practice rings between the home cliffs ---- */
+const tutRings=[];
+const tutMat=new THREE.MeshStandardMaterial({color:0x123a30, emissive:0x7fe6c6, emissiveIntensity:2.4});
+for(const [tx,ty,tz] of [[80,40,250],[10,52,300],[-70,44,250]]){
+  const m=new THREE.Mesh(new THREE.TorusGeometry(12,1.1,10,34), tutMat.clone());
+  m.position.set(tx,ty,tz); m.lookAt(REST.x,ty,REST.z); m.userData.hit=false;
+  tutRings.push(m); scene.add(m);
+}
+function driveTutorial(dt){
+  if(S.chapter!==0) return;
+  const p=D.group.position;
+  for(const r of tutRings){ r.rotation.z+=dt*0.6;
+    if(r.userData.hit) continue;
+    r.material.emissiveIntensity=2.2+Math.sin(S.t*4)*0.8;
+    if(p.distanceTo(r.position)<13){ r.userData.hit=true; r.material.emissiveIntensity=0.5;
+      AU.play('ring',0.6); shockwave(r.position,0x7fe6c6); S.scales=(S.scales||0)+1;
+      const left=tutRings.filter(t=>!t.userData.hit).length;
+      popup(left? 'GOOD · '+left+' MORE' : 'YOU CAN FLY');
+    } }
+  if(tutRings.every(t=>t.userData.hit) && !S.tutDone){
+    S.tutDone=true; S.chapter=1;
+    achievement('First Flight','the cove is behind you — the beacon road waits','CHAPTER II');
+    storyPop('She answers you now. Out past the stacks, the keepers are lighting their lamps.',6);
+    for(const r of rings) r.visible=true;
+  }
+}
 const MISSIONS=[
-  { id:'tower', label:t=>`I · silence a watchtower ${t.towers}/1`, done:false,
+  { id:'tutorial', label:t=>`I · learn to fly — rings ${tutRings.filter(r=>r.userData.hit).length}/3`, done:false,
+    check:()=>S.chapter>=1, story:'' },
+  { id:'tower', label:t=>`II · silence the great lighthouse ${t.towers}/1`, done:false,
     check:()=>searchlights.some(sl=>sl.destroyed),
     story:'One light dies screaming. The sea swallows the stones — and remembers the dark.' },
-  { id:'canyon', label:t=>`II · thread the Serpent Canyon ${t.gates}/3`, done:false,
+  { id:'canyon', label:t=>`III · thread the Serpent Canyon ${t.gates}/3`, done:false,
     check:()=>gates.every(g=>g.userData.hit),
     story:'Wingtip to stone, stone to wingtip — the canyon lets you pass, this once.' },
-  { id:'beacons', label:t=>`III · follow the beacon road ${t.beacons}/${rings.length}`, done:false,
+  { id:'beacons', label:t=>`IV · follow the beacon road ${t.beacons}/${rings.length}`, done:false,
     check:()=>S.score>=rings.length,
     story:'' },
+  { id:'feeding', label:t=>'V · reach the feeding grounds', done:false,
+    check:()=>{ const p=D.group.position; return Math.hypot(p.x+180,p.z-340)<150; },
+    story:'The water boils with fish and the great whales rise around you. This is where dragons come to feed — and to be left alone.' },
 ];
 function missionTallies(){ return { towers:searchlights.filter(s=>s.destroyed).length,
   gates:gates.filter(g=>g.userData.hit).length, beacons:S.score }; }
@@ -1383,7 +1525,7 @@ function updateFoeBolts(dt){
   for(let i=foeBolts.length-1;i>=0;i--){ const b=foeBolts[i];
     b.m.position.addScaledVector(b.vel,dt); b.life-=dt;
     if(!S.done && !S.launching && S.grace<=0 && b.m.position.distanceTo(p)<6.5){
-      S.hp-=16; S.hurt=1; S.shake=Math.max(S.shake,0.7); S.flash=Math.max(S.flash,0.35);
+      S.hp-=Math.max(6,16-upLv('scaleplate')*3); S.hurt=1; S.shake=Math.max(S.shake,0.7); S.flash=Math.max(S.flash,0.35);
       bigExplosion(b.m.position.clone(),0xff7a3a); AU.play('crash',0.5); b.life=0;
       if(S.hp<=0) crash('SHOT DOWN');
     }
@@ -1690,7 +1832,7 @@ function tick(dt){
   D.turn=turnCmd;
 
   const auth=0.5+D.speed/40;
-  D.yaw -= turnCmd*dt*2.35*auth;                       // snappier: the dragon answers you
+  D.yaw -= turnCmd*dt*(1.55+upLv('rudder')*0.32)*auth;   // starts heavy; the rudder fin sharpens her                       // snappier: the dragon answers you
   D.pitch += (pitchCmd*1.05 - D.pitch)*fdamp(6.5,dt);
   D.roll  += (turnCmd*1.0 - D.roll)*fdamp(7,dt);
 
@@ -1732,7 +1874,7 @@ function tick(dt){
   if(input.flap && S.flapCd<=0){ AU.play('flap',0.45); S.flapCd=0.42; }
   S.flapCd-=dt; S.shootCd-=dt;
   // plasma pool: one charge back every 4s; holding X winds up a bigger bolt
-  S.charges=Math.min(3,S.charges+dt/4);
+  S.charges=Math.min(3,S.charges+dt/(4.6-upLv('gland')*0.5));
   if(S.chargeT>=0){ S.chargeT+=dt; const cp=Math.min(1,S.chargeT/0.9);
     if(D.glow) D.glow.intensity=20+cp*70+Math.sin(S.t*40)*8;
     // NOTE: the orb is parented to the head BONE which inherits the model's 9x scale —
@@ -1882,7 +2024,7 @@ function tick(dt){
     if(p.distanceTo(gm.position)<12){ gm.userData.hit=true; gm.material.emissiveIntensity=0.6;
       AU.play('ring',0.6); shockwave(gm.position,0x2fd6a0); popup('GATE '+gates.filter(g=>g.userData.hit).length+' / 3');
       S.detection=Math.max(0,S.detection-0.15); } }                       // the canyon hides you
-  driveMissions(); driveRegions();
+  driveTutorial(dt); driveMissions(); driveRegions(); checkSkillUnlocks();
 
   /* ---- water splash when skimming ---- */
   S.splashT=(S.splashT||0)-dt;
@@ -1903,6 +2045,7 @@ function tick(dt){
     if(p.distanceTo(r.position)<RING_R+2){
       r.userData.hit=true; r.userData.pop=1; r.material=ringDone; S.score++;
       AU.play('ring',0.75); shockwave(r.position,0x9a5cff); popup('BEACON '+S.score+' / '+rings.length);
+      S.scales=(S.scales||0)+2;
       S.flash=Math.max(S.flash,0.2);
       if(S.score===rings.length) escaped();
     }
@@ -1954,6 +2097,7 @@ function hud(litNow){
   const pp=$('plasmaPips').children;
   for(let i=0;i<3;i++) pp[i].className=i<whole?'on':'';
   $('viewTag').textContent=S.fpv?'RIDE':'CHASE';
+  $('scalesV').textContent=Math.floor(S.scales||0);
   $('abEcho').className='ab'+(S.echoCd<=0?' rdy':'');
   $('abFlock').className='ab'+(S.flockCd<=0?' rdy':'')+(S.flockT>0?' hot':'');
   $('abSpiral').className='ab'+(S.spiral>0.15?' hot':(D.speed>28?' rdy':''));
@@ -2040,6 +2184,10 @@ function begin(){
   $('shutter').classList.add('closed');
   setTimeout(()=>{                                    // staged behind the armour
     S.started=true; S.grace=3; TOD.day=0.0; S.keepersWoke=false; S.hp=S.hpMax; S.hurt=0;
+    S.chapter=0; S.tutDone=false;
+    for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; }
+    for(const r of rings) r.visible=false;
+    storyPop('Stay close to the cliffs. Three rings — feel how she answers before the sea takes you seriously.',7);
     for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.fireCd=2+Math.random(); }
     D.group.position.set(REST.x, REST.y+6, REST.z);
     D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=30; S.prevSpeed=30;
@@ -2076,6 +2224,11 @@ function reset(){
   S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.diveFired=false;
   S.spiral=0; S.spiralFired=false; S.spiralMax=false; S.lift=0; S.beatCd=0; S.poison=0;
   S.bookLost=false; S.violence=0; S.violenceWarned=false; S.bookOpen=false; $('book').classList.remove('on');
+  S.shopOpen=false; $('shop').classList.remove('on'); S.scales=0;
+  S.chapter=0; S.tutDone=false;
+  for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; r.visible=true; }
+  for(const r of rings) r.visible=false;
+  for(const u of UPGRADES){ UP[u.id]=0; } for(const sk of SKILLS) sk._had=false;
   S.strikeT=0; S.strikeNext=12; S.superCharge=0; teleMark.visible=false;
   S.flockCd=0; S.flockT=0; for(const f of flock) scene.remove(f.m); flock.length=0;
   for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; sl.fireCd=1.5+Math.random(); sl.alerted=0; }
