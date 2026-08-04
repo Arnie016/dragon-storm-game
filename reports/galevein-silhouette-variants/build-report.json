@@ -1,0 +1,640 @@
+{
+  "strategy": "The original Draco primitive is retained byte-for-byte. A single default-on POSITION morph target stores the displacement, preserving base vertex indices, topology, skin attributes, and animation data exactly.",
+  "accessorMappings": {
+    "corrected": {
+      "vertices": 1080189,
+      "permutationPass": true,
+      "maxIndexSignalDecodeError": 1.966800690311743e-06,
+      "decodedToAccessorSha256": "392efe6efed93380ace48406c7c8407132af9633c1580d06734b900ff1e0a8a3"
+    },
+    "membrane": {
+      "vertices": 1080189,
+      "permutationPass": true,
+      "maxIndexSignalDecodeError": 3.8567447653292675e-06,
+      "decodedToAccessorSha256": "392efe6efed93380ace48406c7c8407132af9633c1580d06734b900ff1e0a8a3"
+    }
+  },
+  "variants": {
+    "stormcrest": {
+      "corrected": {
+        "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_corrected.glb",
+        "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_stormcrest_corrected.glb",
+        "query": "stormcrest",
+        "sourceTopology": {
+          "vertices": 1080189,
+          "edges": 1242070,
+          "polygons": 468563,
+          "loops": 1405689,
+          "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
+        },
+        "sourceWeights": {
+          "vertices": 1080189,
+          "zeroWeight": 0,
+          "overFour": 0,
+          "negativeWeights": 0,
+          "invalidJoints": 0,
+          "deviates1e3": 0,
+          "minSum": 0.9998168349266052,
+          "maxSum": 1.0001832023262978,
+          "influences": {
+            "0": 0,
+            "1": 88224,
+            "2": 96485,
+            "3": 388927,
+            "4": 506553
+          }
+        },
+        "sourceActions": {
+          "Flap": [
+            1.0,
+            39.0
+          ],
+          "Glide": [
+            1.0,
+            73.0
+          ]
+        },
+        "sculpt": {
+          "movedVertices": 567247,
+          "maxDisplacement": 0.20900278199765707,
+          "meanDisplacement": 0.010288492959340484
+        },
+        "validation": {
+          "topology": {
+            "vertices": 1080189,
+            "edges": 1242070,
+            "polygons": 468563,
+            "loops": 1405689,
+            "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
+          },
+          "vertexCountUnchanged": true,
+          "edgeCountUnchanged": true,
+          "polygonCountUnchanged": true,
+          "polygonOrderingUnchanged": true,
+          "baseVertexOrdering": {
+            "pass": true,
+            "maxError": 0.0,
+            "mismatchesAbove2e4": 0
+          },
+          "morphVertexOrdering": {
+            "pass": true,
+            "maxError": 1.737759081973225e-07,
+            "mismatchesAbove2e4": 0
+          },
+          "dracoPayloadByteIdentical": true,
+          "dracoPayloadSha256": "14ec8361316586abcbb5dae0b3318fd3575206cbe26d82a7f97931dae25fec69",
+          "morphDefaultWeight": 1.0,
+          "weights": {
+            "vertices": 1080189,
+            "zeroWeight": 0,
+            "overFour": 0,
+            "negativeWeights": 0,
+            "invalidJoints": 0,
+            "deviates1e3": 0,
+            "minSum": 0.9998168349266052,
+            "maxSum": 1.0001832023262978,
+            "influences": {
+              "0": 0,
+              "1": 88224,
+              "2": 96485,
+              "3": 388927,
+              "4": 506553
+            }
+          },
+          "actions": {
+            "Flap": [
+              1.0,
+              39.0
+            ],
+            "Glide": [
+              1.0,
+              73.0
+            ]
+          },
+          "requiredActionsPass": true,
+          "outputBytes": 28594632,
+          "pass": true
+        },
+        "renders": {
+          "front": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/stormcrest-front.png",
+          "side": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/stormcrest-side.png",
+          "threequarter": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/stormcrest-threequarter.png"
+        }
+      },
+      "membrane": {
+        "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_membrane.glb",
+        "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_stormcrest_membrane.glb",
+        "query": "stormcrest-membrane",
+        "sourceTopology": {
+          "vertices": 1080189,
+          "edges": 1242070,
+          "polygons": 468563,
+          "loops": 1405689,
+          "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
+        },
+        "sourceWeights": {
+          "vertices": 1080189,
+          "zeroWeight": 0,
+          "overFour": 0,
+          "negativeWeights": 0,
+          "invalidJoints": 0,
+          "deviates1e3": 0,
+          "minSum": 0.9998168349266052,
+          "maxSum": 1.0001831948757172,
+          "influences": {
+            "0": 0,
+            "1": 88224,
+            "2": 82858,
+            "3": 203922,
+            "4": 705185
+          }
+        },
+        "sourceActions": {
+          "Flap": [
+            1.0,
+            39.0
+          ],
+          "Glide": [
+            1.0,
+            73.0
+          ]
+        },
+        "sculpt": {
+          "movedVertices": 565416,
+          "maxDisplacement": 0.20900278199765707,
+          "meanDisplacement": 0.010279237641453559
+        },
+        "validation": {
+          "topology": {
+            "vertices": 1080189,
+            "edges": 1242070,
+            "polygons": 468563,
+            "loops": 1405689,
+            "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
+          },
+          "vertexCountUnchanged": true,
+          "edgeCountUnchanged": true,
+          "polygonCountUnchanged": true,
+          "polygonOrderingUnchanged": true,
+          "baseVertexOrdering": {
+            "pass": true,
+            "maxError": 0.0,
+            "mismatchesAbove2e4": 0
+          },
+          "morphVertexOrdering": {
+            "pass": true,
+            "maxError": 1.3328003749250113e-07,
+            "mismatchesAbove2e4": 0
+          },
+          "dracoPayloadByteIdentical": true,
+          "dracoPayloadSha256": "2b19906ff3f14e0cd80ca530902e9a95d880c7394a377f4436c23e6d3a862f2a",
+          "morphDefaultWeight": 1.0,
+          "weights": {
+            "vertices": 1080189,
+            "zeroWeight": 0,
+            "overFour": 0,
+            "negativeWeights": 0,
+            "invalidJoints": 0,
+            "deviates1e3": 0,
+            "minSum": 0.9998168349266052,
+            "maxSum": 1.0001831948757172,
+            "influences": {
+              "0": 0,
+              "1": 88224,
+              "2": 82858,
+              "3": 203922,
+              "4": 705185
+            }
+          },
+          "actions": {
+            "Flap": [
+              1.0,
+              39.0
+            ],
+            "Glide": [
+              1.0,
+              73.0
+            ]
+          },
+          "requiredActionsPass": true,
+          "outputBytes": 28922060,
+          "pass": true
+        }
+      }
+    },
+    "voltspine": {
+      "corrected": {
+        "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_corrected.glb",
+        "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_voltspine_corrected.glb",
+        "query": "voltspine",
+        "sourceTopology": {
+          "vertices": 1080189,
+          "edges": 1242070,
+          "polygons": 468563,
+          "loops": 1405689,
+          "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
+        },
+        "sourceWeights": {
+          "vertices": 1080189,
+          "zeroWeight": 0,
+          "overFour": 0,
+          "negativeWeights": 0,
+          "invalidJoints": 0,
+          "deviates1e3": 0,
+          "minSum": 0.9998168349266052,
+          "maxSum": 1.0001832023262978,
+          "influences": {
+            "0": 0,
+            "1": 88224,
+            "2": 96485,
+            "3": 388927,
+            "4": 506553
+          }
+        },
+        "sourceActions": {
+          "Flap": [
+            1.0,
+            39.0
+          ],
+          "Glide": [
+            1.0,
+            73.0
+          ]
+        },
+        "sculpt": {
+          "movedVertices": 560882,
+          "maxDisplacement": 0.23458648257360243,
+          "meanDisplacement": 0.009521765577807737
+        },
+        "validation": {
+          "topology": {
+            "vertices": 1080189,
+            "edges": 1242070,
+            "polygons": 468563,
+            "loops": 1405689,
+            "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
+          },
+          "vertexCountUnchanged": true,
+          "edgeCountUnchanged": true,
+          "polygonCountUnchanged": true,
+          "polygonOrderingUnchanged": true,
+          "baseVertexOrdering": {
+            "pass": true,
+            "maxError": 0.0,
+            "mismatchesAbove2e4": 0
+          },
+          "morphVertexOrdering": {
+            "pass": true,
+            "maxError": 1.666000468656264e-07,
+            "mismatchesAbove2e4": 0
+          },
+          "dracoPayloadByteIdentical": true,
+          "dracoPayloadSha256": "14ec8361316586abcbb5dae0b3318fd3575206cbe26d82a7f97931dae25fec69",
+          "morphDefaultWeight": 1.0,
+          "weights": {
+            "vertices": 1080189,
+            "zeroWeight": 0,
+            "overFour": 0,
+            "negativeWeights": 0,
+            "invalidJoints": 0,
+            "deviates1e3": 0,
+            "minSum": 0.9998168349266052,
+            "maxSum": 1.0001832023262978,
+            "influences": {
+              "0": 0,
+              "1": 88224,
+              "2": 96485,
+              "3": 388927,
+              "4": 506553
+            }
+          },
+          "actions": {
+            "Flap": [
+              1.0,
+              39.0
+            ],
+            "Glide": [
+              1.0,
+              73.0
+            ]
+          },
+          "requiredActionsPass": true,
+          "outputBytes": 28594632,
+          "pass": true
+        },
+        "renders": {
+          "front": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/voltspine-front.png",
+          "side": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/voltspine-side.png",
+          "threequarter": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/voltspine-threequarter.png"
+        }
+      },
+      "membrane": {
+        "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_membrane.glb",
+        "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_voltspine_membrane.glb",
+        "query": "voltspine-membrane",
+        "sourceTopology": {
+          "vertices": 1080189,
+          "edges": 1242070,
+          "polygons": 468563,
+          "loops": 1405689,
+          "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
+        },
+        "sourceWeights": {
+          "vertices": 1080189,
+          "zeroWeight": 0,
+          "overFour": 0,
+          "negativeWeights": 0,
+          "invalidJoints": 0,
+          "deviates1e3": 0,
+          "minSum": 0.9998168349266052,
+          "maxSum": 1.0001831948757172,
+          "influences": {
+            "0": 0,
+            "1": 88224,
+            "2": 82858,
+            "3": 203922,
+            "4": 705185
+          }
+        },
+        "sourceActions": {
+          "Flap": [
+            1.0,
+            39.0
+          ],
+          "Glide": [
+            1.0,
+            73.0
+          ]
+        },
+        "sculpt": {
+          "movedVertices": 559051,
+          "maxDisplacement": 0.23458648257360243,
+          "meanDisplacement": 0.009502682448692883
+        },
+        "validation": {
+          "topology": {
+            "vertices": 1080189,
+            "edges": 1242070,
+            "polygons": 468563,
+            "loops": 1405689,
+            "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
+          },
+          "vertexCountUnchanged": true,
+          "edgeCountUnchanged": true,
+          "polygonCountUnchanged": true,
+          "polygonOrderingUnchanged": true,
+          "baseVertexOrdering": {
+            "pass": true,
+            "maxError": 0.0,
+            "mismatchesAbove2e4": 0
+          },
+          "morphVertexOrdering": {
+            "pass": true,
+            "maxError": 1.3328003749250113e-07,
+            "mismatchesAbove2e4": 0
+          },
+          "dracoPayloadByteIdentical": true,
+          "dracoPayloadSha256": "2b19906ff3f14e0cd80ca530902e9a95d880c7394a377f4436c23e6d3a862f2a",
+          "morphDefaultWeight": 1.0,
+          "weights": {
+            "vertices": 1080189,
+            "zeroWeight": 0,
+            "overFour": 0,
+            "negativeWeights": 0,
+            "invalidJoints": 0,
+            "deviates1e3": 0,
+            "minSum": 0.9998168349266052,
+            "maxSum": 1.0001831948757172,
+            "influences": {
+              "0": 0,
+              "1": 88224,
+              "2": 82858,
+              "3": 203922,
+              "4": 705185
+            }
+          },
+          "actions": {
+            "Flap": [
+              1.0,
+              39.0
+            ],
+            "Glide": [
+              1.0,
+              73.0
+            ]
+          },
+          "requiredActionsPass": true,
+          "outputBytes": 28922064,
+          "pass": true
+        }
+      }
+    },
+    "thunderhook": {
+      "corrected": {
+        "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_corrected.glb",
+        "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_thunderhook_corrected.glb",
+        "query": "thunderhook",
+        "sourceTopology": {
+          "vertices": 1080189,
+          "edges": 1242070,
+          "polygons": 468563,
+          "loops": 1405689,
+          "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
+        },
+        "sourceWeights": {
+          "vertices": 1080189,
+          "zeroWeight": 0,
+          "overFour": 0,
+          "negativeWeights": 0,
+          "invalidJoints": 0,
+          "deviates1e3": 0,
+          "minSum": 0.9998168349266052,
+          "maxSum": 1.0001832023262978,
+          "influences": {
+            "0": 0,
+            "1": 88224,
+            "2": 96485,
+            "3": 388927,
+            "4": 506553
+          }
+        },
+        "sourceActions": {
+          "Flap": [
+            1.0,
+            39.0
+          ],
+          "Glide": [
+            1.0,
+            73.0
+          ]
+        },
+        "sculpt": {
+          "movedVertices": 573136,
+          "maxDisplacement": 0.15482681048436014,
+          "meanDisplacement": 0.010074813457192978
+        },
+        "validation": {
+          "topology": {
+            "vertices": 1080189,
+            "edges": 1242070,
+            "polygons": 468563,
+            "loops": 1405689,
+            "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
+          },
+          "vertexCountUnchanged": true,
+          "edgeCountUnchanged": true,
+          "polygonCountUnchanged": true,
+          "polygonOrderingUnchanged": true,
+          "baseVertexOrdering": {
+            "pass": true,
+            "maxError": 0.0,
+            "mismatchesAbove2e4": 0
+          },
+          "morphVertexOrdering": {
+            "pass": true,
+            "maxError": 1.3328003749250113e-07,
+            "mismatchesAbove2e4": 0
+          },
+          "dracoPayloadByteIdentical": true,
+          "dracoPayloadSha256": "14ec8361316586abcbb5dae0b3318fd3575206cbe26d82a7f97931dae25fec69",
+          "morphDefaultWeight": 1.0,
+          "weights": {
+            "vertices": 1080189,
+            "zeroWeight": 0,
+            "overFour": 0,
+            "negativeWeights": 0,
+            "invalidJoints": 0,
+            "deviates1e3": 0,
+            "minSum": 0.9998168349266052,
+            "maxSum": 1.0001832023262978,
+            "influences": {
+              "0": 0,
+              "1": 88224,
+              "2": 96485,
+              "3": 388927,
+              "4": 506553
+            }
+          },
+          "actions": {
+            "Flap": [
+              1.0,
+              39.0
+            ],
+            "Glide": [
+              1.0,
+              73.0
+            ]
+          },
+          "requiredActionsPass": true,
+          "outputBytes": 28594636,
+          "pass": true
+        },
+        "renders": {
+          "front": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/thunderhook-front.png",
+          "side": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/thunderhook-side.png",
+          "threequarter": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/thunderhook-threequarter.png"
+        }
+      },
+      "membrane": {
+        "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_membrane.glb",
+        "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_thunderhook_membrane.glb",
+        "query": "thunderhook-membrane",
+        "sourceTopology": {
+          "vertices": 1080189,
+          "edges": 1242070,
+          "polygons": 468563,
+          "loops": 1405689,
+          "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
+        },
+        "sourceWeights": {
+          "vertices": 1080189,
+          "zeroWeight": 0,
+          "overFour": 0,
+          "negativeWeights": 0,
+          "invalidJoints": 0,
+          "deviates1e3": 0,
+          "minSum": 0.9998168349266052,
+          "maxSum": 1.0001831948757172,
+          "influences": {
+            "0": 0,
+            "1": 88224,
+            "2": 82858,
+            "3": 203922,
+            "4": 705185
+          }
+        },
+        "sourceActions": {
+          "Flap": [
+            1.0,
+            39.0
+          ],
+          "Glide": [
+            1.0,
+            73.0
+          ]
+        },
+        "sculpt": {
+          "movedVertices": 571305,
+          "maxDisplacement": 0.1548268088278156,
+          "meanDisplacement": 0.010069115248043936
+        },
+        "validation": {
+          "topology": {
+            "vertices": 1080189,
+            "edges": 1242070,
+            "polygons": 468563,
+            "loops": 1405689,
+            "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
+          },
+          "vertexCountUnchanged": true,
+          "edgeCountUnchanged": true,
+          "polygonCountUnchanged": true,
+          "polygonOrderingUnchanged": true,
+          "baseVertexOrdering": {
+            "pass": true,
+            "maxError": 0.0,
+            "mismatchesAbove2e4": 0
+          },
+          "morphVertexOrdering": {
+            "pass": true,
+            "maxError": 1.3328003749250113e-07,
+            "mismatchesAbove2e4": 0
+          },
+          "dracoPayloadByteIdentical": true,
+          "dracoPayloadSha256": "2b19906ff3f14e0cd80ca530902e9a95d880c7394a377f4436c23e6d3a862f2a",
+          "morphDefaultWeight": 1.0,
+          "weights": {
+            "vertices": 1080189,
+            "zeroWeight": 0,
+            "overFour": 0,
+            "negativeWeights": 0,
+            "invalidJoints": 0,
+            "deviates1e3": 0,
+            "minSum": 0.9998168349266052,
+            "maxSum": 1.0001831948757172,
+            "influences": {
+              "0": 0,
+              "1": 88224,
+              "2": 82858,
+              "3": 203922,
+              "4": 705185
+            }
+          },
+          "actions": {
+            "Flap": [
+              1.0,
+              39.0
+            ],
+            "Glide": [
+              1.0,
+              73.0
+            ]
+          },
+          "requiredActionsPass": true,
+          "outputBytes": 28922064,
+          "pass": true
+        }
+      }
+    }
+  }
+}

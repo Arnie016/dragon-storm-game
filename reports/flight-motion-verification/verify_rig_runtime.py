@@ -150,7 +150,12 @@ def main():
     parser.add_argument(
         "--rigs",
         nargs=2,
-        choices=("original", "corrected", "membrane"),
+        choices=(
+            "original", "corrected", "membrane",
+            "stormcrest", "stormcrest-membrane",
+            "voltspine", "voltspine-membrane",
+            "thunderhook", "thunderhook-membrane",
+        ),
         default=("original", "corrected"),
     )
     parser.add_argument(

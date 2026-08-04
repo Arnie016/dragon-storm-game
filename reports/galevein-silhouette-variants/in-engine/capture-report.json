@@ -1,0 +1,444 @@
+{
+  "baseUrl": "http://127.0.0.1:8000/index.html",
+  "poses": [
+    "rest",
+    "wingUp",
+    "wingDown",
+    "leap",
+    "dive"
+  ],
+  "rigs": {
+    "stormcrest": {
+      "url": "http://127.0.0.1:8000/index.html?rig=stormcrest&comparison=1785860477340327000",
+      "bones": {
+        "tail": 5,
+        "neck": true,
+        "head": true,
+        "chest": true,
+        "hips": true,
+        "wings": 10,
+        "shoulders": 2,
+        "forearms": 2,
+        "wingTips": 6,
+        "membranes": 0
+      },
+      "screenshots": {
+        "rest": {
+          "path": "reports/galevein-silhouette-variants/in-engine/stormcrest-rest.png",
+          "pose": {
+            "name": "rest",
+            "action": "loaded-idle"
+          },
+          "bytes": 971477
+        },
+        "wingUp": {
+          "path": "reports/galevein-silhouette-variants/in-engine/stormcrest-wingUp.png",
+          "pose": {
+            "name": "wingUp",
+            "action": "flap",
+            "phase": 0.24,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 801253
+        },
+        "wingDown": {
+          "path": "reports/galevein-silhouette-variants/in-engine/stormcrest-wingDown.png",
+          "pose": {
+            "name": "wingDown",
+            "action": "flap",
+            "phase": 0.72,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 789381
+        },
+        "leap": {
+          "path": "reports/galevein-silhouette-variants/in-engine/stormcrest-leap.png",
+          "pose": {
+            "name": "leap",
+            "action": "flap",
+            "phase": 0.48,
+            "pitch": 0.52,
+            "speed": 36
+          },
+          "bytes": 795036
+        },
+        "dive": {
+          "path": "reports/galevein-silhouette-variants/in-engine/stormcrest-dive.png",
+          "pose": {
+            "name": "dive",
+            "action": "glide",
+            "phase": 0.5,
+            "pitch": -0.78,
+            "speed": 58
+          },
+          "bytes": 694895
+        }
+      },
+      "consoleProblems": [],
+      "externalRequests": [],
+      "legacyAudioRequests": []
+    },
+    "stormcrest-membrane": {
+      "url": "http://127.0.0.1:8000/index.html?rig=stormcrest-membrane&comparison=1785860483250438000",
+      "bones": {
+        "tail": 5,
+        "neck": true,
+        "head": true,
+        "chest": true,
+        "hips": true,
+        "wings": 10,
+        "shoulders": 2,
+        "forearms": 2,
+        "wingTips": 6,
+        "membranes": 6
+      },
+      "screenshots": {
+        "rest": {
+          "path": "reports/galevein-silhouette-variants/in-engine/stormcrest-membrane-rest.png",
+          "pose": {
+            "name": "rest",
+            "action": "loaded-idle"
+          },
+          "bytes": 967129
+        },
+        "wingUp": {
+          "path": "reports/galevein-silhouette-variants/in-engine/stormcrest-membrane-wingUp.png",
+          "pose": {
+            "name": "wingUp",
+            "action": "flap",
+            "phase": 0.24,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 801736
+        },
+        "wingDown": {
+          "path": "reports/galevein-silhouette-variants/in-engine/stormcrest-membrane-wingDown.png",
+          "pose": {
+            "name": "wingDown",
+            "action": "flap",
+            "phase": 0.72,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 779385
+        },
+        "leap": {
+          "path": "reports/galevein-silhouette-variants/in-engine/stormcrest-membrane-leap.png",
+          "pose": {
+            "name": "leap",
+            "action": "flap",
+            "phase": 0.48,
+            "pitch": 0.52,
+            "speed": 36
+          },
+          "bytes": 781631
+        },
+        "dive": {
+          "path": "reports/galevein-silhouette-variants/in-engine/stormcrest-membrane-dive.png",
+          "pose": {
+            "name": "dive",
+            "action": "glide",
+            "phase": 0.5,
+            "pitch": -0.78,
+            "speed": 58
+          },
+          "bytes": 700062
+        }
+      },
+      "consoleProblems": [],
+      "externalRequests": [],
+      "legacyAudioRequests": []
+    },
+    "voltspine": {
+      "url": "http://127.0.0.1:8000/index.html?rig=voltspine&comparison=1785860490272707000",
+      "bones": {
+        "tail": 5,
+        "neck": true,
+        "head": true,
+        "chest": true,
+        "hips": true,
+        "wings": 10,
+        "shoulders": 2,
+        "forearms": 2,
+        "wingTips": 6,
+        "membranes": 0
+      },
+      "screenshots": {
+        "rest": {
+          "path": "reports/galevein-silhouette-variants/in-engine/voltspine-rest.png",
+          "pose": {
+            "name": "rest",
+            "action": "loaded-idle"
+          },
+          "bytes": 953355
+        },
+        "wingUp": {
+          "path": "reports/galevein-silhouette-variants/in-engine/voltspine-wingUp.png",
+          "pose": {
+            "name": "wingUp",
+            "action": "flap",
+            "phase": 0.24,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 796926
+        },
+        "wingDown": {
+          "path": "reports/galevein-silhouette-variants/in-engine/voltspine-wingDown.png",
+          "pose": {
+            "name": "wingDown",
+            "action": "flap",
+            "phase": 0.72,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 775903
+        },
+        "leap": {
+          "path": "reports/galevein-silhouette-variants/in-engine/voltspine-leap.png",
+          "pose": {
+            "name": "leap",
+            "action": "flap",
+            "phase": 0.48,
+            "pitch": 0.52,
+            "speed": 36
+          },
+          "bytes": 805707
+        },
+        "dive": {
+          "path": "reports/galevein-silhouette-variants/in-engine/voltspine-dive.png",
+          "pose": {
+            "name": "dive",
+            "action": "glide",
+            "phase": 0.5,
+            "pitch": -0.78,
+            "speed": 58
+          },
+          "bytes": 690264
+        }
+      },
+      "consoleProblems": [],
+      "externalRequests": [],
+      "legacyAudioRequests": []
+    },
+    "voltspine-membrane": {
+      "url": "http://127.0.0.1:8000/index.html?rig=voltspine-membrane&comparison=1785860564625232000",
+      "bones": {
+        "tail": 5,
+        "neck": true,
+        "head": true,
+        "chest": true,
+        "hips": true,
+        "wings": 10,
+        "shoulders": 2,
+        "forearms": 2,
+        "wingTips": 6,
+        "membranes": 6
+      },
+      "screenshots": {
+        "rest": {
+          "path": "reports/galevein-silhouette-variants/in-engine/voltspine-membrane-rest.png",
+          "pose": {
+            "name": "rest",
+            "action": "loaded-idle"
+          },
+          "bytes": 856101
+        },
+        "wingUp": {
+          "path": "reports/galevein-silhouette-variants/in-engine/voltspine-membrane-wingUp.png",
+          "pose": {
+            "name": "wingUp",
+            "action": "flap",
+            "phase": 0.24,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 786390
+        },
+        "wingDown": {
+          "path": "reports/galevein-silhouette-variants/in-engine/voltspine-membrane-wingDown.png",
+          "pose": {
+            "name": "wingDown",
+            "action": "flap",
+            "phase": 0.72,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 778261
+        },
+        "leap": {
+          "path": "reports/galevein-silhouette-variants/in-engine/voltspine-membrane-leap.png",
+          "pose": {
+            "name": "leap",
+            "action": "flap",
+            "phase": 0.48,
+            "pitch": 0.52,
+            "speed": 36
+          },
+          "bytes": 782973
+        },
+        "dive": {
+          "path": "reports/galevein-silhouette-variants/in-engine/voltspine-membrane-dive.png",
+          "pose": {
+            "name": "dive",
+            "action": "glide",
+            "phase": 0.5,
+            "pitch": -0.78,
+            "speed": 58
+          },
+          "bytes": 671365
+        }
+      },
+      "consoleProblems": [],
+      "externalRequests": [],
+      "legacyAudioRequests": []
+    },
+    "thunderhook": {
+      "url": "http://127.0.0.1:8000/index.html?rig=thunderhook&comparison=1785860607481139000",
+      "bones": {
+        "tail": 5,
+        "neck": true,
+        "head": true,
+        "chest": true,
+        "hips": true,
+        "wings": 10,
+        "shoulders": 2,
+        "forearms": 2,
+        "wingTips": 6,
+        "membranes": 0
+      },
+      "screenshots": {
+        "rest": {
+          "path": "reports/galevein-silhouette-variants/in-engine/thunderhook-rest.png",
+          "pose": {
+            "name": "rest",
+            "action": "loaded-idle"
+          },
+          "bytes": 938145
+        },
+        "wingUp": {
+          "path": "reports/galevein-silhouette-variants/in-engine/thunderhook-wingUp.png",
+          "pose": {
+            "name": "wingUp",
+            "action": "flap",
+            "phase": 0.24,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 794613
+        },
+        "wingDown": {
+          "path": "reports/galevein-silhouette-variants/in-engine/thunderhook-wingDown.png",
+          "pose": {
+            "name": "wingDown",
+            "action": "flap",
+            "phase": 0.72,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 772217
+        },
+        "leap": {
+          "path": "reports/galevein-silhouette-variants/in-engine/thunderhook-leap.png",
+          "pose": {
+            "name": "leap",
+            "action": "flap",
+            "phase": 0.48,
+            "pitch": 0.52,
+            "speed": 36
+          },
+          "bytes": 786979
+        },
+        "dive": {
+          "path": "reports/galevein-silhouette-variants/in-engine/thunderhook-dive.png",
+          "pose": {
+            "name": "dive",
+            "action": "glide",
+            "phase": 0.5,
+            "pitch": -0.78,
+            "speed": 58
+          },
+          "bytes": 695795
+        }
+      },
+      "consoleProblems": [],
+      "externalRequests": [],
+      "legacyAudioRequests": []
+    },
+    "thunderhook-membrane": {
+      "url": "http://127.0.0.1:8000/index.html?rig=thunderhook-membrane&comparison=1785860618028840000",
+      "bones": {
+        "tail": 5,
+        "neck": true,
+        "head": true,
+        "chest": true,
+        "hips": true,
+        "wings": 10,
+        "shoulders": 2,
+        "forearms": 2,
+        "wingTips": 6,
+        "membranes": 6
+      },
+      "screenshots": {
+        "rest": {
+          "path": "reports/galevein-silhouette-variants/in-engine/thunderhook-membrane-rest.png",
+          "pose": {
+            "name": "rest",
+            "action": "loaded-idle"
+          },
+          "bytes": 920163
+        },
+        "wingUp": {
+          "path": "reports/galevein-silhouette-variants/in-engine/thunderhook-membrane-wingUp.png",
+          "pose": {
+            "name": "wingUp",
+            "action": "flap",
+            "phase": 0.24,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 788250
+        },
+        "wingDown": {
+          "path": "reports/galevein-silhouette-variants/in-engine/thunderhook-membrane-wingDown.png",
+          "pose": {
+            "name": "wingDown",
+            "action": "flap",
+            "phase": 0.72,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 785482
+        },
+        "leap": {
+          "path": "reports/galevein-silhouette-variants/in-engine/thunderhook-membrane-leap.png",
+          "pose": {
+            "name": "leap",
+            "action": "flap",
+            "phase": 0.48,
+            "pitch": 0.52,
+            "speed": 36
+          },
+          "bytes": 795070
+        },
+        "dive": {
+          "path": "reports/galevein-silhouette-variants/in-engine/thunderhook-membrane-dive.png",
+          "pose": {
+            "name": "dive",
+            "action": "glide",
+            "phase": 0.5,
+            "pitch": -0.78,
+            "speed": 58
+          },
+          "bytes": 698139
+        }
+      },
+      "consoleProblems": [],
+      "externalRequests": [],
+      "legacyAudioRequests": []
+    }
+  }
+}

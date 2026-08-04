@@ -11,7 +11,7 @@ import urllib.request
 import aiohttp
 
 
-POSES = ("wingUp", "wingDown", "leap", "dive")
+POSES = ("rest", "wingUp", "wingDown", "leap", "dive")
 
 
 def with_query(base_url, **values):
@@ -92,7 +92,7 @@ async def run(args):
                 "Page.addScriptToEvaluateOnNewDocument",
                 {"source": "localStorage.setItem('galevein_gfx','high')"},
             )
-            for rig in ("corrected", "membrane"):
+            for rig in args.rigs:
                 events.clear()
                 await call("Network.setCacheDisabled", {"cacheDisabled": True})
                 url = with_query(
@@ -108,7 +108,16 @@ async def run(args):
                     "screenshots": {},
                 }
                 for pose in POSES:
-                    pose_state = await evaluate(f"SIM.capturePose({json.dumps(pose)})")
+                    if pose == "rest":
+                        pose_state = await evaluate(
+                            """(()=>{document.getElementById('menu').classList.add('hide','live');
+                            document.getElementById('hud').classList.add('on');SIM.warp(0,1);
+                            return {name:'rest',action:'loaded-idle'};})()"""
+                        )
+                    else:
+                        pose_state = await evaluate(
+                            f"SIM.capturePose({json.dumps(pose)})"
+                        )
                     await asyncio.sleep(0.2)
                     screenshot = await call(
                         "Page.captureScreenshot",
@@ -144,6 +153,16 @@ async def run(args):
                         )
                     }
                 )
+                rig_report["legacyAudioRequests"] = sorted(
+                    {
+                        event["params"]["request"]["url"]
+                        for event in events
+                        if event.get("method") == "Network.requestWillBeSent"
+                        and event["params"]["request"]["url"].startswith(
+                            "http://127.0.0.1:8000/audio/"
+                        )
+                    }
+                )
                 report["rigs"][rig] = rig_report
     report_path = output / "capture-report.json"
     report_path.write_text(json.dumps(report, indent=2) + "\n")
@@ -159,6 +178,11 @@ def main():
     parser.add_argument(
         "--output",
         default="reports/flight-motion-verification/membrane-comparison",
+    )
+    parser.add_argument(
+        "--rigs",
+        nargs="+",
+        default=("corrected", "membrane"),
     )
     parser.add_argument("--width", type=int, default=1440)
     parser.add_argument("--height", type=int, default=900)

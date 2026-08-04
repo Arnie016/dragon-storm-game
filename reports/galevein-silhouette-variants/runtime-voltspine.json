@@ -1,0 +1,112 @@
+{
+  "baseUrl": "http://127.0.0.1:8000/index.html",
+  "cdp": "http://127.0.0.1:9224",
+  "framesPerRig": 900,
+  "order": "original-first",
+  "rigs": {
+    "voltspine": {
+      "url": "http://127.0.0.1:8000/index.html?rig=voltspine&verification=1785860285276095000",
+      "weights": {
+        "meshes": 1,
+        "vertices": 1080189,
+        "zeroWeight": 0,
+        "deviates1e3": 0,
+        "negativeWeights": 0,
+        "minSum": 0.999999957,
+        "maxSum": 1.000000045,
+        "meanSum": 1.000000009,
+        "influences": {
+          "0": 0,
+          "1": 88224,
+          "2": 96485,
+          "3": 388927,
+          "4": 506553
+        },
+        "minJoint": 0,
+        "maxJoint": 22,
+        "invalidJoints": 0
+      },
+      "weightChecks": {
+        "zeroWeightPass": true,
+        "normalizationPass": true,
+        "negativeWeightPass": true,
+        "jointRangePass": true,
+        "influenceCeilingPass": true
+      },
+      "frames": {
+        "samples": 900,
+        "p50": 8.3,
+        "p95": 9.1,
+        "p99": 9.3
+      },
+      "loadBefore": {
+        "loadAverage": [
+          111.01,
+          128.74,
+          117.82
+        ],
+        "uptime": "0:18  up 1 day,  3:47, 1 user, load averages: 111.01 128.74 117.82"
+      },
+      "loadAfter": {
+        "loadAverage": [
+          95.46,
+          124.83,
+          116.56
+        ],
+        "uptime": "0:18  up 1 day,  3:47, 1 user, load averages: 95.46 124.83 116.56"
+      }
+    },
+    "voltspine-membrane": {
+      "url": "http://127.0.0.1:8000/index.html?rig=voltspine-membrane&verification=1785860294809479000",
+      "weights": {
+        "meshes": 1,
+        "vertices": 1080189,
+        "zeroWeight": 0,
+        "deviates1e3": 0,
+        "negativeWeights": 0,
+        "minSum": 0.999999955,
+        "maxSum": 1.000000045,
+        "meanSum": 1.000000007,
+        "influences": {
+          "0": 0,
+          "1": 88224,
+          "2": 82858,
+          "3": 203922,
+          "4": 705185
+        },
+        "minJoint": 0,
+        "maxJoint": 28,
+        "invalidJoints": 0
+      },
+      "weightChecks": {
+        "zeroWeightPass": true,
+        "normalizationPass": true,
+        "negativeWeightPass": true,
+        "jointRangePass": true,
+        "influenceCeilingPass": true
+      },
+      "frames": {
+        "samples": 900,
+        "p50": 8.3,
+        "p95": 9.1,
+        "p99": 9.3
+      },
+      "loadBefore": {
+        "loadAverage": [
+          95.46,
+          124.83,
+          116.56
+        ],
+        "uptime": "0:18  up 1 day,  3:47, 1 user, load averages: 95.46 124.83 116.56"
+      },
+      "loadAfter": {
+        "loadAverage": [
+          82.96,
+          121.18,
+          115.36
+        ],
+        "uptime": "0:18  up 1 day,  3:48, 1 user, load averages: 82.96 121.18 115.36"
+      }
+    }
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "baseUrl": "http://127.0.0.1:8000/index.html",
+  "cdp": "http://127.0.0.1:9224",
+  "framesPerRig": 900,
+  "order": "original-first",
+  "rigs": {
+    "stormcrest": {
+      "url": "http://127.0.0.1:8000/index.html?rig=stormcrest&verification=1785860243390920000",
+      "weights": {
+        "meshes": 1,
+        "vertices": 1080189,
+        "zeroWeight": 0,
+        "deviates1e3": 0,
+        "negativeWeights": 0,
+        "minSum": 0.999999957,
+        "maxSum": 1.000000045,
+        "meanSum": 1.000000009,
+        "influences": {
+          "0": 0,
+          "1": 88224,
+          "2": 96485,
+          "3": 388927,
+          "4": 506553
+        },
+        "minJoint": 0,
+        "maxJoint": 22,
+        "invalidJoints": 0
+      },
+      "weightChecks": {
+        "zeroWeightPass": true,
+        "normalizationPass": true,
+        "negativeWeightPass": true,
+        "jointRangePass": true,
+        "influenceCeilingPass": true
+      },
+      "frames": {
+        "samples": 900,
+        "p50": 16.7,
+        "p95": 33.4,
+        "p99": 34.2
+      },
+      "loadBefore": {
+        "loadAverage": [
+          114.27,
+          130.37,
+          117.94
+        ],
+        "uptime": "0:17  up 1 day,  3:47, 1 user, load averages: 114.27 130.37 117.94"
+      },
+      "loadAfter": {
+        "loadAverage": [
+          122.8,
+          131.52,
+          118.65
+        ],
+        "uptime": "0:17  up 1 day,  3:47, 1 user, load averages: 122.80 131.52 118.65"
+      }
+    },
+    "stormcrest-membrane": {
+      "url": "http://127.0.0.1:8000/index.html?rig=stormcrest-membrane&verification=1785860273763822000",
+      "weights": {
+        "meshes": 1,
+        "vertices": 1080189,
+        "zeroWeight": 0,
+        "deviates1e3": 0,
+        "negativeWeights": 0,
+        "minSum": 0.999999955,
+        "maxSum": 1.000000045,
+        "meanSum": 1.000000007,
+        "influences": {
+          "0": 0,
+          "1": 88224,
+          "2": 82858,
+          "3": 203922,
+          "4": 705185
+        },
+        "minJoint": 0,
+        "maxJoint": 28,
+        "invalidJoints": 0
+      },
+      "weightChecks": {
+        "zeroWeightPass": true,
+        "normalizationPass": true,
+        "negativeWeightPass": true,
+        "jointRangePass": true,
+        "influenceCeilingPass": true
+      },
+      "frames": {
+        "samples": 900,
+        "p50": 8.3,
+        "p95": 25,
+        "p99": 41.7
+      },
+      "loadBefore": {
+        "loadAverage": [
+          122.8,
+          131.52,
+          118.65
+        ],
+        "uptime": "0:17  up 1 day,  3:47, 1 user, load averages: 122.80 131.52 118.65"
+      },
+      "loadAfter": {
+        "loadAverage": [
+          111.01,
+          128.74,
+          117.82
+        ],
+        "uptime": "0:18  up 1 day,  3:47, 1 user, load averages: 111.01 128.74 117.82"
+      }
+    }
+  }
+}

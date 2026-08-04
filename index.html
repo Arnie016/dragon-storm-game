@@ -564,7 +564,7 @@ renderer.toneMappingExposure = 1.35;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x0a0a1a, 0.0030);
+scene.fog = new THREE.FogExp2(0x0a0a1a, 0.00068);
 const camera = new THREE.PerspectiveCamera(64, innerWidth/innerHeight, 0.5, 6000);
 const cinematicDof = new CinematicDofPipeline(renderer, scene, camera, { enabled:false, focusRange:42, maxBlur:1.35 });
 
@@ -577,6 +577,7 @@ const moon = new THREE.DirectionalLight(0xffd9a0, 1.15); moon.position.set(-260,
 const rimP = new THREE.DirectionalLight(0xb072ff, 0.9); rimP.position.set(220,120,180); scene.add(rimP);
 const fillT = new THREE.DirectionalLight(0x2fd6c0, 0.45); fillT.position.set(60,-40,-220); scene.add(fillT);
 const amb = new THREE.AmbientLight(0x3a2c3a, 1.7); scene.add(amb);
+const hemi = new THREE.HemisphereLight(0x8aa6c8,0x160d1c,.72); scene.add(hemi);
 
 /* ---- star + aurora + sun sky dome ---- */
 const sky = new THREE.Mesh(new THREE.SphereGeometry(2600,32,20), new THREE.ShaderMaterial({
@@ -585,6 +586,8 @@ const sky = new THREE.Mesh(new THREE.SphereGeometry(2600,32,20), new THREE.Shade
   fragmentShader:`
     uniform float uT; uniform float uDay; varying vec3 vP;
     float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+    float noise(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f);
+      return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.)),f.x),f.y); }
     void main(){
       vec3 d=normalize(vP); float up=clamp(d.y,0.,1.);
       // sunset gradient (warm) vs night gradient (deep purple)
@@ -595,6 +598,14 @@ const sky = new THREE.Mesh(new THREE.SphereGeometry(2600,32,20), new THREE.Shade
       // bright daytime sky at the start, easing into the sunset by uDay ~0.34
       vec3 dayC = mix(vec3(0.52,0.70,0.93), vec3(0.26,0.49,0.86), smoothstep(0.0,0.7,up));
       col = mix(dayC, col, smoothstep(0.0,0.34,uDay));
+      vec3 hazeC=mix(vec3(.94,.48,.28),vec3(.17,.12,.31),uDay);
+      float horizon=exp(-max(d.y,0.)*9.5);
+      col=mix(col,hazeC,horizon*(.34+.16*uDay));
+      vec2 cp=d.xz/max(.12,d.y+.23);
+      float cloud=noise(cp*1.35+vec2(uT*.014,-uT*.009))*.68+noise(cp*3.1-vec2(uT*.022,uT*.006))*.32;
+      cloud=smoothstep(.48,.78,cloud)*smoothstep(.03,.48,d.y)*(1.-smoothstep(.48,.82,d.y));
+      vec3 cloudC=mix(vec3(.82,.49,.43),vec3(.12,.13,.28),uDay);
+      col=mix(col,cloudC,cloud*(.36+.18*uDay));
       // the sun: high & white by day, sinking & warm into the sunset, gone by night
       vec3 sunDir=normalize(vec3(-0.92, 0.42-0.5*uDay, 0.34));
       float sd=max(dot(d,sunDir),0.);
@@ -619,27 +630,55 @@ const sea = new THREE.Mesh(new THREE.PlaneGeometry(9000,9000,220,220), new THREE
   uniforms:{ ...seaUniforms, fogColor:{value:scene.fog.color}, fogDensity:{value:scene.fog.density},
              uDay, uRA, uRC, uRW }, fog:false,
   vertexShader:`uniform float uT; uniform float uRA; uniform vec2 uRC; uniform float uRW;
-    varying float vH; varying vec3 vW;
+    varying float vH; varying float vMacro; varying vec3 vW;
     float wave(vec2 p,vec2 d,float k,float s,float a){ return a*sin(dot(p,d)*k+uT*s); }
     void main(){ vec3 pos=position;
       float h=wave(pos.xy,vec2(.8,.6),.045,1.25,2.6)+wave(pos.xy,vec2(-.5,.9),.07,1.7,1.5)+wave(pos.xy,vec2(.2,-1.),.11,2.3,.8);
+      float macro=2.2*sin(pos.x*.006+pos.y*.003+uT*.2)+1.2*sin(length(pos.xy)*.0035-uT*.15);
+      h+=macro;
       float rd2=(pos.x-uRC.x)*(pos.x-uRC.x)+(-pos.y-uRC.y)*(-pos.y-uRC.y);  // local->world xz
       h += uRA*exp(-rd2/uRW);                                              // menacing rogue swell
-      pos.z+=h; vH=h; vec4 w=modelMatrix*vec4(pos,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
-  fragmentShader:`uniform vec3 fogColor; uniform float fogDensity; uniform float uDay; varying float vH; varying vec3 vW;
+      pos.z+=h; vH=h; vMacro=macro; vec4 w=modelMatrix*vec4(pos,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
+  fragmentShader:`uniform vec3 fogColor; uniform float fogDensity; uniform float uDay; varying float vH; varying float vMacro; varying vec3 vW;
+    float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+    float noise(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f);
+      return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.)),f.x),f.y); }
     void main(){
-      vec3 deep=mix(vec3(.05,.028,.035), vec3(.01,.025,.05), uDay);
-      vec3 crest=mix(vec3(.9,.55,.38), vec3(.4,.5,.62), uDay);
-      float foam=smoothstep(2.2,4.2,vH)*.8;
-      foam+=step(.985,fract(sin(dot(floor(vW.xz*1.5),vec2(12.9898,78.233)))*43758.55))*.12;
-      vec3 col=mix(deep,crest,foam);
-      col+=vec3(0.18,0.05,0.32)*smoothstep(1.0,3.2,vH)*0.4*uDay;          // night crest sheen
-      col+=vec3(1.0,0.5,0.24)*smoothstep(0.4,3.0,vH)*0.28*(1.-uDay);      // sunset crest
+      vec3 dx=dFdx(vW),dy=dFdy(vW); vec3 nrm=normalize(cross(dx,dy)); if(nrm.y<0.)nrm=-nrm;
+      vec3 viewDir=normalize(cameraPosition-vW);
+      float fresnel=pow(1.-clamp(dot(nrm,viewDir),0.,1.),2.35);
+      float broad=noise(vW.xz*.012+vec2(uDay*.7,0.));
+      float grain=noise(vW.xz*.055+vec2(vH*.08,-vH*.05));
+      float cresting=smoothstep(3.0,6.6,vH+grain*1.45);
+      float torn=smoothstep(.56,.86,broad*.72+grain*.28);
+      float foam=cresting*(.28+.72*torn);
+      vec3 deep=mix(vec3(.035,.045,.062),vec3(.012,.027,.058),uDay);
+      vec3 shallow=mix(vec3(.19,.12,.13),vec3(.07,.13,.18),uDay);
+      vec3 skySheen=mix(vec3(.88,.42,.24),vec3(.28,.32,.55),uDay);
+      vec3 col=mix(deep,shallow,.24+.18*broad+.06*vMacro);
+      col=mix(col,skySheen,fresnel*(.30+.18*(1.-uDay)));
+      col=mix(col,mix(vec3(.82,.72,.64),vec3(.42,.54,.68),uDay),foam*.56);
       float dd=length(vW-cameraPosition); float f=1.-exp(-fogDensity*fogDensity*dd*dd);
+      f*=.72+.28*smoothstep(120.,1500.,dd);
       gl_FragColor=vec4(mix(col,fogColor,f),1.); }`
 }));
 sea.rotation.x=-Math.PI/2; scene.add(sea);
 const horizonDirector = new HorizonDirector(scene, camera);
+function makeHorizonRidgeGeometry(){
+  const seg=13,levels=5,pos=[],col=[],idx=[];
+  const low=new THREE.Color(0x101827),mid=new THREE.Color(0x293449),high=new THREE.Color(0x8b6c76),c=new THREE.Color();
+  for(let j=0;j<levels;j++){ const t=j/(levels-1),r=Math.pow(1-t,.72)*.52+.035;
+    for(let i=0;i<seg;i++){ const a=i/seg*Math.PI*2,broken=1+.15*Math.sin(a*3+1.7)+.07*Math.sin(a*7-.8);
+      pos.push(Math.cos(a)*r*broken+(t-.5)*.17, t-.5, Math.sin(a)*r*(.64+.12*Math.cos(a*2))*broken);
+      c.copy(low).lerp(mid,Math.min(1,t*1.55)).lerp(high,Math.max(0,t-.58)*1.45); col.push(c.r,c.g,c.b); } }
+  for(let j=0;j<levels-1;j++)for(let i=0;i<seg;i++){ const n=(i+1)%seg,a=j*seg+i,b=j*seg+n,d=(j+1)*seg+i,e=(j+1)*seg+n; idx.push(a,d,b,b,d,e); }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.setIndex(idx); g.computeVertexNormals(); return g;
+}
+horizonDirector.masses.geometry.dispose();
+horizonDirector.masses.material.dispose();
+horizonDirector.masses.geometry=makeHorizonRidgeGeometry();
+horizonDirector.masses.material=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.94,metalness:.02,flatShading:true,fog:true,emissive:0x161427,emissiveIntensity:.12});
 const refreshSeaFog=()=>{
   sea.material.uniforms.fogColor.value.copy(scene.fog.color);
   sea.material.uniforms.fogDensity.value=scene.fog.density;
@@ -648,6 +687,7 @@ const refreshSeaFog=()=>{
 const ROG={ amp:0, cx:1e5, cz:1e5, life:0, next:6 };
 function waveH(x,z,t){ const a=x*.8+(-z)*.6, b=x*-.5+(-z)*.9, c=x*.2+(-z)*-1.0;
   let h=2.6*Math.sin(a*.045+t*1.25)+1.5*Math.sin(b*.07+t*1.7)+0.8*Math.sin(c*.11+t*2.3);
+  h+=2.2*Math.sin(x*.006+(-z)*.003+t*.2)+1.2*Math.sin(Math.hypot(x,z)*.0035-t*.15);
   if(ROG.amp>0.01){ const dx=x-ROG.cx, dz=z-ROG.cz; h+=ROG.amp*Math.exp(-(dx*dx+dz*dz)/uRW.value); }
   return h; }
 
@@ -782,13 +822,17 @@ function crystal(x,z,h){
 crystal(20,18,26); crystal(-44,-8,20); crystal(70,44,30); crystal(-20,-64,22); crystal(-78,40,24);
 
 // large mountainous islands ringing the archipelago (terrain to weave through)
-const mtnMat = new THREE.MeshStandardMaterial({ color:0x232838, roughness:.95, flatShading:true });
-const snowMat = new THREE.MeshStandardMaterial({ color:0xdfe6f2, roughness:.7, flatShading:true });
+const mtnMat = new THREE.MeshStandardMaterial({ color:0xffffff, vertexColors:true, roughness:.95, flatShading:true });
+const snowMat = new THREE.MeshStandardMaterial({ color:0xc9c9d5, emissive:0x171629, emissiveIntensity:.18, roughness:.76, flatShading:true });
 function mountain(x,z,r,h){
   const g=new THREE.ConeGeometry(r,h,9,4), p=g.attributes.position;
+  const colors=new Float32Array(p.count*3),lo=new THREE.Color(0x111823),mi=new THREE.Color(0x31384a),hi=new THREE.Color(0x8b7883),cc=new THREE.Color();
   for(let i=0;i<p.count;i++){ const vx=p.getX(i), vy=p.getY(i), vz=p.getZ(i);
     const n=(Math.sin(vx*0.15+vz*0.2)+Math.cos(vz*0.13-vx*0.1))*r*0.10;
-    p.setX(i,vx+n); p.setZ(i,vz-n*0.7); if(vy<h*0.45) p.setY(i, vy+Math.sin(vx*0.3)*r*0.05); }
+    p.setX(i,vx+n); p.setZ(i,vz-n*0.7); if(vy<h*0.45) p.setY(i, vy+Math.sin(vx*0.3)*r*0.05);
+    const t=THREE.MathUtils.clamp(vy/h+.5,0,1); cc.copy(lo).lerp(mi,Math.min(1,t*1.65)).lerp(hi,Math.max(0,t-.58)*1.5);
+    colors[i*3]=cc.r; colors[i*3+1]=cc.g; colors[i*3+2]=cc.b; }
+  g.setAttribute('color',new THREE.BufferAttribute(colors,3));
   g.computeVertexNormals();
   const m=new THREE.Mesh(g,mtnMat); m.position.set(x,h/2-4,z); m.rotation.y=Math.random()*6; scene.add(m);
   const cap=new THREE.Mesh(new THREE.ConeGeometry(r*0.34,h*0.28,9), snowMat);
@@ -966,8 +1010,8 @@ const streakSeed=Array.from({length:STREAK_N},()=>[Math.random(),Math.random(),M
 
 /* ---- beacons (waypoint rings) : a winding route ---- */
 const rings=[]; const RING_R=13; const N_RINGS=12;
-const ringBase=new THREE.MeshStandardMaterial({ color:0x1a0f38, emissive:0x8b46ff, emissiveIntensity:3.0 });
-const ringDone=new THREE.MeshStandardMaterial({ color:0x0f2e26, emissive:0x2fd6a0, emissiveIntensity:1.4 });
+const ringBase=new THREE.MeshStandardMaterial({ color:0x1a0f38, emissive:0x8b46ff, emissiveIntensity:3.0, fog:false });
+const ringDone=new THREE.MeshStandardMaterial({ color:0x0f2e26, emissive:0x2fd6a0, emissiveIntensity:1.4, fog:false });
 const route=[[0,44,200],[150,70,-40],[-90,66,-150],[-170,72,-10],          // home waters + canyon
   [140,60,-260],[420,70,-380],[520,64,-470],                                  // out to the Drowned Village
   [180,80,-560],[-320,90,-420],[-560,96,240],                                 // under the Bone Arches
@@ -1012,13 +1056,44 @@ D.group.position.copy(START); scene.add(D.group);
 const draco=new DRACOLoader().setDecoderPath('./vendor/draco/');
 const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
 const landmarkPath=new LandmarkPath(scene,loader,{assetBase:'./licensed-assets/models/'});
+const landmarkMaterials=[];
+const landmarkLooks={
+  'wake-arch':{stone:0x46666c,glow:0x65e6db},
+  'storm-spire':{stone:0x343b62,glow:0x8c7cff},
+  'drowned-gate':{stone:0x3b5260,glow:0x6bd5ed},
+  'cinder-harbor':{stone:0x563a35,glow:0xff784d},
+  'bone-sentinel':{stone:0x777178,glow:0xd8b8ff},
+  'aurora-crown':{stone:0x3e6262,glow:0x6fffc5}
+};
+function styleLandmarks(){
+  for(let index=0;index<landmarkPath.route.length;index++){
+    const entry=landmarkPath.route[index],look=landmarkLooks[entry.id]; let part=0;
+    entry.object?.traverse(o=>{
+      if(o.isPointLight){ o.color.setHex(look.glow); o.distance=220+index*12; return; }
+      if(!o.isMesh||!o.material)return;
+      const sources=Array.isArray(o.material)?o.material:[o.material];
+      const styled=sources.map((source,slot)=>{
+        const m=source.clone(),shade=.72+((part+slot)%4)*.09;
+        if(m.color)m.color.setHex(look.stone).multiplyScalar(shade);
+        if(m.emissive){ m.emissive.setHex(look.glow); m.emissiveIntensity=.14+((part+slot)%3)*.055; }
+        if('roughness' in m)m.roughness=.64+((part+slot)%3)*.09;
+        if('metalness' in m)m.metalness=entry.template==='harbor'?.28:.08;
+        m.flatShading=true; m.needsUpdate=true;
+        landmarkMaterials.push({material:m,base:m.emissiveIntensity||0,phase:index*.9+part*.17});
+        return m;
+      });
+      o.material=Array.isArray(o.material)?styled:styled[0]; part++;
+    });
+  }
+}
 const landmarkReady=landmarkPath.loadTemplates();
 landmarkReady.then(()=>{
+  styleLandmarks();
   for(const c of landmarkPath.getCollisionProxies()) colliders.push({x:c.x,z:c.z,r:c.radius,top:c.top,landmark:c.id});
   landmarkPath.setCollisionAuthority(true);
 });
 const rigChoice=new URLSearchParams(location.search).get('rig');
-const dragonAsset=rigChoice==='original'?'dragon_rigged.glb':rigChoice==='membrane'?'dragon_rigged_membrane.glb':'dragon_rigged_corrected.glb';
+const dragonAsset=({original:'dragon_rigged.glb',membrane:'dragon_rigged_membrane.glb',stormcrest:'dragon_galevein_stormcrest_corrected.glb','stormcrest-membrane':'dragon_galevein_stormcrest_membrane.glb',voltspine:'dragon_galevein_voltspine_corrected.glb','voltspine-membrane':'dragon_galevein_voltspine_membrane.glb',thunderhook:'dragon_galevein_thunderhook_corrected.glb','thunderhook-membrane':'dragon_galevein_thunderhook_membrane.glb'})[rigChoice]||'dragon_rigged_corrected.glb';
 loader.load(dragonAsset,(g)=>{
   const model=g.scene; D.model=model; model.scale.setScalar(9.0); model.rotation.y=Math.PI;
   // ---- black volcanic obsidian scales: dark PBR + faint ember emissive in the recesses ----
@@ -1824,20 +1899,27 @@ function occluded(lamp,drag){
 /* ============================ SIM ============================ */
 const _sun=new THREE.Color(0xffd9a0), _moonC=new THREE.Color(0x9fb4ff), _sunWhite=new THREE.Color(0xfff2df);
 const _fogSet=new THREE.Color(0x24151f), _fogNight=new THREE.Color(0x0a0a1a), _fogDay=new THREE.Color(0x9fb6cf);
-const _ambSet=new THREE.Color(0x4a2c30), _ambNight=new THREE.Color(0x2c2a48), _ambDay=new THREE.Color(0x6b7690);
+const _ambSet=new THREE.Color(0x4a2c30), _ambNight=new THREE.Color(0x242847), _ambDay=new THREE.Color(0x6b7690);
+const _hemiSkyDay=new THREE.Color(0x9bb9d8),_hemiSkyNight=new THREE.Color(0x52669c);
+const _hemiGroundDay=new THREE.Color(0x31202a),_hemiGroundNight=new THREE.Color(0x100a18);
 function driveTimeOfDay(dt){
   // flight begins in daylight and the sun sinks over NIGHTFALL seconds; menu holds a golden dusk
   if(S.started && !S.done && S.flightT>S.dayHold) TOD.day=Math.min(1, TOD.day + dt/S.nightfall);
   else if(!S.started) TOD.day=0.34 + 0.04*Math.sin(S.t*0.2);
   uDay.value=TOD.day;
   const d=TOD.day, dayW=Math.max(0,1-d/0.34);            // 1 = full day, 0 by dusk
-  moon.color.copy(_sun).lerp(_moonC, d).lerp(_sunWhite, dayW); moon.intensity=1.7-0.2*d + dayW*0.9;
+  moon.color.copy(_sun).lerp(_moonC, d).lerp(_sunWhite, dayW); moon.intensity=1.85+.28*d + dayW*.72;
   moon.position.set(-260, 60+180*d, 140-40*d);            // sun low -> moon high
-  amb.color.copy(_ambSet).lerp(_ambNight, d).lerp(_ambDay, dayW); amb.intensity=2.5-0.3*d + dayW*0.6;
-  rimP.intensity=0.7+0.6*d; fillT.intensity=0.5+0.25*d;
+  amb.color.copy(_ambSet).lerp(_ambNight, d).lerp(_ambDay, dayW); amb.intensity=1.55-.18*d + dayW*.48;
+  hemi.color.copy(_hemiSkyDay).lerp(_hemiSkyNight,d); hemi.groundColor.copy(_hemiGroundDay).lerp(_hemiGroundNight,d); hemi.intensity=.78+.18*d;
+  rimP.intensity=.82+.82*d; fillT.intensity=.58+.42*d;
   scene.fog.color.copy(_fogSet).lerp(_fogNight, d).lerp(_fogDay, dayW);
-  scene.fog.density=(0.0021+0.0008*d) - dayW*0.0008;      // less murk overall
-  renderer.toneMappingExposure=1.78-0.14*d + dayW*0.12;   // brighter across the board
+  horizonDirector.fogDensity=.00058+.00032*d+.00010*smoothstep(.78,1,d);
+  scene.fog.density=horizonDirector.fogDensity;
+  renderer.toneMappingExposure=1.62-.12*d + dayW*.14;
+  for(const r of rings)if(!r.userData.hit)r.material.emissiveIntensity=3.15+d*1.75;
+  for(const item of landmarkMaterials)item.material.emissiveIntensity=item.base+.18*d+.035*Math.sin(S.t*.9+item.phase);
+  horizonDirector.masses.material.emissiveIntensity=.08+.16*d;
   // music: warm menu bed at dusk -> dark tension at night
   if(AU.on&&!S.muted){ if(AU.el.menu){ AU.el.menu.volume=(1-d)*0.34; if(AU.el.menu.paused&&d<0.95)AU.el.menu.play().catch(()=>{});}
     if(AU.el.music) AU.el.music.volume=0.16+d*0.34; }
