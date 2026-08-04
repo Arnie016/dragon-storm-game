@@ -1,0 +1,135 @@
+{
+  "baseUrl": "http://127.0.0.1:8000/index.html",
+  "poses": [
+    "wingUp",
+    "wingDown",
+    "leap",
+    "dive"
+  ],
+  "rigs": {
+    "corrected": {
+      "url": "http://127.0.0.1:8000/index.html?rig=corrected&comparison=1785856335264061000",
+      "bones": {
+        "tail": 5,
+        "neck": true,
+        "head": true,
+        "chest": true,
+        "hips": true,
+        "wings": 10,
+        "shoulders": 2,
+        "forearms": 2,
+        "wingTips": 6
+      },
+      "screenshots": {
+        "wingUp": {
+          "path": "reports/flight-motion-verification/membrane-comparison/corrected-wingUp.png",
+          "pose": {
+            "name": "wingUp",
+            "action": "flap",
+            "phase": 0.24,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 1040645
+        },
+        "wingDown": {
+          "path": "reports/flight-motion-verification/membrane-comparison/corrected-wingDown.png",
+          "pose": {
+            "name": "wingDown",
+            "action": "flap",
+            "phase": 0.72,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 779947
+        },
+        "leap": {
+          "path": "reports/flight-motion-verification/membrane-comparison/corrected-leap.png",
+          "pose": {
+            "name": "leap",
+            "action": "flap",
+            "phase": 0.48,
+            "pitch": 0.52,
+            "speed": 36
+          },
+          "bytes": 802607
+        },
+        "dive": {
+          "path": "reports/flight-motion-verification/membrane-comparison/corrected-dive.png",
+          "pose": {
+            "name": "dive",
+            "action": "glide",
+            "phase": 0.5,
+            "pitch": -0.78,
+            "speed": 58
+          },
+          "bytes": 690660
+        }
+      },
+      "consoleProblems": [],
+      "externalRequests": []
+    },
+    "membrane": {
+      "url": "http://127.0.0.1:8000/index.html?rig=membrane&comparison=1785856378371681000",
+      "bones": {
+        "tail": 5,
+        "neck": true,
+        "head": true,
+        "chest": true,
+        "hips": true,
+        "wings": 10,
+        "shoulders": 2,
+        "forearms": 2,
+        "wingTips": 6
+      },
+      "screenshots": {
+        "wingUp": {
+          "path": "reports/flight-motion-verification/membrane-comparison/membrane-wingUp.png",
+          "pose": {
+            "name": "wingUp",
+            "action": "flap",
+            "phase": 0.24,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 1076495
+        },
+        "wingDown": {
+          "path": "reports/flight-motion-verification/membrane-comparison/membrane-wingDown.png",
+          "pose": {
+            "name": "wingDown",
+            "action": "flap",
+            "phase": 0.72,
+            "pitch": 0,
+            "speed": 28
+          },
+          "bytes": 780409
+        },
+        "leap": {
+          "path": "reports/flight-motion-verification/membrane-comparison/membrane-leap.png",
+          "pose": {
+            "name": "leap",
+            "action": "flap",
+            "phase": 0.48,
+            "pitch": 0.52,
+            "speed": 36
+          },
+          "bytes": 789917
+        },
+        "dive": {
+          "path": "reports/flight-motion-verification/membrane-comparison/membrane-dive.png",
+          "pose": {
+            "name": "dive",
+            "action": "glide",
+            "phase": 0.5,
+            "pitch": -0.78,
+            "speed": 58
+          },
+          "bytes": 694771
+        }
+      },
+      "consoleProblems": [],
+      "externalRequests": []
+    }
+  }
+}

@@ -1,0 +1,519 @@
+{
+  "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_corrected.glb",
+  "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_membrane.glb",
+  "sourceHierarchy": [
+    {
+      "name": "hips",
+      "parent": null,
+      "head": [
+        0.0,
+        0.18,
+        0.3
+      ],
+      "tail": [
+        0.0,
+        0.05,
+        0.4
+      ]
+    },
+    {
+      "name": "chest",
+      "parent": "hips",
+      "head": [
+        0.0,
+        0.05,
+        0.4
+      ],
+      "tail": [
+        0.0,
+        -0.1,
+        0.5
+      ]
+    },
+    {
+      "name": "neck",
+      "parent": "chest",
+      "head": [
+        0.0,
+        -0.1,
+        0.5
+      ],
+      "tail": [
+        0.0,
+        -0.26,
+        0.62
+      ]
+    },
+    {
+      "name": "head",
+      "parent": "neck",
+      "head": [
+        0.0,
+        -0.26,
+        0.62
+      ],
+      "tail": [
+        0.0,
+        -0.455237,
+        0.663386
+      ]
+    },
+    {
+      "name": "shoulder.R",
+      "parent": "chest",
+      "head": [
+        0.06,
+        -0.1,
+        0.53
+      ],
+      "tail": [
+        0.13,
+        -0.14,
+        0.6
+      ]
+    },
+    {
+      "name": "forearm.R",
+      "parent": "shoulder.R",
+      "head": [
+        0.13,
+        -0.14,
+        0.6
+      ],
+      "tail": [
+        0.22,
+        -0.165,
+        0.645
+      ]
+    },
+    {
+      "name": "fingerA.R",
+      "parent": "forearm.R",
+      "head": [
+        0.22,
+        -0.165,
+        0.645
+      ],
+      "tail": [
+        0.321983,
+        -0.17822,
+        0.65822
+      ]
+    },
+    {
+      "name": "fingerB.R",
+      "parent": "forearm.R",
+      "head": [
+        0.22,
+        -0.165,
+        0.645
+      ],
+      "tail": [
+        0.307745,
+        -0.110159,
+        0.651581
+      ]
+    },
+    {
+      "name": "fingerC.R",
+      "parent": "forearm.R",
+      "head": [
+        0.22,
+        -0.165,
+        0.645
+      ],
+      "tail": [
+        0.2569,
+        -0.06865,
+        0.63475
+      ]
+    },
+    {
+      "name": "shoulder.L",
+      "parent": "chest",
+      "head": [
+        -0.06,
+        -0.1,
+        0.53
+      ],
+      "tail": [
+        -0.13,
+        -0.14,
+        0.6
+      ]
+    },
+    {
+      "name": "forearm.L",
+      "parent": "shoulder.L",
+      "head": [
+        -0.13,
+        -0.14,
+        0.6
+      ],
+      "tail": [
+        -0.22,
+        -0.165,
+        0.645
+      ]
+    },
+    {
+      "name": "fingerA.L",
+      "parent": "forearm.L",
+      "head": [
+        -0.22,
+        -0.165,
+        0.645
+      ],
+      "tail": [
+        -0.321982,
+        -0.17822,
+        0.65822
+      ]
+    },
+    {
+      "name": "fingerB.L",
+      "parent": "forearm.L",
+      "head": [
+        -0.22,
+        -0.165,
+        0.645
+      ],
+      "tail": [
+        -0.307745,
+        -0.110159,
+        0.651581
+      ]
+    },
+    {
+      "name": "fingerC.L",
+      "parent": "forearm.L",
+      "head": [
+        -0.22,
+        -0.165,
+        0.645
+      ],
+      "tail": [
+        -0.2569,
+        -0.06865,
+        0.63475
+      ]
+    },
+    {
+      "name": "tail1",
+      "parent": "hips",
+      "head": [
+        0.0,
+        0.18,
+        0.3
+      ],
+      "tail": [
+        -0.0,
+        0.245,
+        0.2
+      ]
+    },
+    {
+      "name": "tail2",
+      "parent": "tail1",
+      "head": [
+        -0.0,
+        0.245,
+        0.2
+      ],
+      "tail": [
+        -0.0,
+        0.31,
+        0.115
+      ]
+    },
+    {
+      "name": "tail3",
+      "parent": "tail2",
+      "head": [
+        -0.0,
+        0.31,
+        0.115
+      ],
+      "tail": [
+        -0.0,
+        0.37,
+        0.055
+      ]
+    },
+    {
+      "name": "tail4",
+      "parent": "tail3",
+      "head": [
+        -0.0,
+        0.37,
+        0.055
+      ],
+      "tail": [
+        0.0,
+        0.425,
+        0.02
+      ]
+    },
+    {
+      "name": "tail5",
+      "parent": "tail4",
+      "head": [
+        0.0,
+        0.425,
+        0.02
+      ],
+      "tail": [
+        0.0,
+        0.487442,
+        0.001267
+      ]
+    },
+    {
+      "name": "thigh.R",
+      "parent": "hips",
+      "head": [
+        0.07,
+        -0.06,
+        0.36
+      ],
+      "tail": [
+        0.105,
+        -0.02,
+        0.2
+      ]
+    },
+    {
+      "name": "shin.R",
+      "parent": "thigh.R",
+      "head": [
+        0.105,
+        -0.02,
+        0.2
+      ],
+      "tail": [
+        0.115,
+        0.03,
+        0.075
+      ]
+    },
+    {
+      "name": "foot.R",
+      "parent": "shin.R",
+      "head": [
+        0.115,
+        0.03,
+        0.075
+      ],
+      "tail": [
+        0.132842,
+        0.110289,
+        -0.032052
+      ]
+    },
+    {
+      "name": "thigh.L",
+      "parent": "hips",
+      "head": [
+        -0.07,
+        -0.06,
+        0.36
+      ],
+      "tail": [
+        -0.105,
+        -0.02,
+        0.2
+      ]
+    },
+    {
+      "name": "shin.L",
+      "parent": "thigh.L",
+      "head": [
+        -0.105,
+        -0.02,
+        0.2
+      ],
+      "tail": [
+        -0.115,
+        0.03,
+        0.075
+      ]
+    },
+    {
+      "name": "foot.L",
+      "parent": "shin.L",
+      "head": [
+        -0.115,
+        0.03,
+        0.075
+      ],
+      "tail": [
+        -0.132842,
+        0.110289,
+        -0.032053
+      ]
+    }
+  ],
+  "sourceActions": {
+    "Flap": [
+      1.0,
+      39.0
+    ],
+    "Glide": [
+      1.0,
+      73.0
+    ]
+  },
+  "membraneBones": [
+    {
+      "name": "membraneAB.R",
+      "parent": "forearm.R",
+      "head": [
+        0.22,
+        -0.165,
+        0.645
+      ],
+      "tail": [
+        0.320752,
+        -0.142898,
+        0.655515
+      ]
+    },
+    {
+      "name": "membraneBC.R",
+      "parent": "forearm.R",
+      "head": [
+        0.22,
+        -0.165,
+        0.645
+      ],
+      "tail": [
+        0.285943,
+        -0.085014,
+        0.643058
+      ]
+    },
+    {
+      "name": "membraneBody.R",
+      "parent": "shoulder.R",
+      "head": [
+        0.06,
+        -0.1,
+        0.53
+      ],
+      "tail": [
+        0.153344,
+        -0.085138,
+        0.579658
+      ]
+    },
+    {
+      "name": "membraneAB.L",
+      "parent": "forearm.L",
+      "head": [
+        -0.22,
+        -0.165,
+        0.644999
+      ],
+      "tail": [
+        -0.320752,
+        -0.142898,
+        0.655515
+      ]
+    },
+    {
+      "name": "membraneBC.L",
+      "parent": "forearm.L",
+      "head": [
+        -0.22,
+        -0.165,
+        0.644999
+      ],
+      "tail": [
+        -0.285942,
+        -0.085014,
+        0.643058
+      ]
+    },
+    {
+      "name": "membraneBody.L",
+      "parent": "shoulder.L",
+      "head": [
+        -0.06,
+        -0.1,
+        0.53
+      ],
+      "tail": [
+        -0.153344,
+        -0.085138,
+        0.579658
+      ]
+    }
+  ],
+  "weighting": {
+    "changedVertices": 470973,
+    "membraneWeightedVertices": {
+      "membraneBody.R": 1303,
+      "membraneAB.R": 190315,
+      "membraneBC.R": 38530,
+      "membraneBody.L": 910,
+      "membraneAB.L": 199292,
+      "membraneBC.L": 38183
+    }
+  },
+  "preExportWeights": {
+    "vertices": 1080189,
+    "zeroWeight": 0,
+    "overFour": 0,
+    "influences": {
+      "0": 0,
+      "1": 88224,
+      "2": 82858,
+      "3": 203922,
+      "4": 705185
+    },
+    "minSum": 0.9998168349266052,
+    "maxSum": 1.0001832023262978,
+    "membraneWeightedVertices": {
+      "membraneBody.R": 1303,
+      "membraneAB.R": 190315,
+      "membraneBC.R": 38530,
+      "membraneBody.L": 910,
+      "membraneAB.L": 199292,
+      "membraneBC.L": 38183
+    }
+  },
+  "postExportWeights": {
+    "vertices": 1080189,
+    "zeroWeight": 0,
+    "overFour": 0,
+    "influences": {
+      "0": 0,
+      "1": 88224,
+      "2": 82858,
+      "3": 203922,
+      "4": 705185
+    },
+    "minSum": 0.9998168349266052,
+    "maxSum": 1.0001831948757172,
+    "membraneWeightedVertices": {
+      "membraneBody.R": 1303,
+      "membraneAB.R": 190315,
+      "membraneBC.R": 38530,
+      "membraneBody.L": 910,
+      "membraneAB.L": 199292,
+      "membraneBC.L": 38183
+    }
+  },
+  "exportedActions": {
+    "Flap": [
+      1.0,
+      39.0
+    ],
+    "Glide": [
+      1.0,
+      73.0
+    ]
+  },
+  "originalAnimationMaxMatrixError": 4.743558205664612e-07,
+  "outputBytes": 15959404
+}

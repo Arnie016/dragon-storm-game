@@ -997,7 +997,8 @@ landmarkReady.then(()=>{
   for(const c of landmarkPath.getCollisionProxies()) colliders.push({x:c.x,z:c.z,r:c.radius,top:c.top,landmark:c.id});
   landmarkPath.setCollisionAuthority(true);
 });
-const dragonAsset=new URLSearchParams(location.search).get('rig')==='original'?'dragon_rigged.glb':'dragon_rigged_corrected.glb';
+const rigChoice=new URLSearchParams(location.search).get('rig');
+const dragonAsset=rigChoice==='original'?'dragon_rigged.glb':rigChoice==='membrane'?'dragon_rigged_membrane.glb':'dragon_rigged_corrected.glb';
 loader.load(dragonAsset,(g)=>{
   const model=g.scene; D.model=model; model.scale.setScalar(9.0); model.rotation.y=Math.PI;
   // ---- black volcanic obsidian scales: dark PBR + faint ember emissive in the recesses ----
@@ -1066,19 +1067,22 @@ function collectBones(model){
   const by=n=>model.getObjectByName(n)||model.getObjectByName(n.replace('.','_'))||model.getObjectByName(n.replace('.',''));
   D.bones={ tail:[by('tail1'),by('tail2'),by('tail3'),by('tail4'),by('tail5')],
     neck:by('neck'), head:by('head'), chest:by('chest'), hips:by('hips'),
-    shoulders:[], forearms:[], wingTips:[], wings:[],
+    shoulders:[], forearms:[], wingTips:[], membranes:[], wings:[],
     thighs:[by('thigh.R'),by('thigh.L')], shins:[by('shin.R'),by('shin.L')] };
   for(const [n,side,chain] of [['shoulder.R',1,'shoulders'],['shoulder.L',-1,'shoulders'],
     ['forearm.R',1,'forearms'],['forearm.L',-1,'forearms'],
     ['fingerA.R',1,'wingTips'],['fingerA.L',-1,'wingTips'],['fingerB.R',1,'wingTips'],
     ['fingerB.L',-1,'wingTips'],['fingerC.R',1,'wingTips'],['fingerC.L',-1,'wingTips']]){
     const b=by(n); if(b){ b.side=side; D.bones[chain].push(b); D.bones.wings.push(b); } }
+  for(const n of ['membraneBody.R','membraneAB.R','membraneBC.R','membraneBody.L','membraneAB.L','membraneBC.L']){
+    const b=by(n); if(b)D.bones.membranes.push(b); }
   const axis=()=>({value:0,velocity:0});
   D.springs={turn:axis(),pitch:axis(),tail:axis(),neck:axis(),head:axis(),wing:axis(),
     tension:axis(),launch:axis(),load:axis()};
   D.boneReport={ tail:D.bones.tail.filter(Boolean).length, neck:!!D.bones.neck, head:!!D.bones.head,
     chest:!!D.bones.chest, hips:!!D.bones.hips, wings:D.bones.wings.length,
-    shoulders:D.bones.shoulders.length, forearms:D.bones.forearms.length, wingTips:D.bones.wingTips.length };
+    shoulders:D.bones.shoulders.length, forearms:D.bones.forearms.length, wingTips:D.bones.wingTips.length,
+    membranes:D.bones.membranes.length };
 }
 // world-space axes of the model, so rotations are predictable regardless of bone roll
 const _mq=new THREE.Quaternion(), _AUP=new THREE.Vector3(), _ART=new THREE.Vector3(), _AFW=new THREE.Vector3();
@@ -2393,8 +2397,8 @@ function render(dt=1/60){
   } else {
     const ang=D.yaw + S.camYaw;
     const back=new THREE.Vector3(Math.sin(ang),0,Math.cos(ang));
-    const height=14 + S.camPitch*22 - CAM.drop.value;
-    const dist = (S.started?27:40) + CAM.pull.value;
+    const height=(S.captureKind?5:14) + S.camPitch*22 - CAM.drop.value;
+    const dist = (S.captureKind?10:(S.started?27:40)) + CAM.pull.value;
     const camTarget=D.group.position.clone().addScaledVector(back,dist).add(new THREE.Vector3(0,height,0));
     camera.position.lerp(camTarget, fdamp(9,dt)); camera.position.add(_shakeV);
     const look=D.group.position.clone().addScaledVector(back,-CAM.look.value).add(new THREE.Vector3(0,-1-CAM.drop.value*.15,0));
@@ -2437,6 +2441,22 @@ window.SIM={
   reset, setFpv:v=>{S.fpv=!!v}, key:(c,v)=>{key[c]=!!v}, shoot, begin,
   teleport:(x,y,z,yaw)=>{ D.group.position.set(x,y,z); if(yaw!=null)D.yaw=yaw; },
   warp:(dt,steps=60)=>{ for(let i=0;i<steps;i++) tick(dt); render(); },
+  capturePose:name=>{ const poses={
+      wingUp:{action:'flap',phase:.24,pitch:0,speed:28},
+      wingDown:{action:'flap',phase:.72,pitch:0,speed:28},
+      leap:{action:'flap',phase:.48,pitch:.52,speed:36},
+      dive:{action:'glide',phase:.50,pitch:-.78,speed:58}};
+    const pose=poses[name]; if(!pose||!D.mixer)return null;
+    S.started=true; S.done=true; S.captureKind=name; S.fpv=false; S.shake=0; S.boost=0; S.accel=0; D.roll=0; D.yaw=Math.PI; D.pitch=pose.pitch; D.speed=pose.speed;
+    D.group.position.set(900,220,900); D.group.rotation.set(0,D.yaw,0); D.group.rotateX(D.pitch*.75);
+    D.model.rotation.x=THREE.MathUtils.clamp(-.85-D.pitch*.3,-1.2,-.45); D.model.rotation.z=0;
+    D.flap.setEffectiveWeight(pose.action==='flap'?1:0); D.glide.setEffectiveWeight(pose.action==='glide'?1:0);
+    D.mixer.timeScale=1; const action=pose.action==='flap'?D.flap:D.glide; D.mixer.setTime(action.getClip().duration*pose.phase); D.mixer.timeScale=0;
+    menuEl.classList.add('hide','live'); $('hud').classList.add('on');
+    const back=new THREE.Vector3(Math.sin(D.yaw),0,Math.cos(D.yaw));
+    camera.position.copy(D.group.position).addScaledVector(back,10).add(new THREE.Vector3(0,5,0));
+    camera.lookAt(D.group.position.clone().add(new THREE.Vector3(0,-1,0))); render();
+    return {name,action:pose.action,phase:pose.phase,pitch:pose.pitch,speed:pose.speed}; },
   bones:()=>D.boneReport, alive:v=>{ALIVE=v;}, setTurn:v=>{D.turn=v;}, day:v=>{TOD.day=v;uDay.value=v;},
   motion:()=>({accel:+D.motion.longAccel.toFixed(2),yawRate:+D.motion.yawRate.toFixed(3),
     pitchRate:+D.motion.pitchRate.toFixed(3),gLoad:+D.motion.gLoad.toFixed(2),

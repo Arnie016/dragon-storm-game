@@ -47,3 +47,19 @@ nice -n 19 python3 reports/flight-motion-verification/verify_rig_runtime.py --cd
 ```
 
 Screenshots in this directory cover the original/corrected rig sample, launch coil/release/settle, and dive entry/load/pull-out. The automated static clip-extreme sampler did not advance the baked action reliably; the before/after files therefore prove comparative rendered loading, not exact extrema.
+
+## Membrane-bone candidate
+
+`dragon_rigged_membrane.glb` is an opt-in Draco-compressed candidate selected with `?rig=membrane`; the corrected rig remains the default. The Blender build is reproducible with `build_membrane_rig.py`.
+
+- The source hierarchy was independently verified as 25 deform bones: hips/chest/neck/head, bilateral shoulder/forearm/finger A-B-C chains, tail1-tail5, and bilateral thigh/shin/foot chains.
+- Six deform bones were added: `membraneBody`, `membraneAB`, and `membraneBC` on each side. The body rib spans shoulder to the inner finger; the other two bisect the A/B and B/C rays. Three ribs per side provide one independently curved bay between each structural boundary without building a dense rib cage that competes for the four available skin slots.
+- Smooth weights were derived from the overlap between adjacent corrected wing groups, capped to the strongest four assignments, and renormalized. 470,973 vertices changed.
+- Post-export influence distribution: 88,224 / 82,858 / 203,922 / 705,185 vertices with 1 / 2 / 3 / 4 influences. Zero vertices are unweighted or above four influences. Sum range after Draco round-trip: 0.999816835-1.000183195.
+- `Flap` remains frames 1-39 and `Glide` remains frames 1-73. Existing-bone animation matrices differ by at most 4.75e-7 after export/import. Each clip contains the original 75 TRS channels plus 18 additive membrane-bone TRS channels.
+- In-engine GPU-input audit: 1,080,189 vertices, zero unweighted, zero negative weights, zero normalization failures, and zero invalid joints. The membrane rig has joint indices 0-28.
+- Paired captures are under `membrane-comparison/`, with corrected on the left and membrane on the right in `paired-wingUp.png`, `paired-wingDown.png`, `paired-leap.png`, and `paired-dive.png`. The capture pass reported zero console warnings/errors and zero external requests.
+
+The visual result is restrained. The leap capture has a visibly fuller, rounder membrane contour and the upstroke has slight independent cupping. The downstroke and dive difference is subtle at gameplay scale. This reads as real skinned stretch/billow, but not as cloth simulation and not as a dramatic rig transformation.
+
+The first 600-frame corrected/membrane timing pair is recorded in `membrane-controlled-ab.json`: corrected p95/p99 10.3/25.3 ms and membrane 10.2/17.2 ms. It is not accepted as performance proof because one-minute load was already about 19-22 on 18 cores and subsequently exceeded 200 due unrelated CPU jobs. The p95 result is effectively tied; p99 must be retaken in a stable load window.

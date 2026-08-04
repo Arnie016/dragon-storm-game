@@ -89,13 +89,15 @@ async def run(args):
                 {"source": "localStorage.setItem('galevein_gfx','med')"},
             )
 
-            rigs = [("original", True), ("corrected", False)]
-            if args.order == "corrected-first":
-                rigs.reverse()
-            for name, original in rigs:
+            rigs = list(args.rigs)
+            preferred = "corrected" if args.order == "corrected-first" else "original"
+            if preferred in rigs:
+                rigs.remove(preferred)
+                rigs.insert(0, preferred)
+            for name in rigs:
                 url = with_query(
                     args.base_url,
-                    rig="original" if original else "corrected",
+                    rig=name,
                     verification=time.time_ns(),
                 )
                 await call("Network.enable")
@@ -124,6 +126,9 @@ async def run(args):
                         "normalizationPass": weight_stats["deviates1e3"] == 0,
                         "negativeWeightPass": weight_stats["negativeWeights"] == 0,
                         "jointRangePass": weight_stats["invalidJoints"] == 0,
+                        "influenceCeilingPass": all(
+                            int(count) <= 4 for count in weight_stats["influences"]
+                        ),
                     },
                     "frames": frame_stats,
                     "loadBefore": before,
@@ -142,6 +147,12 @@ def main():
         "--base-url", default="http://127.0.0.1:8000/index.html"
     )
     parser.add_argument("--frames", type=int, default=900)
+    parser.add_argument(
+        "--rigs",
+        nargs=2,
+        choices=("original", "corrected", "membrane"),
+        default=("original", "corrected"),
+    )
     parser.add_argument(
         "--order",
         choices=("original-first", "corrected-first"),
