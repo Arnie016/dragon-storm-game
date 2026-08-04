@@ -2443,6 +2443,28 @@ window.SIM={
   frameStats:()=>{ const a=frameTimes.slice().sort((x,y)=>x-y), at=q=>a[Math.min(a.length-1,Math.floor(a.length*q))]||0;
     return {samples:a.length,p50:+at(.5).toFixed(2),p95:+at(.95).toFixed(2),p99:+at(.99).toFixed(2)}; },
   clearFrames:()=>{frameTimes.length=0;},
+  skinWeightStats:()=>{ const stats={meshes:0,vertices:0,zeroWeight:0,deviates1e3:0,negativeWeights:0,
+      minSum:Infinity,maxSum:-Infinity,meanSum:0,influences:{0:0,1:0,2:0,3:0,4:0},minJoint:Infinity,maxJoint:-Infinity,invalidJoints:0};
+    D.model.traverse(o=>{ if(!o.isSkinnedMesh)return; const weights=o.geometry.getAttribute('skinWeight');
+      const joints=o.geometry.getAttribute('skinIndex'); if(!weights||!joints)return; stats.meshes++;
+      const boneCount=o.skeleton.bones.length;
+      for(let i=0;i<weights.count;i++){ let sum=0,count=0;
+        for(let c=0;c<4;c++){ const w=weights.getComponent(i,c),j=joints.getComponent(i,c);
+          sum+=w; if(w>1e-8)count++; if(w<0)stats.negativeWeights++;
+          stats.minJoint=Math.min(stats.minJoint,j); stats.maxJoint=Math.max(stats.maxJoint,j);
+          if(w>1e-8&&(j<0||j>=boneCount))stats.invalidJoints++; }
+        stats.vertices++; stats.meanSum+=sum; stats.minSum=Math.min(stats.minSum,sum); stats.maxSum=Math.max(stats.maxSum,sum);
+        if(Math.abs(sum)<=1e-8)stats.zeroWeight++; if(Math.abs(sum-1)>1e-3)stats.deviates1e3++;
+        stats.influences[count]=(stats.influences[count]||0)+1; } });
+    stats.meanSum=stats.vertices?stats.meanSum/stats.vertices:0;
+    for(const k of ['minSum','maxSum','meanSum'])stats[k]=+stats[k].toFixed(9);
+    return stats; },
+  benchmarkStart:()=>{ S.started=true; S.done=false; S.grace=999; S.gustNext=999; S.gustPow=0; S.strikeNext=999;
+    ROG.life=0; ROG.next=999; D.group.position.set(900,220,900); D.yaw=Math.PI; D.pitch=0; D.roll=0; D.speed=30;
+    D.prevYaw=D.yaw; D.prevPitch=D.pitch; S.prevSpeed=D.speed; for(const k in key)key[k]=false;
+    key.KeyW=true; key.ArrowDown=true; frameTimes.length=0; },
+  benchmarkPhase:n=>{ key.ArrowDown=false; key.KeyD=n===1; key.ArrowUp=n===2; },
+  benchmarkStop:()=>{ for(const k in key)key[k]=false; S.done=true; return SIM.frameStats(); },
   echo:echoPulse, flockCall:callFlock,
   expansion:()=>({dof:cinematicDof.enabled,horizon:horizonDirector.getSnapshot(),landmarks:landmarkPath.getSnapshot(),
     seaFog:sea.material.uniforms.fogDensity.value,sceneFog:scene.fog.density,cameraFar:camera.far}),

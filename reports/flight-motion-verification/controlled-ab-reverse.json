@@ -1,0 +1,110 @@
+{
+  "baseUrl": "http://127.0.0.1:8000/index.html",
+  "cdp": "http://127.0.0.1:9224",
+  "framesPerRig": 900,
+  "order": "corrected-first",
+  "rigs": {
+    "corrected": {
+      "url": "http://127.0.0.1:8000/index.html?rig=corrected&verification=1785854202926732000",
+      "weights": {
+        "meshes": 1,
+        "vertices": 1080189,
+        "zeroWeight": 0,
+        "deviates1e3": 0,
+        "negativeWeights": 0,
+        "minSum": 0.999999957,
+        "maxSum": 1.000000045,
+        "meanSum": 1.000000009,
+        "influences": {
+          "0": 0,
+          "1": 88224,
+          "2": 96485,
+          "3": 388927,
+          "4": 506553
+        },
+        "minJoint": 0,
+        "maxJoint": 22,
+        "invalidJoints": 0
+      },
+      "weightChecks": {
+        "zeroWeightPass": true,
+        "normalizationPass": true,
+        "negativeWeightPass": true,
+        "jointRangePass": true
+      },
+      "frames": {
+        "samples": 900,
+        "p50": 8.3,
+        "p95": 16.2,
+        "p99": 50
+      },
+      "loadBefore": {
+        "loadAverage": [
+          200.06,
+          158.58,
+          137.12
+        ],
+        "uptime": "22:36  up 1 day,  2:06, 1 user, load averages: 200.06 158.58 137.12"
+      },
+      "loadAfter": {
+        "loadAverage": [
+          183.26,
+          157.1,
+          136.98
+        ],
+        "uptime": "22:37  up 1 day,  2:06, 1 user, load averages: 183.26 157.10 136.98"
+      }
+    },
+    "original": {
+      "url": "http://127.0.0.1:8000/index.html?rig=original&verification=1785854220899203000",
+      "weights": {
+        "meshes": 1,
+        "vertices": 1080189,
+        "zeroWeight": 0,
+        "deviates1e3": 0,
+        "negativeWeights": 0,
+        "minSum": 0.999999957,
+        "maxSum": 1.000000045,
+        "meanSum": 1.00000001,
+        "influences": {
+          "0": 0,
+          "1": 87351,
+          "2": 24083,
+          "3": 319560,
+          "4": 649195
+        },
+        "minJoint": 0,
+        "maxJoint": 22,
+        "invalidJoints": 0
+      },
+      "weightChecks": {
+        "zeroWeightPass": true,
+        "normalizationPass": true,
+        "negativeWeightPass": true,
+        "jointRangePass": true
+      },
+      "frames": {
+        "samples": 900,
+        "p50": 8.3,
+        "p95": 9.2,
+        "p99": 17.1
+      },
+      "loadBefore": {
+        "loadAverage": [
+          170.19,
+          154.82,
+          136.29
+        ],
+        "uptime": "22:37  up 1 day,  2:06, 1 user, load averages: 170.19 154.82 136.29"
+      },
+      "loadAfter": {
+        "loadAverage": [
+          157.52,
+          152.45,
+          135.57
+        ],
+        "uptime": "22:37  up 1 day,  2:06, 1 user, load averages: 157.52 152.45 135.57"
+      }
+    }
+  }
+}
