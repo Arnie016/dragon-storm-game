@@ -1,0 +1,113 @@
+{
+  "amb_sea": {
+    "bitrate": 32000,
+    "cc0_size": 15939,
+    "channels": 2,
+    "duration": 5.2,
+    "loop": {
+      "boundary_jump": 0.005233733914792538,
+      "boundary_to_p95_step": 1.1270884275436401,
+      "head_tail_rms": 0.03741210326552391,
+      "pass": true,
+      "window_samples": 2048
+    },
+    "lufs": -28.33,
+    "sample_rate": 32000,
+    "size": 21285,
+    "true_peak": -13.66
+  },
+  "crash": {
+    "bitrate": 24000,
+    "cc0_size": 3537,
+    "channels": 1,
+    "duration": 1.1,
+    "lufs": -19.05,
+    "sample_rate": 24000,
+    "size": 3693,
+    "true_peak": -2.73
+  },
+  "detected": {
+    "bitrate": 24000,
+    "cc0_size": 6301,
+    "channels": 1,
+    "duration": 0.72,
+    "lufs": -17.36,
+    "sample_rate": 24000,
+    "size": 2541,
+    "true_peak": -10.36
+  },
+  "flap": {
+    "bitrate": 24000,
+    "cc0_size": 13389,
+    "channels": 1,
+    "duration": 0.68,
+    "lufs": -20.08,
+    "sample_rate": 24000,
+    "size": 2469,
+    "true_peak": -7.52
+  },
+  "music_tension": {
+    "bitrate": 24000,
+    "cc0_size": 16205,
+    "channels": 1,
+    "duration": 6.5,
+    "loop": {
+      "boundary_jump": 0.002071116119623184,
+      "boundary_to_p95_step": 0.28353285789489746,
+      "head_tail_rms": 0.12344066053628922,
+      "pass": true,
+      "window_samples": 2048
+    },
+    "lufs": -24.44,
+    "sample_rate": 24000,
+    "size": 19893,
+    "true_peak": -9.5
+  },
+  "ring": {
+    "bitrate": 24000,
+    "cc0_size": 7302,
+    "channels": 1,
+    "duration": 1.45,
+    "lufs": -19.42,
+    "sample_rate": 24000,
+    "size": 4773,
+    "true_peak": -2.42
+  },
+  "thunder": {
+    "bitrate": 32000,
+    "cc0_size": 4078,
+    "channels": 2,
+    "duration": 3.8,
+    "lufs": -22.01,
+    "sample_rate": 32000,
+    "size": 15669,
+    "true_peak": -2.46
+  },
+  "wind": {
+    "bitrate": 32000,
+    "cc0_size": 15235,
+    "channels": 2,
+    "duration": 4.2,
+    "loop": {
+      "boundary_jump": 0.013071851804852486,
+      "boundary_to_p95_step": 1.2094502449035645,
+      "head_tail_rms": 0.058213286101818085,
+      "pass": true,
+      "window_samples": 2048
+    },
+    "lufs": -27.35,
+    "sample_rate": 32000,
+    "size": 17253,
+    "true_peak": -14.07
+  },
+  "zap": {
+    "bitrate": 24000,
+    "cc0_size": 9998,
+    "channels": 1,
+    "duration": 0.78,
+    "lufs": -19.04,
+    "sample_rate": 24000,
+    "size": 2757,
+    "true_peak": -3.53
+  }
+}
