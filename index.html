@@ -2728,8 +2728,9 @@ window.SIM={
   route:()=>route.map((p,i)=>({beacon:i+1,x:p[0],y:p[1],z:p[2]})),
   win:()=>{ simJumpState({started:true,done:false,chapter:5,score:11,detection:0,day:0.2});
     simJumpBeacon(12,{speed:36}); return simRunUntil(s=>s.score>=12||s.done,{controls:{accel:true},maxSteps:2400}); },
-  loseDetection:()=>{ simJumpState({started:true,done:false,chapter:2,score:2,detection:0.95,day:0.3});
-    return simRunUntil(s=>s.done,{controls:{accel:true},maxSteps:120}); },
+  loseDetection:()=>{ simJumpState({started:true,done:false,chapter:2,score:2,detection:0.92,day:0.3});
+    S.grace=0; D.group.position.set(110,44,18); D.yaw=Math.PI; D.speed=8;
+    return simRunUntil(s=>s.done,{controls:{accel:false,climb:false},maxSteps:480}); },
   loseNightfall:()=>{ simJumpState({started:true,done:false,chapter:4,score:6,detection:0,day:0.98});
     return simRunUntil(s=>s.done,{controls:{accel:true},maxSteps:600}); },
   triggerDetected:()=>{ detected(); return SIM.state(); },
