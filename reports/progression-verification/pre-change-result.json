@@ -1,0 +1,118 @@
+{
+  "url": "http://127.0.0.1:8000/index.html?prechange=1785856702933979000",
+  "method": "CDP teleport through each route ring during restart launch grace",
+  "before": {
+    "t": 1.5,
+    "started": false,
+    "done": false,
+    "det": 0,
+    "score": 0,
+    "spd": 20,
+    "pos": [
+      56,
+      30,
+      31
+    ],
+    "fpv": false,
+    "chapter": 0,
+    "tutorial": 0,
+    "routeVisible": 12,
+    "cause": "",
+    "charges": 3,
+    "chargeT": -1,
+    "bolts": 0,
+    "disabled": 0
+  },
+  "scoreSequence": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "forcedBeacon12": {
+    "state": {
+      "t": 1.9,
+      "started": true,
+      "done": true,
+      "det": 0,
+      "score": 12,
+      "spd": 28.9,
+      "pos": [
+        -0.1,
+        120,
+        780.4
+      ],
+      "fpv": false,
+      "chapter": 0,
+      "tutorial": 0,
+      "routeVisible": 0,
+      "cause": "",
+      "charges": 3,
+      "chargeT": -1,
+      "bolts": 0,
+      "disabled": 0
+    },
+    "kick": "ESCAPED",
+    "title": "TEMPEST GATE",
+    "sub": "All twelve beacons, unseen. The Gate opens, and the Sable Reach falls behind you.",
+    "beacons": "12 / 12",
+    "time": "2s",
+    "overHidden": false
+  },
+  "screenshot": "reports/progression-verification/pre-change-beacon-12.png",
+  "consoleProblems": [
+    {
+      "method": "Log.entryAdded",
+      "entry": {
+        "source": "other",
+        "level": "warning",
+        "text": "The AudioContext was not allowed to start. It must be resumed (or created) after a user gesture on the page. https://developer.chrome.com/blog/autoplay/#web_audio",
+        "timestamp": 1785856705527.541,
+        "url": "http://127.0.0.1:8000/index.html?prechange=1785856702933979000",
+        "lineNumber": 2221,
+        "stackTrace": {
+          "callFrames": [
+            {
+              "functionName": "initWind",
+              "scriptId": "5",
+              "url": "http://127.0.0.1:8000/index.html?prechange=1785856702933979000",
+              "lineNumber": 2221,
+              "columnNumber": 84
+            },
+            {
+              "functionName": "startAudio",
+              "scriptId": "5",
+              "url": "http://127.0.0.1:8000/index.html?prechange=1785856702933979000",
+              "lineNumber": 2234,
+              "columnNumber": 4
+            },
+            {
+              "functionName": "reset",
+              "scriptId": "5",
+              "url": "http://127.0.0.1:8000/index.html?prechange=1785856702933979000",
+              "lineNumber": 2266,
+              "columnNumber": 2
+            },
+            {
+              "functionName": "",
+              "scriptId": "15",
+              "url": "",
+              "lineNumber": 0,
+              "columnNumber": 4
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "externalRequests": [],
+  "oldAudioRequests": []
+}
