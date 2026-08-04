@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <title>Night Fury: Hidden World</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
 <style>
   :root{ --purple:#a463ff; --teal:#38e6d0; --warn:#ff5a7a;
     --sc1:rgba(150,100,255,.13); --sc2:rgba(56,230,208,.05);
@@ -211,6 +208,10 @@
   .gfxrow{ display:flex; gap:6px; align-items:center; font-size:10px; letter-spacing:2px; color:#7f90b3; }
   .gfxrow b{ cursor:pointer; padding:3px 10px; border-radius:12px; border:1px solid rgba(140,110,220,.3); color:#aab8d6; }
   .gfxrow b.on{ color:#fff; background:rgba(120,90,200,.35); border-color:rgba(180,150,255,.7); }
+  #muteBtn{ position:fixed; right:14px; bottom:12px; z-index:10; cursor:pointer; padding:7px 10px;
+    border-radius:14px; border:1px solid rgba(140,110,220,.4); background:rgba(8,10,22,.78); color:#c7d5f0;
+    font:700 10px var(--mono); letter-spacing:1px; }
+  #muteBtn:hover,#muteBtn:focus-visible{ color:#fff; border-color:rgba(190,160,255,.8); outline:none; }
 
   /* ---- overlays (menu / gameover) ---- */
   .screen{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; text-align:center;
@@ -413,8 +414,8 @@
     <div class="mini">FPS<b id="fpsV">–</b></div>
     <div class="mini">SCALES<b id="scalesV">0</b></div>
   </div>
-  <div class="panel" id="objTag"><span id="objText">reach the cove — <b>8 beacons before nightfall</b></span>
-    <span class="objmeta"><b id="beaconV">0/8</b> beacons · <b id="duskV">dusk</b></span></div>
+  <div class="panel" id="objTag"><span id="objText">reach the cove — <b>12 beacons before nightfall</b></span>
+    <span class="objmeta"><b id="beaconV">0/12</b> beacons · <b id="duskV">dusk</b></span></div>
   <div class="panel" id="abil">
     <span class="ab" id="abEcho"><b>C</b>ECHO</span>
     <span class="ab" id="abFlock"><b>F</b>FLOCK</span>
@@ -459,7 +460,7 @@
     <div class="ach-n" id="achName">—</div><div class="ach-d" id="achDesc">—</div>
     <div class="ach-key" id="achKey">—</div></div></div>
   <div id="chargeHud"><div id="chargeRing"><i></i></div><div id="chargeTxt">SPIT</div></div>
-  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> book · <b>B</b> forge</div>
+  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> book · <b>B</b> forge · <b>M</b> mute</div>
 </div>
 
 <div class="screen" id="menu">
@@ -489,7 +490,8 @@
         <span class="chip"><b>X</b>hold to charge plasma</span>
         <span class="chip"><b>Q/E</b>look around</span>
         <span class="chip"><b>V</b>ride first-person</span>
-        <span class="chip"><b>GOAL</b>follow the beacon road — never be seen</span>
+        <span class="chip"><b>M</b>mute</span>
+        <span class="chip"><b>GOAL</b>follow 12 beacons — never be seen</span>
       </div>
       <div class="gfxrow">GRAPHICS <b data-g="low">LOW</b><b data-g="med">MED</b><b data-g="high" class="on">HIGH</b></div>
       <div class="foot">headphones recommended · dive into shadow to break a lock</div>
@@ -509,6 +511,7 @@
     <div class="btn" id="againBtn">↺ FLY AGAIN</div>
   </div>
 </div>
+<button id="muteBtn" type="button" aria-pressed="false">M · SOUND ON</button>
 
 <script type="importmap">
 { "imports": {
@@ -527,12 +530,13 @@ addEventListener('error', e => { $('objTag').innerHTML = 'ERR: ' + e.message; })
 
 /* ============================ AUDIO ============================ */
 const AU = {
-  el:{}, on:false,
+  el:{}, on:false, muted:false,
   load(n,src,loop,vol){ const a=new Audio(src); a.loop=!!loop; a.volume=vol??1; a.preload='auto'; this.el[n]=a; },
-  play(n,vol){ const a=this.el[n]; if(!a)return; try{ a.currentTime=0; }catch(e){} if(vol!=null)a.volume=vol; a.play().catch(()=>{}); },
-  loop(n){ const a=this.el[n]; if(a) a.play().catch(()=>{}); },
+  play(n,vol){ const a=this.el[n]; if(!a||this.muted)return; try{ a.currentTime=0; }catch(e){} if(vol!=null)a.volume=vol; a.play().catch(()=>{}); },
+  loop(n){ const a=this.el[n]; if(a&&!this.muted) a.play().catch(()=>{}); },
   stop(n){ const a=this.el[n]; if(a){ a.pause(); try{a.currentTime=0;}catch(e){} } },
   fadeTo(n,to,ms){ const a=this.el[n]; if(!a)return; const f=a.volume,t0=performance.now();
+    if(this.muted){ a.pause(); return; }
     const st=()=>{ const k=Math.min(1,(performance.now()-t0)/ms); a.volume=f+(to-f)*k; if(k<1)requestAnimationFrame(st); else if(to<=0)a.pause(); };
     if(to>0&&a.paused)a.play().catch(()=>{}); st(); },
 };
@@ -1024,6 +1028,10 @@ loader.load('dragon_rigged.glb',(g)=>{
     rider.position.copy(chest.worldToLocal(pw)); chest.add(rider);
   }
   stageRest();
+},undefined,()=>{
+  $('objText').textContent='DRAGON ASSET FAILED TO LOAD — refresh the local server and try again';
+  $('wakehint').textContent='MODEL LOAD FAILED';
+  $('startBtn').disabled=true;
 });
 
 /* he sleeps on the sea-rock until the patrol light finds him */
@@ -1111,6 +1119,7 @@ addEventListener('keydown',e=>{
     e.preventDefault(); }
   if(e.code==='KeyX' && !e.repeat){ if(S.started&&!S.done && S.charges>=1 && S.chargeT<0) S.chargeT=0; e.preventDefault(); }
   if(e.code==='KeyV') S.fpv=!S.fpv;
+  if(e.code==='KeyM' && !e.repeat) setMuted(!S.muted);
   if(e.code==='KeyC' && !e.repeat) echoPulse();
   if(e.code==='KeyF' && !e.repeat) callFlock();
   if(e.code==='Tab'){ e.preventDefault(); if(S.started) toggleBook(); }
@@ -1133,7 +1142,7 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
   bookOpen:false, bookLost:false, violence:0, violenceWarned:false, shopOpen:false, scales:0,
   chapter:0, tutDone:false, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
   dive:0, diveFired:false,                          // fury dive -> sonic boom
-  turn:0, pTurn:0, pPitch:0 };
+  turn:0, pTurn:0, pPitch:0, muted:false };
 
 /* ---- plasma lightning (X): a jagged bolt from the mouth that shatters towers ---- */
 const bolts=[], BOLT_SEG=16;
@@ -1210,12 +1219,6 @@ function buildArc(from,to,power){
   return g;
 }
 function fillBolt(b){
-  if(b.arc){ scene.remove(b.arc); b.arc.geometry.dispose(); }
-  b.arc=new THREE.LineSegments(buildArc(b.origin,b.m.position,b.power||0.3),
-    new THREE.LineBasicMaterial({color:0xe6d4ff,transparent:true,opacity:0.55+0.45*Math.random(),
-      blending:THREE.AdditiveBlending,depthWrite:false}));
-  b.arc.frustumCulled=false; scene.add(b.arc);
-  return;
   const pos=b.lgeo.attributes.position.array, N=BOLT_SEG;
   _b0.copy(b.origin); _b1.copy(b.m.position);
   _perp.set(-b.vel.z,0,b.vel.x).normalize();     // a lateral axis
@@ -1314,7 +1317,7 @@ function updateBolts(dt){
     }
     if(hit) b.life=0;
     if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.line); b.lgeo.dispose();
-      if(b.arc){ scene.remove(b.arc); b.arc.geometry.dispose(); }
+      if(b.arc){ scene.remove(b.arc); b.arc.geometry.dispose(); b.arc.material.dispose(); }
       bolts.splice(i,1); }
   }
 }
@@ -1384,7 +1387,7 @@ function achievement(name,desc,key){
 function checkSkillUnlocks(){
   for(const sk of SKILLS){
     if(!sk._had && sk.have()){ sk._had=true;
-      if(S.started && S.t>4) achievement(sk.name, sk.d, sk.k);
+      if(S.started && S.t>4 && S.score>0) achievement(sk.name, sk.d, sk.k);
     }
   }
 }
@@ -1474,9 +1477,6 @@ const MISSIONS=[
   { id:'beacons', label:t=>`IV · follow the beacon road ${t.beacons}/${rings.length}`, done:false,
     check:()=>S.score>=rings.length,
     story:'' },
-  { id:'feeding', label:t=>'V · reach the feeding grounds', done:false,
-    check:()=>{ const p=D.group.position; return Math.hypot(p.x+180,p.z-340)<150; },
-    story:'The water boils with fish and the great whales rise around you. This is where dragons come to feed — and to be left alone.' },
 ];
 function missionTallies(){ return { towers:searchlights.filter(s=>s.destroyed).length,
   gates:gates.filter(g=>g.userData.hit).length, beacons:S.score }; }
@@ -1767,7 +1767,7 @@ function driveTimeOfDay(dt){
   scene.fog.density=(0.0021+0.0008*d) - dayW*0.0008;      // less murk overall
   renderer.toneMappingExposure=1.78-0.14*d + dayW*0.12;   // brighter across the board
   // music: warm menu bed at dusk -> dark tension at night
-  if(AU.on){ if(AU.el.menu){ AU.el.menu.volume=(1-d)*0.34; if(AU.el.menu.paused&&d<0.95)AU.el.menu.play().catch(()=>{});}
+  if(AU.on&&!S.muted){ if(AU.el.menu){ AU.el.menu.volume=(1-d)*0.34; if(AU.el.menu.paused&&d<0.95)AU.el.menu.play().catch(()=>{});}
     if(AU.el.music) AU.el.music.volume=0.16+d*0.34; }
   // full night without reaching the cove: every keeper wakes
   if(d>=1 && !S.keepersWoke && S.started && !S.done){ S.keepersWoke=true;
@@ -2149,7 +2149,7 @@ function detected(){ if(S.done)return; AU.play('detected',0.9); showOver('DETECT
 function crash(reason){ if(S.done)return; S.cause=reason; AU.play('crash',0.9); S.shake=1; showOver('WRECKED',reason,'bad',
   'Even a Night Fury cannot fly through stone.'); }
 function escaped(){ if(S.done)return; AU.play('ring',0.9); showOver('ESCAPED','HIDDEN WORLD','good',
-  'All eight beacons, unseen. The cove opens and the storm closes behind you.'); }
+  'All twelve beacons, unseen. The cove opens and the storm closes behind you.'); }
 
 /* ---- start / restart: armour shutter closes, he leaps, shutter opens on the flight ---- */
 /* WebAudio wind rush: filtered noise whose brightness+level rise with airspeed (better than an mp3) */
@@ -2169,7 +2169,7 @@ function initWind(){
 }
 function updateWind(){
   if(!WIND.ctx) return; const b=S.boost, spd=D.speed, g=S.gustPow||0;
-  WIND.gain.gain.value = 0.03 + b*0.16 + g*0.20 + Math.min(0.06, S.shake*0.2);  // squalls howl
+  WIND.gain.gain.value = S.muted ? 0 : 0.03 + b*0.16 + g*0.20 + Math.min(0.06, S.shake*0.2);  // squalls howl
   WIND.bp.frequency.value = 320 + spd*22 + g*260;   // brighter as you go faster / gust hits
   WIND.lp.frequency.value = 800 + b*2600 + g*1800;
 }
@@ -2177,6 +2177,12 @@ function startAudio(){
   if(!AU.on){ AU.on=true; AU.loop('amb'); AU.el.amb.volume=0; AU.fadeTo('amb',0.5,1200);
     AU.loop('music'); AU.el.music.volume=0; AU.fadeTo('music',0.4,1500);
     initWind(); }
+}
+function setMuted(muted){
+  S.muted=!!muted; AU.muted=S.muted;
+  const b=$('muteBtn'); b.textContent=S.muted?'M · SOUND OFF':'M · SOUND ON'; b.setAttribute('aria-pressed',String(S.muted));
+  if(S.muted){ for(const a of Object.values(AU.el)) a.pause(); if(WIND.gain) WIND.gain.gain.value=0; }
+  else if(AU.on){ AU.loop('amb'); AU.loop('music'); updateWind(); }
 }
 function begin(){
   if(S.launching||S.started) return; S.launching=true;
@@ -2202,9 +2208,9 @@ function begin(){
   setTimeout(()=>{ S.launching=false; },2900);
 }
 function reset(){
-  D.group.position.copy(START); D.yaw=Math.PI; D.pitch=0; D.roll=0; D.speed=26; input.flap=false;
+  startAudio(); D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=30; input.flap=false;
   S.done=false; S.detection=0; S.score=0; S.shake=0; S.fpv=false; S.nextThunder=S.t+5; S.shootCd=0;
-  S.boost=0; S.accel=0; S.prevSpeed=26; S.boomed=false; S.charges=3; S.chargeT=-1; S.grace=2.5;
+  S.boost=0; S.accel=0; S.prevSpeed=30; S.boomed=false; S.charges=3; S.chargeT=-1; S.grace=3; S.launching=true;
   TOD.day=0.0; S.keepersWoke=false; ROG.amp=0; ROG.life=0; ROG.next=6; uRA.value=0;
   if(D.model) D.model.scale.setScalar(9);
   if(D.glide) D.glide.timeScale=1;
@@ -2236,6 +2242,11 @@ function reset(){
   $('over').classList.add('hide'); $('litglow').style.opacity=0; $('warn').style.opacity=0;
   AU.fadeTo('music',0.4,600); AU.fadeTo('amb',0.5,600);
   S.started=true;
+  storyPop('Back to the cove. Three rings first — then follow the beacon road.',5);
+  $('shutter').classList.add('closed');
+  setTimeout(()=>{ $('shutter').classList.remove('closed'); input.flap=true; AU.play('flap',0.5);
+    setTimeout(()=>{ input.flap=false; },700); },900);
+  setTimeout(()=>{ S.launching=false; },1800);
 }
 /* ---- landing interactions ---- */
 const menuEl=$('menu');
@@ -2243,6 +2254,7 @@ $('startBtn').addEventListener('click',e=>{ e.stopPropagation();
   if(!menuEl.classList.contains('live')) spotMoment(); else begin(); });
 menuEl.addEventListener('click',()=>{ if(!menuEl.classList.contains('live')) spotMoment(); });
 $('againBtn').addEventListener('click',reset);
+$('muteBtn').addEventListener('click',()=>setMuted(!S.muted));
 
 /* ---- graphics presets: LOW / MED / HIGH (persisted) ---- */
 function applyGfx(level){
