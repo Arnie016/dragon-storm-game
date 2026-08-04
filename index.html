@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Galevein: Stormflight</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <style>
   :root{ --purple:#a463ff; --teal:#38e6d0; --warn:#ff5a7a;
     --sc1:rgba(150,100,255,.13); --sc2:rgba(56,230,208,.05);
@@ -543,16 +544,16 @@ const AU = {
     const st=()=>{ const k=Math.min(1,(performance.now()-t0)/ms); a.volume=f+(to-f)*k; if(k<1)requestAnimationFrame(st); else if(to<=0)a.pause(); };
     if(to>0&&a.paused)a.play().catch(()=>{}); st(); },
 };
-AU.load('menu','audio/music_menu.mp3',true,0.0);
-AU.load('music','audio/music_tension.mp3',true,0.0);
-AU.load('amb','audio/amb_sea.mp3',true,0.0);
-AU.load('flap','audio/flap.mp3',false,0.5);
-AU.load('ring','audio/ring.mp3',false,0.7);
-AU.load('detected','audio/detected.mp3',false,0.9);
-AU.load('crash','audio/crash.mp3',false,0.9);
-AU.load('thunder','audio/thunder.mp3',false,0.6);
-AU.load('zap','audio/zap.mp3',false,0.55);
-AU.load('wind','audio/wind.mp3',true,0.0);
+AU.load('menu','licensed-assets/audio/music_menu.mp3',true,0.0);
+AU.load('music','synthesized-audio/music_tension.mp3',true,0.0);
+AU.load('amb','synthesized-audio/amb_sea.mp3',true,0.0);
+AU.load('flap','synthesized-audio/flap.mp3',false,0.5);
+AU.load('ring','synthesized-audio/ring.mp3',false,0.7);
+AU.load('detected','synthesized-audio/detected.mp3',false,0.9);
+AU.load('crash','synthesized-audio/crash.mp3',false,0.9);
+AU.load('thunder','synthesized-audio/thunder.mp3',false,0.6);
+AU.load('zap','synthesized-audio/zap.mp3',false,0.55);
+AU.load('wind','synthesized-audio/wind.mp3',true,0.0);
 
 /* ============================ RENDERER / SCENE ============================ */
 const renderer = new THREE.WebGLRenderer({ antialias:true });
@@ -990,7 +991,7 @@ const D={ group:new THREE.Group(), model:null, mixer:null, flap:null, glide:null
 D.group.position.copy(START); scene.add(D.group);
 const draco=new DRACOLoader().setDecoderPath('./vendor/draco/');
 const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
-const landmarkPath=new LandmarkPath(scene,loader);
+const landmarkPath=new LandmarkPath(scene,loader,{assetBase:'./licensed-assets/models/'});
 const landmarkReady=landmarkPath.loadTemplates();
 landmarkReady.then(()=>{
   for(const c of landmarkPath.getCollisionProxies()) colliders.push({x:c.x,z:c.z,r:c.radius,top:c.top,landmark:c.id});
