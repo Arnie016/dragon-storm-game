@@ -206,9 +206,12 @@
     text-shadow:0 2px 14px rgba(0,0,0,.9), 0 0 30px rgba(150,100,255,.35); pointer-events:none; }
   @keyframes storyfade{ 0%{opacity:0; transform:translateX(-50%) translateY(10px);} 12%{opacity:1; transform:translateX(-50%);}
     80%{opacity:1;} 100%{opacity:0; transform:translateX(-50%) translateY(-8px);} }
-  .gfxrow{ display:flex; gap:6px; align-items:center; font-size:10px; letter-spacing:2px; color:#7f90b3; }
+  .gfxrow{ display:flex; gap:6px; align-items:center; font-size:10px; letter-spacing:2px; color:#7f90b3; flex-wrap:wrap; justify-content:center; }
   .gfxrow b{ cursor:pointer; padding:3px 10px; border-radius:12px; border:1px solid rgba(140,110,220,.3); color:#aab8d6; }
   .gfxrow b.on{ color:#fff; background:rgba(120,90,200,.35); border-color:rgba(180,150,255,.7); }
+  .gfxrow label.shakerow{ display:flex; align-items:center; gap:8px; margin-left:4px; }
+  .gfxrow input[type=range]{ width:92px; accent-color:var(--purple); cursor:pointer; }
+  .gfxrow .shakelbl{ min-width:54px; color:#aab8d6; font-size:10px; letter-spacing:1px; }
   #muteBtn{ position:fixed; right:14px; bottom:12px; z-index:10; cursor:pointer; padding:7px 10px;
     border-radius:14px; border:1px solid rgba(140,110,220,.4); background:rgba(8,10,22,.78); color:#c7d5f0;
     font:700 10px var(--mono); letter-spacing:1px; }
@@ -494,7 +497,8 @@
         <span class="chip"><b>M</b>mute</span>
         <span class="chip"><b>GOAL</b>follow 12 beacons — never be seen</span>
       </div>
-      <div class="gfxrow">GRAPHICS <b data-g="low">LOW</b><b data-g="med" class="on">MED</b><b data-g="high">HIGH</b></div>
+      <div class="gfxrow">GRAPHICS <b data-g="low">LOW</b><b data-g="med" class="on">MED</b><b data-g="high">HIGH</b>
+        <label class="shakerow">SHAKE <input id="shakeSlider" type="range" min="0" max="100" value="35"><span class="shakelbl" id="shakeLbl">35%</span></label></div>
       <div class="foot">headphones recommended · dive into shadow to break a lock</div>
     </div>
   </div>
@@ -2472,7 +2476,17 @@ applyGfx(localStorage.getItem('galevein_gfx')||'med');
 const _hp=new THREE.Vector3();
 const _sfwd=new THREE.Vector3(), _srt=new THREE.Vector3(), _sup=new THREE.Vector3(), _SUP=new THREE.Vector3(0,1,0);
 const _shakeV=new THREE.Vector3();
-const CAM={pull:{value:0,velocity:0},drop:{value:0,velocity:0},look:{value:0,velocity:0},fov:{value:0,velocity:0}};
+const CAM={pull:{value:0,velocity:0},drop:{value:0,velocity:0},look:{value:0,velocity:0},fov:{value:0,velocity:0},
+  jerk:{value:0,velocity:0}, prevAccel:0};
+const CAM_SHAKE={ intensity:0.35, defaultIntensity:0.35 };
+function applyCamShake(v){
+  CAM_SHAKE.intensity=THREE.MathUtils.clamp(Number(v),0,1);
+  localStorage.setItem('galevein_cam_shake', String(CAM_SHAKE.intensity));
+  $('shakeSlider').value=Math.round(CAM_SHAKE.intensity*100);
+  $('shakeLbl').textContent=Math.round(CAM_SHAKE.intensity*100)+'%';
+}
+applyCamShake(Number(localStorage.getItem('galevein_cam_shake')??CAM_SHAKE.defaultIntensity));
+$('shakeSlider').addEventListener('input', e=>applyCamShake(Number(e.target.value)/100));
 function updateStreaks(){
   const b=S.boost; streaks.material.opacity=Math.min(0.4, Math.max(0,b-0.14)*0.72);   // only at real speed
   if(b<0.16){ if(b<0.03) return; }
@@ -2498,7 +2512,11 @@ function render(dt=1/60){
   springAxis(CAM.pull,S.started?speedLoad*8+accelLoad*4.5+S.spiral*4-brakeLoad*1.2:0,dt,1.2,.93);
   springAxis(CAM.drop,S.started?speedLoad*.8+accelLoad*.9+diveLoad*1.4-brakeLoad*.45:0,dt,1.32,1);
   springAxis(CAM.look,S.started?speedLoad*7+accelLoad*3+diveLoad*4:0,dt,1.45,1);
-  springAxis(CAM.fov,S.started?speedLoad*13+accelLoad*4.5+S.spiral*5+diveLoad*2:0,dt,1.55,1);
+  springAxis(CAM.fov,S.started?speedLoad*10+accelLoad*4+S.spiral*4+diveLoad*1.6:0,dt,1.55,1);
+  const jerkRate=THREE.MathUtils.clamp((D.motion.longAccel-CAM.prevAccel)/Math.max(dt,1e-3),-180,180);
+  CAM.prevAccel=D.motion.longAccel;
+  springAxis(CAM.jerk,THREE.MathUtils.clamp(jerkRate/150,-1,1)*(accelLoad>0?1:0.62),dt,2.2,0.72);
+  CAM.jerk.value*=Math.exp(-dt*5.4);
   camera.fov += ((60+CAM.fov.value)-camera.fov)*fdamp(10,dt); camera.updateProjectionMatrix();
   updateStreaks();
   $('speedvig').style.opacity=(S.boost*.42+THREE.MathUtils.clamp((D.motion.gLoad-1)/3,0,.18)).toFixed(2);
@@ -2518,8 +2536,12 @@ function render(dt=1/60){
   S.camPitch += (0 - S.camPitch)*fdamp(7,dt);
 
   const loadShake=THREE.MathUtils.clamp((D.motion.gLoad-1)/3,0,1);
-  const shakeAmp=(S.shake+S.boost*.16+loadShake*.22)*1.3;
-  _shakeV.set(Math.sin(S.t*47),Math.sin(S.t*53+1.7),Math.sin(S.t*43+4.1)).multiplyScalar(shakeAmp);
+  const shakeBase=(S.shake*0.55+S.boost*0.08+loadShake*0.12+Math.abs(CAM.jerk.value)*0.22)*CAM_SHAKE.intensity;
+  _shakeV.set(
+    Math.sin(S.t*3.2)*0.55+Math.sin(S.t*1.1)*0.45,
+    Math.sin(S.t*2.7+1.7)*0.55+Math.sin(S.t*0.9+0.3)*0.45,
+    Math.sin(S.t*2.1+4.1)*0.55+Math.sin(S.t*1.3+2.1)*0.45
+  ).multiplyScalar(shakeBase);
 
   if(S.finishing){
     const a=S.t*.18, target=gateGroup.position;
@@ -2600,7 +2622,9 @@ window.SIM={
   bones:()=>D.boneReport, alive:v=>{ALIVE=v;}, setTurn:v=>{D.turn=v;}, day:v=>{TOD.day=v;uDay.value=v;},
   motion:()=>({accel:+D.motion.longAccel.toFixed(2),yawRate:+D.motion.yawRate.toFixed(3),
     pitchRate:+D.motion.pitchRate.toFixed(3),gLoad:+D.motion.gLoad.toFixed(2),
-    camera:{pull:+CAM.pull.value.toFixed(2),drop:+CAM.drop.value.toFixed(2),fov:+CAM.fov.value.toFixed(2)}}),
+    camera:{pull:+CAM.pull.value.toFixed(2),drop:+CAM.drop.value.toFixed(2),fov:+CAM.fov.value.toFixed(2),
+      jerk:+CAM.jerk.value.toFixed(3),shakeIntensity:CAM_SHAKE.intensity}}),
+  setCameraShake:v=>{ applyCamShake(v); return CAM_SHAKE.intensity; },
   frameStats:()=>{ const a=frameTimes.slice().sort((x,y)=>x-y), at=q=>a[Math.min(a.length-1,Math.floor(a.length*q))]||0;
     return {samples:a.length,p50:+at(.5).toFixed(2),p95:+at(.95).toFixed(2),p99:+at(.99).toFixed(2)}; },
   clearFrames:()=>{frameTimes.length=0;},
