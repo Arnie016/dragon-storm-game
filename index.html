@@ -630,7 +630,7 @@ const sea = new THREE.Mesh(new THREE.PlaneGeometry(9000,9000,220,220), new THREE
   uniforms:{ ...seaUniforms, fogColor:{value:scene.fog.color}, fogDensity:{value:scene.fog.density},
              uDay, uRA, uRC, uRW }, fog:false,
   vertexShader:`uniform float uT; uniform float uRA; uniform vec2 uRC; uniform float uRW;
-    varying float vH; varying float vMacro; varying vec3 vW;
+    varying float vH; varying vec3 vW;
     float wave(vec2 p,vec2 d,float k,float s,float a){ return a*sin(dot(p,d)*k+uT*s); }
     void main(){ vec3 pos=position;
       float h=wave(pos.xy,vec2(.8,.6),.045,1.25,2.6)+wave(pos.xy,vec2(-.5,.9),.07,1.7,1.5)+wave(pos.xy,vec2(.2,-1.),.11,2.3,.8);
@@ -638,25 +638,41 @@ const sea = new THREE.Mesh(new THREE.PlaneGeometry(9000,9000,220,220), new THREE
       h+=macro;
       float rd2=(pos.x-uRC.x)*(pos.x-uRC.x)+(-pos.y-uRC.y)*(-pos.y-uRC.y);  // local->world xz
       h += uRA*exp(-rd2/uRW);                                              // menacing rogue swell
-      pos.z+=h; vH=h; vMacro=macro; vec4 w=modelMatrix*vec4(pos,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
-  fragmentShader:`uniform vec3 fogColor; uniform float fogDensity; uniform float uDay; varying float vH; varying float vMacro; varying vec3 vW;
+      pos.z+=h; vH=h;
+      vec4 w=modelMatrix*vec4(pos,1.); vW=w.xyz; gl_Position=projectionMatrix*viewMatrix*w; }`,
+  fragmentShader:`uniform vec3 fogColor; uniform float fogDensity; uniform float uDay; uniform float uT; varying float vH; varying vec3 vW;
     float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
     float noise(vec2 p){ vec2 i=floor(p),f=fract(p); f=f*f*(3.-2.*f);
       return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.)),f.x),f.y); }
     void main(){
-      vec3 dx=dFdx(vW),dy=dFdy(vW); vec3 nrm=normalize(cross(dx,dy)); if(nrm.y<0.)nrm=-nrm;
+      vec2 p=vec2(vW.x,-vW.z); float radial=max(length(p),1.);
+      float dhx=2.6*.045*.8*cos(dot(p,vec2(.8,.6))*.045+uT*1.25)
+        +1.5*.07*-.5*cos(dot(p,vec2(-.5,.9))*.07+uT*1.7)
+        +.8*.11*.2*cos(dot(p,vec2(.2,-1.))*.11+uT*2.3)
+        +2.2*.006*cos(p.x*.006+p.y*.003+uT*.2)+1.2*.0035*(p.x/radial)*cos(radial*.0035-uT*.15);
+      float dhy=2.6*.045*.6*cos(dot(p,vec2(.8,.6))*.045+uT*1.25)
+        +1.5*.07*.9*cos(dot(p,vec2(-.5,.9))*.07+uT*1.7)
+        +.8*.11*-1.*cos(dot(p,vec2(.2,-1.))*.11+uT*2.3)
+        +2.2*.003*cos(p.x*.006+p.y*.003+uT*.2)+1.2*.0035*(p.y/radial)*cos(radial*.0035-uT*.15);
+      vec3 nrm=normalize(vec3(-dhx,1.,dhy));
       vec3 viewDir=normalize(cameraPosition-vW);
       float fresnel=pow(1.-clamp(dot(nrm,viewDir),0.,1.),2.35);
       float broad=noise(vW.xz*.012+vec2(uDay*.7,0.));
       float grain=noise(vW.xz*.055+vec2(vH*.08,-vH*.05));
+      float detail=noise(vW.xz*.17+vec2(uDay,-uDay*.6));
+      float windLine=sin(vW.x*.12+vW.z*.045+uT*1.4+broad*7.)*.5+.5;
+      float windGlint=smoothstep(.76,.95,detail*.58+windLine*.42);
       float cresting=smoothstep(3.0,6.6,vH+grain*1.45);
       float torn=smoothstep(.56,.86,broad*.72+grain*.28);
       float foam=cresting*(.28+.72*torn);
-      vec3 deep=mix(vec3(.035,.045,.062),vec3(.012,.027,.058),uDay);
-      vec3 shallow=mix(vec3(.19,.12,.13),vec3(.07,.13,.18),uDay);
+      vec3 deep=mix(vec3(.018,.042,.058),vec3(.01,.024,.052),uDay);
+      vec3 shallow=mix(vec3(.075,.145,.16),vec3(.04,.075,.13),uDay);
       vec3 skySheen=mix(vec3(.88,.42,.24),vec3(.28,.32,.55),uDay);
-      vec3 col=mix(deep,shallow,.24+.18*broad+.06*vMacro);
-      col=mix(col,skySheen,fresnel*(.30+.18*(1.-uDay)));
+      vec3 sunDir=normalize(vec3(-.62,.56,.34));
+      float diffuse=.48+.52*max(dot(nrm,sunDir),0.);
+      vec3 col=mix(deep,shallow,.34+.28*broad)*diffuse;
+      col=mix(col,skySheen,pow(fresnel,2.2)*(.16+.08*(1.-uDay)));
+      col+=mix(vec3(.48,.3,.22),vec3(.22,.34,.52),uDay)*windGlint*(.09+.08*fresnel);
       col=mix(col,mix(vec3(.82,.72,.64),vec3(.42,.54,.68),uDay),foam*.56);
       float dd=length(vW-cameraPosition); float f=1.-exp(-fogDensity*fogDensity*dd*dd);
       f*=.72+.28*smoothstep(120.,1500.,dd);
@@ -665,15 +681,14 @@ const sea = new THREE.Mesh(new THREE.PlaneGeometry(9000,9000,220,220), new THREE
 sea.rotation.x=-Math.PI/2; scene.add(sea);
 const horizonDirector = new HorizonDirector(scene, camera);
 function makeHorizonRidgeGeometry(){
-  const seg=13,levels=5,pos=[],col=[],idx=[];
+  const g=new THREE.IcosahedronGeometry(.64,2),p=g.attributes.position;
+  const colors=new Float32Array(p.count*3);
   const low=new THREE.Color(0x101827),mid=new THREE.Color(0x293449),high=new THREE.Color(0x8b6c76),c=new THREE.Color();
-  for(let j=0;j<levels;j++){ const t=j/(levels-1),r=Math.pow(1-t,.72)*.52+.035;
-    for(let i=0;i<seg;i++){ const a=i/seg*Math.PI*2,broken=1+.15*Math.sin(a*3+1.7)+.07*Math.sin(a*7-.8);
-      pos.push(Math.cos(a)*r*broken+(t-.5)*.17, t-.5, Math.sin(a)*r*(.64+.12*Math.cos(a*2))*broken);
-      c.copy(low).lerp(mid,Math.min(1,t*1.55)).lerp(high,Math.max(0,t-.58)*1.45); col.push(c.r,c.g,c.b); } }
-  for(let j=0;j<levels-1;j++)for(let i=0;i<seg;i++){ const n=(i+1)%seg,a=j*seg+i,b=j*seg+n,d=(j+1)*seg+i,e=(j+1)*seg+n; idx.push(a,d,b,b,d,e); }
-  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
-  g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.setIndex(idx); g.computeVertexNormals(); return g;
+  for(let i=0;i<p.count;i++){ const x=p.getX(i),y=p.getY(i),z=p.getZ(i),ridge=.10*Math.sin(x*11+z*7)+.055*Math.sin(x*23-z*17);
+    p.setXYZ(i,x*(1.05+.10*Math.sin(z*9)),y*.92+ridge-.12,z*.72);
+    const t=THREE.MathUtils.clamp((y+.64)/1.28,0,1); c.copy(low).lerp(mid,Math.min(1,t*1.5)).lerp(high,Math.max(0,t-.62)*1.35);
+    colors[i*3]=c.r;colors[i*3+1]=c.g;colors[i*3+2]=c.b; }
+  g.setAttribute('color',new THREE.BufferAttribute(colors,3)); g.computeVertexNormals(); return g;
 }
 horizonDirector.masses.geometry.dispose();
 horizonDirector.masses.material.dispose();
@@ -1073,9 +1088,9 @@ function styleLandmarks(){
       if(!o.isMesh||!o.material)return;
       const sources=Array.isArray(o.material)?o.material:[o.material];
       const styled=sources.map((source,slot)=>{
-        const m=source.clone(),shade=.72+((part+slot)%4)*.09;
+        const m=source.clone(),shade=.26+((part+slot)%4)*.11;
         if(m.color)m.color.setHex(look.stone).multiplyScalar(shade);
-        if(m.emissive){ m.emissive.setHex(look.glow); m.emissiveIntensity=.14+((part+slot)%3)*.055; }
+        if(m.emissive){ m.emissive.setHex(look.glow); m.emissiveIntensity=.06+((part+slot)%3)*.035; }
         if('roughness' in m)m.roughness=.64+((part+slot)%3)*.09;
         if('metalness' in m)m.metalness=entry.template==='harbor'?.28:.08;
         m.flatShading=true; m.needsUpdate=true;
@@ -1914,7 +1929,7 @@ function driveTimeOfDay(dt){
   hemi.color.copy(_hemiSkyDay).lerp(_hemiSkyNight,d); hemi.groundColor.copy(_hemiGroundDay).lerp(_hemiGroundNight,d); hemi.intensity=.78+.18*d;
   rimP.intensity=.82+.82*d; fillT.intensity=.58+.42*d;
   scene.fog.color.copy(_fogSet).lerp(_fogNight, d).lerp(_fogDay, dayW);
-  horizonDirector.fogDensity=.00058+.00032*d+.00010*smoothstep(.78,1,d);
+  horizonDirector.fogDensity=.00058+.00032*d+.00010*THREE.MathUtils.smoothstep(d,.78,1);
   scene.fog.density=horizonDirector.fogDensity;
   renderer.toneMappingExposure=1.62-.12*d + dayW*.14;
   for(const r of rings)if(!r.userData.hit)r.material.emissiveIntensity=3.15+d*1.75;
@@ -2630,7 +2645,12 @@ window.SIM={
     downbeat:11+upLv('stirrup')*2.5,chargeSeconds:+chargeSeconds().toFixed(2),
     plasmaBonus:+(upLv('gland')*.07).toFixed(2),hpMax:S.hpMax,boltDamage:Math.max(6,16-upLv('scaleplate')*3)}),
   expansion:()=>({dof:cinematicDof.enabled,horizon:horizonDirector.getSnapshot(),landmarks:landmarkPath.getSnapshot(),
-    seaFog:sea.material.uniforms.fogDensity.value,sceneFog:scene.fog.density,cameraFar:camera.far}),
+    seaFog:sea.material.uniforms.fogDensity.value,sceneFog:scene.fog.density,cameraFar:camera.far,
+    worldArt:{seaVertices:sea.geometry.attributes.position.count,horizonTriangles:(horizonDirector.masses.geometry.index?.count||horizonDirector.masses.geometry.attributes.position.count)/3,
+      landmarkMaterials:landmarkMaterials.length,objectiveRingsFogFree:rings.every(r=>r.material.fog===false)}}),
+  objectiveVisibility:()=>{ const a=$('arrow'),r=a.getBoundingClientRect(); return {arrowOpacity:+getComputedStyle(a).opacity,
+    arrowOnScreen:r.right>0&&r.left<innerWidth&&r.bottom>0&&r.top<innerHeight,
+    nextRingVisible:!!rings.find(r=>!r.userData.hit)?.visible,nextRingFogFree:rings.find(r=>!r.userData.hit)?.material.fog===false}; },
   landmarkBounds:()=>landmarkPath.route.map(e=>{ const size=new THREE.Vector3();
     if(e.object)new THREE.Box3().setFromObject(e.object).getSize(size);
     return {id:e.id,position:e.position,size:size.toArray().map(v=>+v.toFixed(1))}; }),

@@ -1,0 +1,28 @@
+{
+  "cacheDisabled": true,
+  "quality": "med",
+  "loadBefore": {
+    "loadAverage": [
+      20.77,
+      30.98,
+      48.57
+    ],
+    "uptime": "0:45  up 1 day,  4:15, 1 user, load averages: 20.77 30.98 48.57"
+  },
+  "loadAfter": {
+    "loadAverage": [
+      17.96,
+      30.04,
+      48.03
+    ],
+    "uptime": "0:46  up 1 day,  4:15, 1 user, load averages: 17.96 30.04 48.03"
+  },
+  "focusChecks": 36,
+  "allFocusedVisible": true,
+  "frames": {
+    "samples": 900,
+    "p50": 8.4,
+    "p95": 25,
+    "p99": 33.3
+  }
+}
