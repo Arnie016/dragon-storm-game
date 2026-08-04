@@ -1,0 +1,42 @@
+{
+  "wing_capture_note": "The static action sampler did not advance reliably; comparative renders are retained but are not claimed as exact extrema.",
+  "after_frame_stats": {
+    "samples": 900,
+    "p50": 8.3,
+    "p95": 16.6,
+    "p99": 25
+  },
+  "motion": {
+    "accel": -0.74,
+    "yawRate": 0,
+    "pitchRate": 0,
+    "gLoad": 1,
+    "camera": {
+      "pull": 1.03,
+      "drop": 0.09,
+      "fov": 1.75
+    }
+  },
+  "state": {
+    "t": 13.6,
+    "started": true,
+    "done": false,
+    "det": 0,
+    "score": 0,
+    "spd": 27.7,
+    "pos": [
+      12.6,
+      118,
+      412.7
+    ],
+    "fpv": false,
+    "chapter": 0,
+    "tutorial": 0,
+    "routeVisible": 12,
+    "cause": "",
+    "charges": 3,
+    "chargeT": -1,
+    "bolts": 0,
+    "disabled": 0
+  }
+}

@@ -984,7 +984,9 @@ for(let i=0;i<N_RINGS;i++){
 const START=new THREE.Vector3(0,58,250);
 const D={ group:new THREE.Group(), model:null, mixer:null, flap:null, glide:null,
   yaw:Math.PI, pitch:0, roll:0, speed:20, flapping:false, headNode:null, glow:null,
-  turn:0, pTurn:0, pPitch:0, bones:null, mouth:null, mouthLt:null };
+  turn:0, pTurn:0, pPitch:0, bones:null, mouth:null, mouthLt:null,
+  motion:{longAccel:0,yawRate:0,pitchRate:0,gLoad:1}, prevYaw:Math.PI, prevPitch:0,
+  springs:null };
 D.group.position.copy(START); scene.add(D.group);
 const draco=new DRACOLoader().setDecoderPath('./vendor/draco/');
 const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
@@ -994,7 +996,8 @@ landmarkReady.then(()=>{
   for(const c of landmarkPath.getCollisionProxies()) colliders.push({x:c.x,z:c.z,r:c.radius,top:c.top,landmark:c.id});
   landmarkPath.setCollisionAuthority(true);
 });
-loader.load('dragon_rigged.glb',(g)=>{
+const dragonAsset=new URLSearchParams(location.search).get('rig')==='original'?'dragon_rigged.glb':'dragon_rigged_corrected.glb';
+loader.load(dragonAsset,(g)=>{
   const model=g.scene; D.model=model; model.scale.setScalar(9.0); model.rotation.y=Math.PI;
   // ---- black volcanic obsidian scales: dark PBR + faint ember emissive in the recesses ----
   model.traverse(o=>{ if(!o.isMesh || !o.material) return;
@@ -1061,52 +1064,71 @@ function stageRest(){
 function collectBones(model){
   const by=n=>model.getObjectByName(n)||model.getObjectByName(n.replace('.','_'))||model.getObjectByName(n.replace('.',''));
   D.bones={ tail:[by('tail1'),by('tail2'),by('tail3'),by('tail4'),by('tail5')],
-    neck:by('neck'), head:by('head'), chest:by('chest'), hips:by('hips'), wings:[],
+    neck:by('neck'), head:by('head'), chest:by('chest'), hips:by('hips'),
+    shoulders:[], forearms:[], wingTips:[], wings:[],
     thighs:[by('thigh.R'),by('thigh.L')], shins:[by('shin.R'),by('shin.L')] };
-  for(const [n,side] of [['forearm.R',1],['forearm.L',-1],['fingerA.R',1],['fingerA.L',-1],['fingerB.R',1],['fingerB.L',-1]]){
-    const b=by(n); if(b){ b.side=side; D.bones.wings.push(b); } }
+  for(const [n,side,chain] of [['shoulder.R',1,'shoulders'],['shoulder.L',-1,'shoulders'],
+    ['forearm.R',1,'forearms'],['forearm.L',-1,'forearms'],
+    ['fingerA.R',1,'wingTips'],['fingerA.L',-1,'wingTips'],['fingerB.R',1,'wingTips'],
+    ['fingerB.L',-1,'wingTips'],['fingerC.R',1,'wingTips'],['fingerC.L',-1,'wingTips']]){
+    const b=by(n); if(b){ b.side=side; D.bones[chain].push(b); D.bones.wings.push(b); } }
+  const axis=()=>({value:0,velocity:0});
+  D.springs={turn:axis(),pitch:axis(),tail:axis(),neck:axis(),head:axis(),wing:axis(),
+    tension:axis(),launch:axis(),load:axis()};
   D.boneReport={ tail:D.bones.tail.filter(Boolean).length, neck:!!D.bones.neck, head:!!D.bones.head,
-    chest:!!D.bones.chest, hips:!!D.bones.hips, wings:D.bones.wings.length };
+    chest:!!D.bones.chest, hips:!!D.bones.hips, wings:D.bones.wings.length,
+    shoulders:D.bones.shoulders.length, forearms:D.bones.forearms.length, wingTips:D.bones.wingTips.length };
 }
 // world-space axes of the model, so rotations are predictable regardless of bone roll
 const _mq=new THREE.Quaternion(), _AUP=new THREE.Vector3(), _ART=new THREE.Vector3(), _AFW=new THREE.Vector3();
-let ALIVE=1.0;    // RE-SKINNED: smooth blended weights (0 uncovered verts) — full flex is safe now
+let ALIVE=1.0;
 function applyAlive(dt){
-  if(!D.bones || !D.model || ALIVE<=0) return;
+  if(!D.bones || !D.model || !D.springs || ALIVE<=0) return;
   D.model.getWorldQuaternion(_mq);
   _AUP.set(0,1,0).applyQuaternion(_mq); _ART.set(1,0,0).applyQuaternion(_mq); _AFW.set(0,0,-1).applyQuaternion(_mq);
-  const spd=THREE.MathUtils.clamp(D.speed/40,0,1.4), t=S.t, g=ALIVE;
-  D.pTurn += (D.turn - D.pTurn)*fdamp(6,dt);
-  D.pPitch += (D.pitch - D.pPitch)*fdamp(4,dt);
-  // TAIL — ONE slow traveling wave; tiny per-bone so the chain reads as a gentle S, never a whip.
-  // Rotations compound down the parented chain, so keep each bone small and taper toward the tip.
+  const spd=THREE.MathUtils.clamp(D.speed/40,0,1.6), t=S.t, g=ALIVE, m=D.motion, q=D.springs;
+  springAxis(q.turn,D.turn,dt,2.0,.78);
+  springAxis(q.pitch,D.pitch,dt,1.65,.82);
+  springAxis(q.tail,-m.yawRate*.34,dt,1.2,.68);
+  springAxis(q.neck,-D.turn*.12-m.yawRate*.055,dt,2.4,.78);
+  springAxis(q.head,-D.turn*.18+m.yawRate*.04,dt,3.1,.72);
+  springAxis(q.wing,THREE.MathUtils.clamp((D.speed-26)/55,0,1),dt,1.8,.9);
+  springAxis(q.tension,THREE.MathUtils.clamp((m.gLoad-1)/2.6,0,1),dt,3.0,.8);
+  springAxis(q.load,THREE.MathUtils.clamp(m.longAccel/32,-1,1),dt,2.2,.76);
+  springAxis(q.launch,S.launching?(S.started?1:-1):0,dt,S.started?2.0:3.2,.72);
+  D.pTurn=q.turn.value; D.pPitch=q.pitch.value;
   const tl=D.bones.tail;
   for(let i=0;i<tl.length;i++){ const b=tl[i]; if(!b) continue;
-    const ph=t*1.5 - i*0.55;
-    const sway=(Math.sin(ph)*0.018*(0.6+0.4*spd) - D.pTurn*0.030)*g;   // idle drift + soft trail into turns
-    const lift=Math.sin(ph+0.6)*0.011*g;
+    const lag=(i+1)/tl.length, ph=t*1.35-i*.48;
+    const sway=(Math.sin(ph)*.012*(.6+.4*spd)+q.tail.value*lag*.095-q.turn.velocity*lag*.006)*g;
+    const lift=(Math.sin(ph+.6)*.008-q.pitch.velocity*lag*.004)*g;
     b.rotateOnWorldAxis(_AUP, sway); b.rotateOnWorldAxis(_ART, lift);
   }
-  // NECK + HEAD — look softly into the turn, settle with climb/dive
-  if(D.bones.neck){ D.bones.neck.rotateOnWorldAxis(_AUP,(-D.pTurn*0.055+Math.sin(t*1.0)*0.009)*g);
-    D.bones.neck.rotateOnWorldAxis(_ART,(-D.pPitch*0.045)*g); }
-  if(D.bones.head){ D.bones.head.rotateOnWorldAxis(_AUP,(-D.pTurn*0.075)*g);
-    D.bones.head.rotateOnWorldAxis(_ART,(D.pPitch*0.05+Math.sin(t*0.8)*0.010)*g); }   // head leads the dive
-  // SPINE — bank flex
-  if(D.bones.chest) D.bones.chest.rotateOnWorldAxis(_AFW,(D.pTurn*0.045)*g);
-  // WINGS — real articulation: they sweep with speed, cup on the climb, and the inside
-  // wing tucks / outside wing extends through a turn (differential, like a real banking bird)
-  if(D.bones.wings){
-    const sweep = -0.12 - Math.min(0.5, D.speed/62)*0.30;        // faster = swept back
-    const cup   = THREE.MathUtils.clamp(D.pPitch,-1,1)*0.22;      // climb = cupped air
-    const brake = (key['KeyS']&&D.speed>16) ? 0.45 : 0;           // air-brake spread
-    for(const w of D.bones.wings){
-      const diff = -D.pTurn*w.side*0.34;                          // inside tucks, outside extends
-      w.rotateOnWorldAxis(_AUP, (sweep+diff+brake*0.5)*g*w.side);
-      w.rotateOnWorldAxis(_AFW, (cup - brake*0.35)*g*w.side*0.6);
-    }
+  if(D.bones.neck){ D.bones.neck.rotateOnWorldAxis(_AUP,(q.neck.value+Math.sin(t)*.006)*g);
+    D.bones.neck.rotateOnWorldAxis(_ART,(-q.pitch.value*.04-q.pitch.velocity*.008)*g); }
+  if(D.bones.head){ D.bones.head.rotateOnWorldAxis(_AUP,q.head.value*g);
+    D.bones.head.rotateOnWorldAxis(_ART,(q.pitch.value*.055+q.pitch.velocity*.012+Math.sin(t*.8)*.006)*g); }
+  const coil=q.launch.value, effort=q.tension.value;
+  if(D.bones.chest){ D.bones.chest.rotateOnWorldAxis(_AFW,(q.turn.value*.038-m.yawRate*.012)*g);
+    D.bones.chest.rotateOnWorldAxis(_ART,(-coil*.09-q.load.value*.055-effort*.045)*g); }
+  if(D.bones.hips) D.bones.hips.rotateOnWorldAxis(_ART,(coil*.075+q.load.value*.035)*g);
+  const brake=(key['KeyS']&&D.speed>16)?1:0;
+  const sweep=-.08-q.wing.value*.28+brake*.24, cup=THREE.MathUtils.clamp(q.pitch.value,-1,1)*.16+effort*.12;
+  for(const w of D.bones.shoulders){
+    const diff=-q.turn.value*w.side*.14;
+    w.rotateOnWorldAxis(_AUP,(sweep*.34+diff)*g*w.side);
+    w.rotateOnWorldAxis(_AFW,(cup+coil*.08)*g*w.side);
   }
-  // LEGS — tuck back into a clean streamlined line so they don't dangle as a crumpled lump
+  for(const w of D.bones.forearms){
+    const diff=-q.turn.value*w.side*.22;
+    w.rotateOnWorldAxis(_AUP,(sweep*.72+diff)*g*w.side);
+    w.rotateOnWorldAxis(_AFW,(cup*.72-brake*.12)*g*w.side);
+  }
+  for(const w of D.bones.wingTips){
+    const trail=-q.wing.velocity*.035-q.turn.velocity*w.side*.018;
+    w.rotateOnWorldAxis(_AUP,(sweep*.42+trail)*g*w.side);
+    w.rotateOnWorldAxis(_AFW,(effort*.075-brake*.08)*g*w.side);
+  }
   const tuck=(D.speed>18?1:0.5)*g;
   if(D.bones.thighs) for(const b of D.bones.thighs){ if(b) b.rotateOnWorldAxis(_ART, -0.55*tuck); }
   if(D.bones.shins)  for(const b of D.bones.shins){ if(b) b.rotateOnWorldAxis(_ART, 0.5*tuck); }
@@ -1116,6 +1138,11 @@ function applyAlive(dt){
 const key={};
 const input={ flap:false };
 const fdamp=(l,dt)=>1-Math.exp(-l*dt);          // frame-rate independent smoothing
+function springAxis(axis,target,dt,frequency,damping=1){
+  dt=Math.min(dt,.033); const omega=Math.PI*2*frequency;
+  axis.velocity+=((target-axis.value)*omega*omega-2*damping*omega*axis.velocity)*dt;
+  axis.value+=axis.velocity*dt;
+}
 // mouse only drives the landing-page parallax now — flight is pure keyboard (no cursor drift)
 addEventListener('mousemove',e=>{
   const nx=(e.clientX/innerWidth)*2-1, ny=(e.clientY/innerHeight)*2-1;
@@ -1845,7 +1872,7 @@ function tick(dt){
   const pitchCmd=THREE.MathUtils.clamp((key['ArrowUp']?1:0)-(key['ArrowDown']?1:0), -1,1);
   const turnCmd =THREE.MathUtils.clamp((key['KeyD']?1:0)-(key['KeyA']?1:0)+(key['ArrowRight']?1:0)-(key['ArrowLeft']?1:0), -1,1);
   const throttle=(key['KeyW']?1:0)-(key['KeyS']?1:0);
-  D.turn=turnCmd;
+  D.turn+=(turnCmd-D.turn)*fdamp(turnCmd?11:7.5,dt);
 
   const auth=0.5+D.speed/40;
   D.yaw -= turnCmd*dt*(1.55+upLv('rudder')*0.32)*auth;   // starts heavy; the rudder fin sharpens her                       // snappier: the dragon answers you
@@ -1861,6 +1888,14 @@ function tick(dt){
 
   /* ---- acceleration factor drives all the speed FX ---- */
   const inst=(D.speed-S.prevSpeed)/Math.max(dt,1e-3); S.prevSpeed=D.speed;
+  let yawDelta=D.yaw-D.prevYaw; if(yawDelta>Math.PI)yawDelta-=Math.PI*2; if(yawDelta<-Math.PI)yawDelta+=Math.PI*2;
+  const yawRate=yawDelta/Math.max(dt,1e-3), pitchRate=(D.pitch-D.prevPitch)/Math.max(dt,1e-3);
+  D.prevYaw=D.yaw; D.prevPitch=D.pitch;
+  D.motion.longAccel+=(inst-D.motion.longAccel)*fdamp(8,dt);
+  D.motion.yawRate+=(yawRate-D.motion.yawRate)*fdamp(10,dt);
+  D.motion.pitchRate+=(pitchRate-D.motion.pitchRate)*fdamp(10,dt);
+  const loadTarget=1+Math.abs(D.motion.yawRate)*D.speed/34+Math.max(0,D.motion.pitchRate)*D.speed/28;
+  D.motion.gLoad+=(THREE.MathUtils.clamp(loadTarget,.25,4)-D.motion.gLoad)*fdamp(7,dt);
   S.boost += (THREE.MathUtils.clamp((D.speed-CRUISE)/(62-CRUISE),0,1) - S.boost)*Math.min(1,dt*4);
   S.accel += (THREE.MathUtils.clamp(inst/45,0,1) - S.accel)*Math.min(1,dt*6);
   updateWind();
@@ -2297,6 +2332,8 @@ applyGfx(localStorage.getItem('galevein_gfx')||'med');
 /* ============================ CAMERA + LOOP ============================ */
 const _hp=new THREE.Vector3();
 const _sfwd=new THREE.Vector3(), _srt=new THREE.Vector3(), _sup=new THREE.Vector3(), _SUP=new THREE.Vector3(0,1,0);
+const _shakeV=new THREE.Vector3();
+const CAM={pull:{value:0,velocity:0},drop:{value:0,velocity:0},look:{value:0,velocity:0},fov:{value:0,velocity:0}};
 function updateStreaks(){
   const b=S.boost; streaks.material.opacity=Math.min(0.4, Math.max(0,b-0.14)*0.72);   // only at real speed
   if(b<0.16){ if(b<0.03) return; }
@@ -2314,12 +2351,18 @@ function updateStreaks(){
   streakGeo.attributes.position.needsUpdate=true;
 }
 function render(dt=1/60){
-  // acceleration visuals (decay boost on menu / game-over so FOV eases back)
   if(!S.started||S.done){ S.boost*=0.93; S.accel*=0.9; }
-  const fov=60 + S.boost*22 + Math.max(0,S.accel)*8;
-  camera.fov += (fov-camera.fov)*fdamp(8,dt); camera.updateProjectionMatrix();
+  const accelLoad=THREE.MathUtils.clamp(D.motion.longAccel/24,0,1);
+  const brakeLoad=THREE.MathUtils.clamp(-D.motion.longAccel/20,0,1);
+  const diveLoad=THREE.MathUtils.clamp((-D.pitch-.18)/.7,0,1);
+  const speedLoad=THREE.MathUtils.clamp((D.speed-20)/58,0,1);
+  springAxis(CAM.pull,S.started?speedLoad*8+accelLoad*4.5+S.spiral*4-brakeLoad*1.2:0,dt,1.2,.93);
+  springAxis(CAM.drop,S.started?speedLoad*.8+accelLoad*.9+diveLoad*1.4-brakeLoad*.45:0,dt,1.32,1);
+  springAxis(CAM.look,S.started?speedLoad*7+accelLoad*3+diveLoad*4:0,dt,1.45,1);
+  springAxis(CAM.fov,S.started?speedLoad*13+accelLoad*4.5+S.spiral*5+diveLoad*2:0,dt,1.55,1);
+  camera.fov += ((60+CAM.fov.value)-camera.fov)*fdamp(10,dt); camera.updateProjectionMatrix();
   updateStreaks();
-  $('speedvig').style.opacity=(S.boost*0.5).toFixed(2);
+  $('speedvig').style.opacity=(S.boost*.42+THREE.MathUtils.clamp((D.motion.gLoad-1)/3,0,.18)).toFixed(2);
 
   // landing page: cinematic close arc around the resting dragon
   if(!S.started){
@@ -2335,23 +2378,25 @@ function render(dt=1/60){
   S.camYaw   += (lookX*2.2 - S.camYaw)*fdamp(7,dt);
   S.camPitch += (0 - S.camPitch)*fdamp(7,dt);
 
-  const shakeV=new THREE.Vector3(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar((S.shake + S.boost*0.32)*1.6);
+  const loadShake=THREE.MathUtils.clamp((D.motion.gLoad-1)/3,0,1);
+  const shakeAmp=(S.shake+S.boost*.16+loadShake*.22)*1.3;
+  _shakeV.set(Math.sin(S.t*47),Math.sin(S.t*53+1.7),Math.sin(S.t*43+4.1)).multiplyScalar(shakeAmp);
 
   if(S.fpv && D.headNode){
     const back=new THREE.Vector3(Math.sin(D.yaw),0,Math.cos(D.yaw));
     const fwd=back.clone().negate();
     D.headNode.getWorldPosition(_hp);
-    camera.position.copy(_hp).addScaledVector(fwd,1.4).add(new THREE.Vector3(0,2.0,0)).add(shakeV);
-    const look=camera.position.clone().addScaledVector(fwd,60); look.y+=Math.sin(D.pitch)*40;
+    camera.position.copy(_hp).addScaledVector(fwd,1.4).add(new THREE.Vector3(0,2.0,0)).add(_shakeV);
+    const look=camera.position.clone().addScaledVector(fwd,60+CAM.look.value); look.y+=Math.sin(D.pitch)*40;
     camera.lookAt(look); camera.rotateZ(-D.roll*0.4);
   } else {
     const ang=D.yaw + S.camYaw;
     const back=new THREE.Vector3(Math.sin(ang),0,Math.cos(ang));
-    const height=14 + S.camPitch*22 - S.boost*2;         // higher: look down on the open wingspan
-    const dist = (S.started? 27 : 40) + S.boost*7;
+    const height=14 + S.camPitch*22 - CAM.drop.value;
+    const dist = (S.started?27:40) + CAM.pull.value;
     const camTarget=D.group.position.clone().addScaledVector(back,dist).add(new THREE.Vector3(0,height,0));
-    camera.position.lerp(camTarget, fdamp(10,dt)); camera.position.add(shakeV);
-    const look=D.group.position.clone().add(new THREE.Vector3(0,-1,0));
+    camera.position.lerp(camTarget, fdamp(9,dt)); camera.position.add(_shakeV);
+    const look=D.group.position.clone().addScaledVector(back,-CAM.look.value).add(new THREE.Vector3(0,-1-CAM.drop.value*.15,0));
     camera.lookAt(look); camera.rotateZ(-D.roll*0.10);
   }
   renderWorld();
@@ -2365,8 +2410,10 @@ function renderWorld(){
 }
 
 let last=performance.now(), fpsE=60, fpsAcc=0;
+const frameTimes=[];
 function loop(now){ requestAnimationFrame(loop);
   const dt=Math.min((now-last)/1000,0.05); last=now;
+  frameTimes.push(dt*1000); if(frameTimes.length>900)frameTimes.shift();
   fpsE+=(1/Math.max(dt,1e-3)-fpsE)*0.06; fpsAcc+=dt;
   if(fpsAcc>0.35){ fpsAcc=0; $('fpsV').textContent=Math.round(fpsE); }
   tick(dt); render(dt);
@@ -2390,6 +2437,12 @@ window.SIM={
   teleport:(x,y,z,yaw)=>{ D.group.position.set(x,y,z); if(yaw!=null)D.yaw=yaw; },
   warp:(dt,steps=60)=>{ for(let i=0;i<steps;i++) tick(dt); render(); },
   bones:()=>D.boneReport, alive:v=>{ALIVE=v;}, setTurn:v=>{D.turn=v;}, day:v=>{TOD.day=v;uDay.value=v;},
+  motion:()=>({accel:+D.motion.longAccel.toFixed(2),yawRate:+D.motion.yawRate.toFixed(3),
+    pitchRate:+D.motion.pitchRate.toFixed(3),gLoad:+D.motion.gLoad.toFixed(2),
+    camera:{pull:+CAM.pull.value.toFixed(2),drop:+CAM.drop.value.toFixed(2),fov:+CAM.fov.value.toFixed(2)}}),
+  frameStats:()=>{ const a=frameTimes.slice().sort((x,y)=>x-y), at=q=>a[Math.min(a.length-1,Math.floor(a.length*q))]||0;
+    return {samples:a.length,p50:+at(.5).toFixed(2),p95:+at(.95).toFixed(2),p99:+at(.99).toFixed(2)}; },
+  clearFrames:()=>{frameTimes.length=0;},
   echo:echoPulse, flockCall:callFlock,
   expansion:()=>({dof:cinematicDof.enabled,horizon:horizonDirector.getSnapshot(),landmarks:landmarkPath.getSnapshot(),
     seaFog:sea.material.uniforms.fogDensity.value,sceneFog:scene.fog.density,cameraFar:camera.far}),
