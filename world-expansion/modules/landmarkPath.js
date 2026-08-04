@@ -14,6 +14,9 @@ import {
   LANDMARK_SITES,
   buildLandmarkSite,
   createLandmarkMaterials,
+  filterLandmarkSites,
+  landmarksForRegion,
+  regionLandmarkProfiles,
   validateRouteClearance
 } from './proceduralLandmarks.js';
 
@@ -27,7 +30,11 @@ export class LandmarkPath {
     if (!scene?.add) throw new TypeError('LandmarkPath requires a Three.js scene.');
     this.scene = scene;
     this.flightRoute = options.flightRoute || null;
-    this.sites = options.sites || LANDMARK_SITES;
+    this.allSites = options.sites || LANDMARK_SITES;
+    // Build the full route for colliders; region visibility is applied in update().
+    this.sites = this.allSites;
+    this.activeRegionId = options.activeRegionId ?? null;
+    this.regionProfiles = options.regionProfiles ?? null;
     this.root = new THREE.Group();
     this.root.name = 'DragonStorm_LandmarkPath';
     this.root.userData.visualOnly = true;
@@ -38,6 +45,9 @@ export class LandmarkPath {
     this.clearance = null;
     this.collisionAuthority = false;
     this.buildError = null;
+    this.regionFilter = null;
+    this._regionArchetypes = null;
+    this._regionIds = null;
 
     // A small fixed pool of point lights, moved to the nearest sites each frame. The
     // previous build gave every landmark its own light, which charges every lit
@@ -101,6 +111,34 @@ export class LandmarkPath {
   // Retained for callers that still say loadTemplates(); the GLB manifest is gone.
   loadTemplates() { return this.build(); }
 
+  /**
+   * Filter visible landmarks by active region data from regions.json.
+   * @param {string|null} regionId
+   * @param {string[]} [allowedArchetypes]
+   * @param {string[]} [allowedLandmarkIds]
+   */
+  setRegionFilter(regionId, allowedArchetypes = [], allowedLandmarkIds = []) {
+    this.regionFilter = regionId ?? null;
+    this.activeRegionId = regionId ?? null;
+    this._regionArchetypes = allowedArchetypes?.length ? new Set(allowedArchetypes) : null;
+    this._regionIds = allowedLandmarkIds?.length ? new Set(allowedLandmarkIds) : null;
+  }
+
+  getRegionLandmarks(regionId) {
+    const profile = this.regionProfiles?.find((entry) => entry.regionId === regionId);
+    return profile?.sites ?? [];
+  }
+
+  _passesRegionFilter(entry) {
+    if (!this.regionFilter) return true;
+    const idOk = this._regionIds ? this._regionIds.has(entry.id) : true;
+    const archetypeOk = this._regionArchetypes ? this._regionArchetypes.has(entry.archetype) : true;
+    if (this._regionIds && this._regionArchetypes) return idOk || archetypeOk;
+    if (this._regionIds) return idOk;
+    if (this._regionArchetypes) return archetypeOk;
+    return true;
+  }
+
   update(playerPosition) {
     if (!playerPosition?.isVector3) return;
     const nearest = this._nearest;
@@ -109,8 +147,9 @@ export class LandmarkPath {
       if (!entry.object) continue;
       const distance = playerPosition.distanceTo(entry.object.position);
       entry.distance = distance;
-      entry.active = distance < ACTIVE_DISTANCE;
-      entry.object.visible = distance < CULL_DISTANCE;
+      const regionOk = this._passesRegionFilter(entry);
+      entry.active = regionOk && distance < ACTIVE_DISTANCE;
+      entry.object.visible = regionOk && distance < CULL_DISTANCE;
       if (entry.active) nearest.push(entry);
     }
     nearest.sort((a, b) => a.distance - b.distance);
@@ -140,6 +179,7 @@ export class LandmarkPath {
   setCollisionAuthority(enabled = true) { this.collisionAuthority = !!enabled; }
 
   getSnapshot() {
+    const activeSites = this.activeRegionId ? this.getRegionLandmarks(this.activeRegionId) : [];
     return {
       landmarks: this.route.length,
       procedural: true,
@@ -150,6 +190,9 @@ export class LandmarkPath {
       clearance: this.clearance,
       loadedTemplates: [...new Set(this.route.map((entry) => entry.archetype))],
       active: this.route.filter((entry) => entry.active).map((entry) => entry.id),
+      regionFilter: this.regionFilter,
+      activeRegionArchetypes: [...new Set(activeSites.map((site) => site.archetype))],
+      regionProfiles: this.regionProfiles,
       collisionWiringRequired: !this.collisionAuthority
     };
   }

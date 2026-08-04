@@ -342,6 +342,39 @@
   #menu.live #wakehint{ opacity:0; }
   .card{ max-width:640px; padding:0 28px; }
 
+  /* dragon rig picker */
+  #rigPicker{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:10px 0 4px; max-width:520px; }
+  #rigPicker .rig{ cursor:pointer; padding:6px 12px; border-radius:14px; border:1px solid rgba(140,110,220,.35);
+    background:rgba(8,10,22,.55); color:#aab8d6; font-size:10px; letter-spacing:1.5px; transition:all .18s; }
+  #rigPicker .rig b{ display:block; font-family:var(--display); font-size:12px; letter-spacing:.12em; color:#dbe7fb; }
+  #rigPicker .rig i{ display:block; font-size:9px; color:#7d8cad; margin-top:2px; font-style:normal; }
+  #rigPicker .rig.on{ color:#fff; border-color:rgba(190,160,255,.85); background:rgba(120,90,200,.38);
+    box-shadow:0 0 18px rgba(150,100,255,.35); }
+  #rigPicker .rig:disabled{ opacity:.35; cursor:default; }
+
+  /* lobby hub nodes */
+  #lobbyHub{ position:absolute; inset:0; z-index:4; display:flex; align-items:center; justify-content:center;
+    pointer-events:none; opacity:0; transition:opacity .5s; }
+  #lobbyHub.on{ opacity:1; pointer-events:auto; }
+  #lobbyHub .lobby-nodes{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; max-width:720px; padding:0 16px; }
+  #lobbyHub .lobby-node{ cursor:pointer; min-width:148px; padding:16px 18px; border-radius:12px;
+    border:1px solid rgba(120,90,200,.45); background:linear-gradient(180deg,rgba(14,18,34,.88),rgba(8,10,22,.72));
+    box-shadow:0 8px 32px rgba(0,0,0,.45); transition:transform .15s, border-color .15s; }
+  #lobbyHub .lobby-node:hover{ transform:translateY(-3px); border-color:rgba(190,160,255,.8); }
+  #lobbyHub .lobby-node b{ display:block; font-family:var(--display); font-size:15px; letter-spacing:.18em; color:#eaf1ff; }
+  #lobbyHub .lobby-node i{ display:block; margin-top:6px; font-size:10px; color:#8fa0c2; font-style:normal; line-height:1.4; }
+  #lobbyChapterPanel{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:min(92vw,380px);
+    padding:22px 24px; border-radius:12px; border:1px solid rgba(140,110,220,.5);
+    background:rgba(8,10,22,.94); opacity:0; pointer-events:none; transition:opacity .25s; }
+  #lobbyChapterPanel.on{ opacity:1; pointer-events:auto; }
+  #lobbyChapterPanel select{ width:100%; margin:12px 0; padding:8px; background:#0a0e1c; color:#dbe7fb;
+    border:1px solid rgba(140,110,220,.4); border-radius:6px; font-family:var(--mono); }
+  #lobbyChapterPanel .lobby-actions{ display:flex; gap:10px; justify-content:center; margin-top:8px; }
+  #lobbyChapterPanel button{ font-family:var(--mono); font-size:11px; padding:7px 14px; cursor:pointer;
+    border-radius:6px; border:1px solid rgba(140,110,220,.5); background:rgba(120,90,200,.25); color:#eaf1ff; }
+  #over .btnrow{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  #hubBtn{ border-color:rgba(56,230,208,.5); color:var(--teal); }
+
   .kicker{ font-family:var(--display); font-size:13px; letter-spacing:.62em; text-indent:.62em; color:var(--teal);
     margin-bottom:10px; font-weight:500; display:flex; align-items:center; gap:16px; }
   .kicker::before,.kicker::after{ content:''; width:64px; height:1px;
@@ -483,9 +516,32 @@
     </div>
     <div class="playwrap">
       <button class="play" id="startBtn" aria-label="Take flight"><span class="tri"></span></button>
-      <div class="playlabel">TAKE FLIGHT</div>
+      <div class="playlabel">ENTER HUB</div>
+    </div>
+    <div id="lobbyHub" class="hide">
+      <div class="lobby-nodes">
+        <div class="lobby-node" data-lobby-mode="story"><b>STORY</b><i>Full beacon road · chapters · nightfall</i></div>
+        <div class="lobby-node" data-lobby-mode="practice"><b>PRACTICE</b><i>Wake Cove rings · no keeper hunt</i></div>
+        <div class="lobby-node" data-lobby-mode="chapter"><b>CHAPTER</b><i>Jump to a saved checkpoint</i></div>
+      </div>
+      <div id="lobbyChapterPanel" data-lobby-chapter-panel>
+        <b style="font-family:var(--display);letter-spacing:.2em;color:var(--purple)">CHAPTER SELECT</b>
+        <select data-lobby-chapter-pick>
+          <option value="0">0 · First Flight</option>
+          <option value="1">I · Keeper Shallows</option>
+          <option value="2">II · Echo Training</option>
+          <option value="3">III · Serpent Run</option>
+          <option value="4">IV · Rib Wastes</option>
+          <option value="5">V · Tempest Gate</option>
+        </select>
+        <div class="lobby-actions">
+          <button type="button" data-lobby-chapter-back>Back</button>
+          <button type="button" data-lobby-chapter-go>Launch</button>
+        </div>
+      </div>
     </div>
     <div class="dock">
+      <div id="rigPicker" aria-label="Dragon mount"></div>
       <div class="chips">
         <span class="chip"><b>W/S</b>speed</span>
         <span class="chip"><b>↑↓</b>climb · dive</span>
@@ -513,7 +569,10 @@
       <span class="stat">BEACONS<b id="overBeacons">0</b></span>
       <span class="stat">TIME ALOFT<b id="overTime">0s</b></span>
     </div>
-    <div class="btn" id="againBtn">↺ FLY AGAIN</div>
+    <div class="btnrow">
+      <div class="btn" id="hubBtn">⌂ RETURN TO HUB</div>
+      <div class="btn" id="againBtn">↺ FLY AGAIN</div>
+    </div>
   </div>
 </div>
 <button id="muteBtn" type="button" aria-pressed="false">M · SOUND ON</button>
@@ -533,6 +592,8 @@ import { CinematicDofPipeline } from './world-expansion/modules/cinematicDof.js'
 import { HorizonDirector } from './world-expansion/modules/horizonDirector.js';
 import { LandmarkPath } from './world-expansion/modules/landmarkPath.js';
 import { gameStructure } from './world-expansion/modules/gameStructure.js';
+import { DRAGON_RIGS, resolveRigFromQuery, rigCatalog } from './world-expansion/modules/dragonRigs.js';
+import { LobbyHub } from './world-expansion/modules/lobbyHub.js';
 
 const $ = id => document.getElementById(id);
 const bootErrors=[];
@@ -1110,44 +1171,37 @@ landmarkReady.then(async ()=>{
   $('wakehint').textContent='LANDMARK BUILD FAILED';
   $('startBtn').disabled=true;
 });
-const rigChoice=new URLSearchParams(location.search).get('rig');
-const dragonAsset=({original:'dragon_rigged.glb',membrane:'dragon_rigged_membrane.glb',stormcrest:'dragon_galevein_stormcrest_corrected.glb','stormcrest-membrane':'dragon_galevein_stormcrest_membrane.glb',voltspine:'dragon_galevein_voltspine_corrected.glb','voltspine-membrane':'dragon_galevein_voltspine_membrane.glb',thunderhook:'dragon_galevein_thunderhook_corrected.glb','thunderhook-membrane':'dragon_galevein_thunderhook_membrane.glb'})[rigChoice]||'dragon_rigged_corrected.glb';
-loader.load(dragonAsset,(g)=>{
-  const model=g.scene; D.model=model; model.scale.setScalar(9.0); model.rotation.y=Math.PI;
-  // ---- black volcanic obsidian scales: dark PBR + faint ember emissive in the recesses ----
+const rigProbed={};
+let activeRig=resolveRigFromQuery();
+function findClip(animations, name){
+  return THREE.AnimationClip.findByName(animations, name)
+    || animations.find(c=>c.name===name||c.name.endsWith(name)||c.name.includes(name));
+}
+function applyDragonMaterials(model, rig){
   model.traverse(o=>{ if(!o.isMesh || !o.material) return;
     const m=o.material;
     if(m.map){ m.map.anisotropy=8; }
-    m.color = new THREE.Color(0x504c60);           // lit obsidian — reads as a dragon, not a black cutout
-    m.roughness = 0.6;
-    m.metalness = 0.15;
-    m.emissive = new THREE.Color(0x4a3358);        // violet self-light so scales read even when back-lit
+    m.color = new THREE.Color(rig.id==='quaternius'?0x605858:0x504c60);
+    m.roughness = 0.6; m.metalness = 0.15;
+    m.emissive = new THREE.Color(rig.id==='quaternius'?0x5a4038:0x4a3358);
     if(m.map){ m.emissiveMap = m.map; m.emissiveIntensity = 0.7; }
     else m.emissiveIntensity = 0.7;
-    m.needsUpdate = true;
-    o.castShadow=true;
+    m.needsUpdate = true; o.castShadow=true;
   });
-  D.group.add(model);
+}
+function attachDragonAccessories(model){
   D.mixer=new THREE.AnimationMixer(model);
-  D.flap=D.mixer.clipAction(THREE.AnimationClip.findByName(g.animations,'Flap'));
-  D.glide=D.mixer.clipAction(THREE.AnimationClip.findByName(g.animations,'Glide'));
-  D.flap.play(); D.glide.play(); D.flap.setEffectiveWeight(0); D.glide.setEffectiveWeight(1);
-  D.headNode=model.getObjectByName('head');
-  collectBones(model);
-  // purple plasma glow at the chest
+  D.headNode=model.getObjectByName('head')||model.getObjectByName('Head');
   const glow=new THREE.PointLight(0x9a4cff, 0, 60, 2); D.group.add(glow); glow.position.set(0,4,0); D.glow=glow;
-  // key lights that always light the dragon so it never sinks into silhouette
   const key1=new THREE.PointLight(0xcdd6ff, 40, 70, 2); key1.position.set(5,16,-6); D.group.add(key1);
   const key2=new THREE.PointLight(0x8a6bff, 26, 60, 2); key2.position.set(0,3,7); D.group.add(key2);
-  // mouth charge ball — grows while holding X, consumed on release
   const mouth=new THREE.Mesh(new THREE.SphereGeometry(1,12,12),
     new THREE.MeshBasicMaterial({color:0xd7a0ff, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true}));
   mouth.scale.setScalar(0.001); (D.headNode||model).add(mouth);
   mouth.position.set(0, -0.02, -0.06);
   const mlt=new THREE.PointLight(0xc86bff,0,80,2); mouth.add(mlt);
   D.mouth=mouth; D.mouthLt=mlt;
-  // rider
-  const chest=model.getObjectByName('chest');
+  const chest=model.getObjectByName('chest')||model.getObjectByName('Body');
   if(chest){ const rider=new THREE.Group();
     const cloth=new THREE.MeshStandardMaterial({color:0x2a2119,roughness:.9});
     const leather=new THREE.MeshStandardMaterial({color:0x17120c,roughness:.8});
@@ -1160,8 +1214,74 @@ loader.load(dragonAsset,(g)=>{
     const pw=new THREE.Vector3(0,.545,.03).applyMatrix4(model.matrixWorld);
     rider.position.copy(chest.worldToLocal(pw)); chest.add(rider);
   }
+}
+function setupDragonClips(g, rig){
+  const flap=findClip(g.animations, rig.flapClip);
+  const glide=findClip(g.animations, rig.glideClip);
+  D.flap=flap?D.mixer.clipAction(flap):null;
+  D.glide=glide?D.mixer.clipAction(glide):null;
+  if(D.flap) D.flap.play();
+  if(D.glide) D.glide.play();
+  if(D.flap) D.flap.setEffectiveWeight(0);
+  if(D.glide) D.glide.setEffectiveWeight(1);
+  if(rig.id==='quaternius' && D.glide) D.glide.timeScale=0.35;
+}
+function onDragonLoaded(g, rig){
+  if(D.model){ D.group.remove(D.model); D.model.traverse(o=>{ if(o.geometry)o.geometry.dispose?.(); }); }
+  const model=g.scene; D.model=model; model.scale.setScalar(rig.scale||9); model.rotation.y=Math.PI;
+  applyDragonMaterials(model, rig);
+  D.group.add(model);
+  attachDragonAccessories(model);
+  setupDragonClips(g, rig);
+  collectBones(model);
+  if(rig.id==='quaternius') ALIVE=0.35;
+  else ALIVE=1.0;
   stageRest();
-},undefined,()=>{
+  renderRigPicker();
+}
+function loadDragonRig(rig){
+  activeRig=rig;
+  localStorage.setItem('galevein_rig', rig.id);
+  const url=new URL(location.href); url.searchParams.set('rig', rig.id); history.replaceState(null,'',url);
+  return new Promise((resolve,reject)=>{
+    loader.load(rig.asset,(g)=>{ onDragonLoaded(g,rig); resolve(rig); },undefined,reject);
+  });
+}
+function probeOptionalRigs(){
+  const quaternius=DRAGON_RIGS.find(r=>r.id==='quaternius');
+  if(!quaternius) return Promise.resolve();
+  return new Promise(resolve=>{
+    loader.load(quaternius.asset,(g)=>{
+      rigProbed.quaternius=!!(g.animations?.length);
+      resolve();
+    },undefined,()=>{ rigProbed.quaternius=false; resolve(); });
+  });
+}
+function renderRigPicker(){
+  const host=$('rigPicker'); if(!host) return;
+  host.innerHTML='';
+  for(const rig of rigCatalog(rigProbed)){
+    const btn=document.createElement('button');
+    btn.type='button'; btn.className='rig'+(rig.id===activeRig.id?' on':'');
+    btn.innerHTML=`<b>${rig.loreName}</b><i>${rig.epithet}</i>`;
+    btn.title=rig.note;
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      if(S.started && !S.done) return;
+      loadDragonRig(rig).catch(()=>surfaceBootError('rig load failed', rig.id));
+    });
+    host.appendChild(btn);
+  }
+}
+const rigChoice=new URLSearchParams(location.search).get('rig');
+if(rigChoice) activeRig=DRAGON_RIGS.find(r=>r.id===rigChoice)||activeRig;
+else { const saved=localStorage.getItem('galevein_rig'); if(saved) activeRig=DRAGON_RIGS.find(r=>r.id===saved)||activeRig; }
+probeOptionalRigs().then(()=>{
+  loadDragonRig(activeRig).catch(()=>{
+    if(activeRig.id!=='stormcrest') return loadDragonRig(DRAGON_RIGS.find(r=>r.id==='stormcrest'));
+    throw new Error('stormcrest failed');
+  });
+}).catch(()=>{
   $('objText').textContent='DRAGON ASSET FAILED TO LOAD — refresh the local server and try again';
   $('wakehint').textContent='MODEL LOAD FAILED';
   $('startBtn').disabled=true;
@@ -1178,17 +1298,28 @@ function stageRest(){
 /* ---- procedural "alive" layer: real spine/tail/neck flex on top of the baked flap+glide ---- */
 function collectBones(model){
   const by=n=>model.getObjectByName(n)||model.getObjectByName(n.replace('.','_'))||model.getObjectByName(n.replace('.',''));
-  D.bones={ tail:[by('tail1'),by('tail2'),by('tail3'),by('tail4'),by('tail5')],
-    neck:by('neck'), head:by('head'), chest:by('chest'), hips:by('hips'),
-    shoulders:[], forearms:[], wingTips:[], membranes:[], wings:[],
-    thighs:[by('thigh.R'),by('thigh.L')], shins:[by('shin.R'),by('shin.L')] };
-  for(const [n,side,chain] of [['shoulder.R',1,'shoulders'],['shoulder.L',-1,'shoulders'],
-    ['forearm.R',1,'forearms'],['forearm.L',-1,'forearms'],
-    ['fingerA.R',1,'wingTips'],['fingerA.L',-1,'wingTips'],['fingerB.R',1,'wingTips'],
-    ['fingerB.L',-1,'wingTips'],['fingerC.R',1,'wingTips'],['fingerC.L',-1,'wingTips']]){
-    const b=by(n); if(b){ b.side=side; D.bones[chain].push(b); D.bones.wings.push(b); } }
-  for(const n of ['membraneBody.R','membraneAB.R','membraneBC.R','membraneBody.L','membraneAB.L','membraneBC.L']){
-    const b=by(n); if(b)D.bones.membranes.push(b); }
+  if(activeRig?.id==='quaternius'){
+    D.bones={ tail:[by('Tail1'),by('Tail2'),by('Tail3'),by('Tail4'),null],
+      neck:by('Neck'), head:by('Head'), chest:by('Body'), hips:by('BodyRoot'),
+      shoulders:[by('Shoulder.L'),by('Shoulder.R')].filter(Boolean),
+      forearms:[by('Wing2.L'),by('Wing2.R')].filter(Boolean),
+      wingTips:[by('Wing4.L'),by('Wing4.R')].filter(Boolean),
+      membranes:[], wings:[],
+      thighs:[by('UpperLeg.L'),by('UpperLeg.R')], shins:[by('LowerLeg.L'),by('LowerLeg.R')] };
+    for(const b of [...D.bones.shoulders,...D.bones.forearms,...D.bones.wingTips]) if(b) D.bones.wings.push(b);
+  } else {
+    D.bones={ tail:[by('tail1'),by('tail2'),by('tail3'),by('tail4'),by('tail5')],
+      neck:by('neck'), head:by('head'), chest:by('chest'), hips:by('hips'),
+      shoulders:[], forearms:[], wingTips:[], membranes:[], wings:[],
+      thighs:[by('thigh.R'),by('thigh.L')], shins:[by('shin.R'),by('shin.L')] };
+    for(const [n,side,chain] of [['shoulder.R',1,'shoulders'],['shoulder.L',-1,'shoulders'],
+      ['forearm.R',1,'forearms'],['forearm.L',-1,'forearms'],
+      ['fingerA.R',1,'wingTips'],['fingerA.L',-1,'wingTips'],['fingerB.R',1,'wingTips'],
+      ['fingerB.L',-1,'wingTips'],['fingerC.R',1,'wingTips'],['fingerC.L',-1,'wingTips']]){
+      const b=by(n); if(b){ b.side=side; D.bones[chain].push(b); D.bones.wings.push(b); } }
+    for(const n of ['membraneBody.R','membraneAB.R','membraneBC.R','membraneBody.L','membraneAB.L','membraneBC.L']){
+      const b=by(n); if(b)D.bones.membranes.push(b); }
+  }
   const axis=()=>({value:0,velocity:0});
   D.springs={turn:axis(),pitch:axis(),tail:axis(),neck:axis(),head:axis(),wing:axis(),
     tension:axis(),launch:axis(),load:axis()};
@@ -1303,7 +1434,7 @@ const S={ t:0, flightT:0, started:false, done:false, detection:0, score:0, fpv:f
   chapter:0, tutDone:false, spiralFired:false, spiralMax:false, tier:0,
   dive:0, stormbreakFired:false,                    // stormbreak dive -> sonic boom
   turn:0, pTurn:0, pPitch:0, muted:false, impactCd:0, alertStage:0,
-  finishing:false, finishToken:0 };
+  finishing:false, finishToken:0, lobbyMode:null, practiceMode:false };
 const routeDifficulty=()=>THREE.MathUtils.clamp((S.score-1)/(rings.length-2),0,1);
 const chargeSeconds=()=>Math.max(.54,.9-upLv('gland')*.12);
 
@@ -2195,7 +2326,7 @@ function tick(dt){
   if(S.detection>=.72 && S.alertStage<2){ S.alertStage=2; AU.play('detected',.65); popup('LOCKED · BREAK LINE OF SIGHT'); }
   else if(S.detection>=.38 && S.alertStage<1){ S.alertStage=1; AU.play('detected',.4); popup('HUNTED'); }
   else if(S.detection<.18) S.alertStage=0;
-  if(S.detection>=1) detected();
+  if(S.detection>=1 && !S.practiceMode) detected();
 
   // lit HUD feedback
   $('litglow').style.opacity = (litNow>0.02? 0.25+litNow*0.55 : Math.max(0, S.detection*0.25)).toFixed(2);
@@ -2338,6 +2469,14 @@ function showOver(kick,title,cls,sub){
   $('overBeacons').textContent=S.score+' / '+rings.length;
   $('overTime').textContent=Math.round(S.flightT)+'s';
   $('over').classList.remove('hide');
+  setTimeout(()=>{ if(S.done) returnToHub(S.cause||kick); }, cls==='good'?2200:800);
+}
+function returnToHub(reason=''){
+  $('over').classList.add('hide'); $('hud').classList.remove('on');
+  menuEl.classList.remove('hide'); menuEl.classList.add('live');
+  $('lobbyHub').classList.add('on'); $('lobbyHub').classList.remove('hide');
+  S.started=false; S.done=false; S.launching=false; input.flap=false;
+  lobby.returnToHub(reason); stageRest();
 }
 function detected(){ if(S.done)return; AU.play('detected',0.9); showOver('DETECTED','SPOTTED','bad',
   'The searchlight found you. The keepers loose their bolts into the dark.'); }
@@ -2383,21 +2522,31 @@ function setMuted(muted){
   if(S.muted){ for(const a of Object.values(AU.el)) a.pause(); if(WIND.gain) WIND.gain.gain.value=0; }
   else if(AU.on){ AU.loop('amb'); AU.loop('music'); updateWind(); }
 }
-function begin(){
+function begin(opts={}){
   if(S.launching||S.started) return; S.launching=true;
+  S.lobbyMode=opts.mode||S.lobbyMode||'story';
+  S.practiceMode=!!opts.practice||S.lobbyMode==='practice';
+  $('lobbyHub').classList.remove('on'); $('lobbyHub').classList.add('hide');
   startAudio(); triggerRipple();
   $('shutter').classList.add('closed');
-  setTimeout(()=>{                                    // staged behind the armour
+  setTimeout(()=>{
     S.started=true; S.flightT=0; S.grace=3; TOD.day=0.0; S.keepersWoke=false; S.hp=S.hpMax; S.hurt=0;
     S.chapter=0; S.tutDone=false;
     for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; }
     for(const r of rings) r.visible=false;
-    storyPop('Stay close to the cliffs. Three rings — feel how she answers before the sea takes you seriously.',7);
-    for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.fireCd=2+Math.random(); }
+    if(S.practiceMode){
+      storyPop('Practice flight — three rings in the cove. No keeper hunt.',6);
+    } else if(S.lobbyMode==='chapter' && opts.chapterIndex!=null){
+      simJumpChapter(Number(opts.chapterIndex));
+      storyPop('Chapter checkpoint loaded.',4);
+    } else {
+      storyPop('Stay close to the cliffs. Three rings — feel how she answers before the sea takes you seriously.',7);
+    }
+    for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.fireCd=2+Math.random(); if(S.practiceMode) sl.alerted=0; }
     D.group.position.set(REST.x, REST.y+6, REST.z);
     D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=30; S.prevSpeed=30;
-    if(D.model) D.model.scale.setScalar(9);
-    if(D.glide) D.glide.timeScale=1;
+    if(D.model) D.model.scale.setScalar(activeRig.scale||9);
+    if(D.glide) D.glide.timeScale=activeRig.id==='quaternius'?0.35:1;
     $('menu').classList.add('hide'); $('hud').classList.add('on');
     const back=new THREE.Vector3(Math.sin(D.yaw),0,Math.cos(D.yaw));
     camera.position.copy(D.group.position).addScaledVector(back,25).add(new THREE.Vector3(0,9,0));
@@ -2449,10 +2598,31 @@ function reset(){
 }
 /* ---- landing interactions ---- */
 const menuEl=$('menu');
-$('startBtn').addEventListener('click',e=>{ e.stopPropagation();
-  if(!menuEl.classList.contains('live')) spotMoment(); else begin(); });
+const lobby=new LobbyHub({ rootEl:$('lobbyHub'),
+  onSelect:(mode, extra)=>{
+    S.lobbyMode=mode;
+    if(mode==='story') begin({mode:'story'});
+    else if(mode==='practice') begin({mode:'practice', practice:true});
+    else if(mode==='chapter') begin({mode:'chapter', chapterIndex:extra.chapterIndex??0});
+  },
+  onReturn:()=>{ stageRest(); }
+});
+lobby.mount();
+function openLobby(){
+  if(!menuEl.classList.contains('live')) spotMoment();
+  else { $('lobbyHub').classList.add('on'); $('lobbyHub').classList.remove('hide'); }
+}
+$('startBtn').addEventListener('click',e=>{ e.stopPropagation(); openLobby(); });
 menuEl.addEventListener('click',()=>{ if(!menuEl.classList.contains('live')) spotMoment(); });
-$('againBtn').addEventListener('click',reset);
+$('againBtn').addEventListener('click',()=>{
+  $('over').classList.add('hide');
+  S.done=false; S.started=false; S.launching=false;
+  const mode=S.lobbyMode||'story';
+  if(mode==='practice') begin({mode:'practice', practice:true});
+  else if(mode==='chapter') begin({mode:'chapter', chapterIndex:lobby.chapterPick});
+  else begin({mode:'story'});
+});
+$('hubBtn').addEventListener('click',()=>returnToHub('manual'));
 $('muteBtn').addEventListener('click',()=>setMuted(!S.muted));
 
 /* ---- graphics presets: LOW / MED / HIGH (persisted) ---- */
@@ -2599,6 +2769,17 @@ addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.upd
 const SIM_KEYS={climb:'ArrowUp',dive:'ArrowDown',bankL:'KeyA',bankR:'KeyD',turnL:'ArrowLeft',turnR:'ArrowRight',
   accel:'KeyW',brake:'KeyS',lookL:'KeyQ',lookR:'KeyE'};
 function simClearControls(){ for(const c of Object.values(SIM_KEYS)) key[c]=false; input.flap=false; }
+function simSteerObjective(){
+  const nb=S.chapter===0?tutRings.find(r=>!r.userData.hit):rings.find(r=>!r.userData.hit);
+  if(!nb){ simSetControls({accel:true,climb:false,bankLeft:false,bankRight:false}); return null; }
+  const p=D.group.position,t=nb.position;
+  let diff=Math.atan2(-(t.x-p.x),-(t.z-p.z))-D.yaw;
+  while(diff>Math.PI)diff-=Math.PI*2;
+  while(diff<-Math.PI)diff+=Math.PI*2;
+  simSetControls({accel:true,climb:p.y<t.y-6,dive:p.y>t.y+10,bankLeft:diff>0.12,bankRight:diff<-0.12,
+    flap:p.y<t.y-18&&((S.t*10)%9<1.5)});
+  return {x:+t.x.toFixed(1),y:+t.y.toFixed(1),z:+t.z.toFixed(1),dist:+p.distanceTo(t).toFixed(1)};
+}
 function simSetControls(spec={}){
   if(spec.allOff) simClearControls();
   if(spec.climb!=null) key[SIM_KEYS.climb]=!!spec.climb;
@@ -2722,7 +2903,7 @@ window.SIM={
   start:()=>{ startAudio(); S.started=true; S.grace=3; menuEl.classList.add('hide','live');
     $('hud').classList.add('on'); },
   reset, setFpv:v=>{S.fpv=!!v}, key:(c,v)=>{key[c]=!!v}, shoot, begin,
-  controls:simSetControls, clearControls:simClearControls,
+  controls:simSetControls, clearControls:simClearControls, steerObjective:simSteerObjective,
   jumpBeacon:simJumpBeacon, jumpChapter:simJumpChapter, jumpState:simJumpState,
   runSteps:simRunSteps, runUntil:simRunUntil, snapshot:simSnapshot,
   route:()=>route.map((p,i)=>({beacon:i+1,x:p[0],y:p[1],z:p[2]})),
@@ -2795,6 +2976,7 @@ window.SIM={
   expansion:()=>({dof:cinematicDof.enabled,horizon:horizonDirector.getSnapshot(),landmarks:landmarkPath.getSnapshot(),
     seaFog:sea.material.uniforms.fogDensity.value,sceneFog:scene.fog.density,cameraFar:camera.far,
     worldArt:{seaVertices:sea.geometry.attributes.position.count,horizonTriangles:(horizonDirector.masses.geometry.index?.count||horizonDirector.masses.geometry.attributes.position.count)/3,
+      islandDrawCalls:horizonDirector.getSnapshot().drawCalls,
       landmarkMaterials:2,objectiveRingsFogFree:rings.every(r=>r.material.fog===false)}}),
   // Renderer counters for the landmark budget; info.render is reset each frame by three.
   renderInfo:()=>({calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,
@@ -2817,6 +2999,38 @@ window.SIM={
   landmarkReady,
   chapterHud:()=>structure?.director?.lastHud??null,
   structureSnapshot:()=>structure?.snapshot()??null,
+  rig:()=>({id:activeRig?.id,loreName:activeRig?.loreName,probed:{...rigProbed}}),
+  selectRig:id=>{ const rig=DRAGON_RIGS.find(r=>r.id===id); if(!rig)return null; return loadDragonRig(rig); },
+  lobby:()=>lobby.snapshot(),
+  selectLobby:(mode,opts={})=>{ lobby.select(mode,opts); return lobby.snapshot(); },
+  returnLobby:()=>{ returnToHub('sim'); return lobby.snapshot(); },
+  regionLandmarks:()=>({filter:landmarkPath.regionFilter, active:landmarkPath.getSnapshot().active,
+    profiles:landmarkPath.getSnapshot().regionProfiles}),
+  regionLandmarkProof:()=>{
+    const probes=[
+      {id:'wake_cove', pos:[128,80,263]},
+      {id:'serpent_reach', pos:[545,80,-305]},
+      {id:'rib_wastes', pos:[67,80,-673]}
+    ];
+    const out={};
+    for(const probe of probes){
+      const region=structure?.getRegion(probe.id);
+      if(region) landmarkPath.setRegionFilter(region.id, region.allowedLandmarkArchetypes, region.allowedLandmarkIds);
+      D.group.position.set(...probe.pos);
+      landmarkPath.update(D.group.position);
+      tick(1/60);
+      const snap=landmarkPath.getSnapshot();
+      out[probe.id]={
+        regionFilter:snap.regionFilter,
+        expectedArchetypes:region?.allowedLandmarkArchetypes??[],
+        expectedIds:region?.allowedLandmarkIds??[],
+        profileSites:snap.regionProfiles?.find(p=>p.regionId===probe.id)?.sites??[],
+        visible:landmarkPath.route.filter(e=>e.object?.visible).map(e=>({id:e.id,archetype:e.archetype})),
+        activeArchetypes:snap.activeRegionArchetypes
+      };
+    }
+    return out;
+  },
   strike:()=>{ const p=D.group.position; S.strikeX=p.x; S.strikeZ=p.z; S.strikeT=0.04; },   // force a bolt on us (test)
   uptime:()=>({loopLagMs:+(performance.now()-loopAlive).toFixed(1), bootErrors:bootErrors.slice(), alive:performance.now()-loopAlive<250}),
   bootErrors:()=>bootErrors.slice(),

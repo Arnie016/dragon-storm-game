@@ -82,6 +82,41 @@ try {
     steps: loseDet.steps
   };
 
+  // Scenario 5: dragon rig default
+  const rig = await browser.cdp.eval('return SIM.rig();');
+  results.scenarios.rigPicker = {
+    pass: rig?.id === 'stormcrest',
+    ...rig
+  };
+
+  // Scenario 6: lobby return
+  const lobby = await browser.cdp.eval(`
+    SIM.returnLobby();
+    return { lobby: SIM.lobby(), hubVisible: !document.getElementById('lobbyHub').classList.contains('hide') };
+  `);
+  results.scenarios.lobbyReturn = {
+    pass: lobby.hubVisible === true,
+    ...lobby
+  };
+
+  // Scenario 7: region landmark filter after chapter jump
+  const regionLm = await browser.cdp.eval(`
+    SIM.jumpBeacon(6);
+    return SIM.regionLandmarks();
+  `);
+  results.scenarios.regionFilter = {
+    pass: !!regionLm.filter,
+    ...regionLm
+  };
+
+  // Scenario 8: sky island draw calls
+  const expansion = await browser.cdp.eval('return SIM.expansion();');
+  results.scenarios.skyIslands = {
+    pass: expansion?.horizon?.drawCalls === 2,
+    drawCalls: expansion?.horizon?.drawCalls,
+    islandInstances: expansion?.horizon?.islandInstances
+  };
+
   results.loadAfter = loadSnapshot();
   results.consoleProblems = browser.problems.slice(0, 10);
   writeJson(OUT, results);

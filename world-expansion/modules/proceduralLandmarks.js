@@ -836,6 +836,38 @@ export const LANDMARK_SITES = Object.freeze([
   { id: 'aurora-crown', archetype: 'seagate', position: [-253, 6, 815], yaw: -0.7, scale: 1.18, palette: palette(0x3f6664, 0x6c9490, 0x7dffc8), seed: 3077 }
 ]);
 
+/** Filter sites by region.json allowedLandmarkIds / allowedLandmarkArchetypes. */
+export function filterLandmarkSites(sites, filter = {}) {
+  let out = sites;
+  if (filter.allowedLandmarkIds?.length) {
+    out = out.filter((site) => filter.allowedLandmarkIds.includes(site.id));
+  }
+  if (filter.allowedLandmarkArchetypes?.length) {
+    out = out.filter((site) => filter.allowedLandmarkArchetypes.includes(site.archetype));
+  }
+  return out;
+}
+
+/** Landmarks assigned to a region via allowedLandmarkIds (authoritative over archetype list). */
+export function landmarksForRegion(region, sites = LANDMARK_SITES) {
+  if (!region) return [];
+  return filterLandmarkSites(sites, {
+    allowedLandmarkIds: region.allowedLandmarkIds,
+    allowedLandmarkArchetypes: region.allowedLandmarkArchetypes
+  });
+}
+
+/** Proof payload: distinct archetypes per named region. */
+export function regionLandmarkProfiles(regions = []) {
+  return regions.map((region) => ({
+    regionId: region.id,
+    name: region.name,
+    allowedLandmarkIds: region.allowedLandmarkIds ?? [],
+    allowedLandmarkArchetypes: region.allowedLandmarkArchetypes ?? [],
+    sites: landmarksForRegion(region).map((site) => ({ id: site.id, archetype: site.archetype }))
+  }));
+}
+
 export function specFor(site) {
   const defaults = ARCHETYPES[site.archetype].defaults;
   const spec = {};

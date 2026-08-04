@@ -6,6 +6,7 @@
  * driveMissions() currently writes $('objText').
  */
 import { ChapterDirector } from './chapterDirector.js';
+import { regionLandmarkProfiles as buildRegionLandmarkProfiles } from './proceduralLandmarks.js';
 
 let _director = null;
 let _regions = null;
@@ -55,12 +56,31 @@ export async function init(S, D, landmarkPath, options = {}) {
     onRegionEnter(region, meta, snap) {
       S._regionId = region.id;
       if (options.horizonDirector) _director.applySkyPreset(options.horizonDirector, region.id);
-      options.onRegionStory?.(region, meta, snap);
+      if (landmarkPath?.setRegionFilter) {
+        landmarkPath.setRegionFilter(
+          region.id,
+          region.allowedLandmarkArchetypes ?? [],
+          region.allowedLandmarkIds ?? []
+        );
+      }
+      if (meta?.firstVisit !== false) options.onRegionStory?.(region, meta, snap);
     }
   });
 
   if (options.horizonDirector && _director.regionId) {
     _director.applySkyPreset(options.horizonDirector, _director.regionId);
+  }
+
+  if (landmarkPath) {
+    landmarkPath.regionProfiles = buildRegionLandmarkProfiles(_regions?.regions ?? []);
+    const bootRegion = _regions?.regions?.find((r) => r.id === _director.regionId);
+    if (bootRegion) {
+      landmarkPath.setRegionFilter(
+        bootRegion.id,
+        bootRegion.allowedLandmarkArchetypes ?? [],
+        bootRegion.allowedLandmarkIds ?? []
+      );
+    }
   }
 
   return createRuntime(S, D, landmarkPath, options);
@@ -135,10 +155,19 @@ function createRuntime(S, D, landmarkPath, options) {
       return _regions?.regions?.find((r) => r.id === id) ?? null;
     },
 
-    /** Landmark ids permitted in the active region (for future spawn filtering). */
+    /** Landmark ids permitted in the active region (for spawn / visibility filtering). */
     allowedLandmarksForRegion(regionId = _director?.regionId) {
       const region = _regions?.regions?.find((r) => r.id === regionId);
       return region?.allowedLandmarkIds ?? [];
+    },
+
+    allowedArchetypesForRegion(regionId = _director?.regionId) {
+      const region = _regions?.regions?.find((r) => r.id === regionId);
+      return region?.allowedLandmarkArchetypes ?? [];
+    },
+
+    regionLandmarkProfiles() {
+      return buildRegionLandmarkProfiles(_regions?.regions ?? []);
     },
 
     /** Structure proportion reference from data. */

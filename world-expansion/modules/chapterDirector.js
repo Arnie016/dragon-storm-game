@@ -108,9 +108,12 @@ export class ChapterDirector {
   enterRegion(regionId, meta = {}) {
     if (!this.regionById[regionId]) return;
     const firstVisit = !this.seenRegions.has(regionId);
+    const changed = this.regionId !== regionId;
     this.regionId = regionId;
     this.seenRegions.add(regionId);
-    if (firstVisit) this.callbacks.onRegionEnter?.(this.regionById[regionId], meta, this.snapshot());
+    if (changed || firstVisit) {
+      this.callbacks.onRegionEnter?.(this.regionById[regionId], { ...meta, firstVisit }, this.snapshot());
+    }
   }
 
   /**
@@ -255,7 +258,11 @@ export class ChapterDirector {
     if (preset.fogDensity != null) horizonDirector.fogDensity = preset.fogDensity;
     if (preset.horizonNear != null) horizonDirector.near = preset.horizonNear;
     if (preset.horizonFar != null) horizonDirector.far = preset.horizonFar;
-    horizonDirector._skyPreset = preset;
+    if (typeof horizonDirector.applySkyPreset === 'function') {
+      horizonDirector.applySkyPreset(preset);
+    } else {
+      horizonDirector._skyPreset = preset;
+    }
   }
 
   snapshot() {

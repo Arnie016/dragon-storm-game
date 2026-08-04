@@ -1,33 +1,33 @@
 {
-  "startedAt": "2026-08-04T19:05:09.080Z",
+  "startedAt": "2026-08-04T19:29:00.701Z",
   "loadBefore": {
-    "uptime": "3:05  up 1 day,  6:34, 1 user, load averages: 11.66 14.01 14.42",
+    "uptime": "3:28  up 1 day,  6:58, 1 user, load averages: 16.17 22.21 17.54",
     "loadAverage": [
-      11.66,
-      14.01,
-      14.42
+      16.17,
+      22.21,
+      17.54
     ]
   },
   "scenarios": {
     "idle65s": {
       "pass": true,
       "uptime": {
-        "loopLagMs": 2,
+        "loopLagMs": 1.2,
         "bootErrors": [],
         "alive": true
       },
       "state": {
-        "t": 65.8,
-        "flightT": 64.9,
+        "t": 65,
+        "flightT": 63.7,
         "started": true,
         "done": false,
         "det": 0,
         "score": 2,
         "spd": 62,
         "pos": [
-          -2017.6,
-          103.1,
-          3298.9
+          -2997.2,
+          130.9,
+          2257.1
         ],
         "fpv": false,
         "chapter": 1,
@@ -37,7 +37,7 @@
         "scales": 0,
         "hp": 100,
         "hpMax": 100,
-        "day": 0.513,
+        "day": 0.511,
         "finishing": false,
         "charges": 3,
         "chargeT": -1,
@@ -48,8 +48,8 @@
       "frameStats": {
         "samples": 900,
         "p50": 8.3,
-        "p95": 9.3,
-        "p99": 9.4
+        "p95": 8.7,
+        "p99": 9.3
       },
       "cameraShake": 0.35
     },
@@ -66,11 +66,11 @@
         "regionName": "Serpent Reach",
         "objectiveText": "III · Serpent Run — beacons 6/8 · dive and flock",
         "goalText": "Thread three canyon gates and reach beacon eight",
-        "distanceM": 4543.68003124334,
+        "distanceM": 4451.096898507877,
         "distanceLabel": "Next beacon",
-        "distanceText": "4544 m",
-        "heightAboveWater": 104.01413617383031,
-        "heightText": "104 m AGL",
+        "distanceText": "4451 m",
+        "heightAboveWater": 130.4806209794432,
+        "heightText": "130 m AGL",
         "subHints": [
           "Thread canyon gates for cover",
           "Climb over harbor works — collect altitude"
@@ -104,11 +104,11 @@
           "regionName": "Serpent Reach",
           "objectiveText": "III · Serpent Run — beacons 6/8 · dive and flock",
           "goalText": "Thread three canyon gates and reach beacon eight",
-          "distanceM": 4543.68003124334,
+          "distanceM": 4451.096898507877,
           "distanceLabel": "Next beacon",
-          "distanceText": "4544 m",
-          "heightAboveWater": 104.01413617383031,
-          "heightText": "104 m AGL",
+          "distanceText": "4451 m",
+          "heightAboveWater": 130.4806209794432,
+          "heightText": "130 m AGL",
           "subHints": [
             "Thread canyon gates for cover",
             "Climb over harbor works — collect altitude"
@@ -121,8 +121,8 @@
         }
       },
       "state": {
-        "t": 65.8,
-        "flightT": 64.9,
+        "t": 65,
+        "flightT": 63.7,
         "started": true,
         "done": false,
         "det": 0,
@@ -141,7 +141,7 @@
         "scales": 0,
         "hp": 100,
         "hpMax": 100,
-        "day": 0.513,
+        "day": 0.511,
         "finishing": false,
         "charges": 3,
         "chargeT": -1,
@@ -153,15 +153,15 @@
       "pass": true,
       "hp": 100,
       "pos": [
-        -133.2,
-        173.1,
-        -27.6
+        -134.3,
+        172.5,
+        -41.4
       ],
       "frameStats": {
         "samples": 900,
         "p50": 8.3,
-        "p95": 9.3,
-        "p99": 9.4
+        "p95": 8.7,
+        "p99": 9.3
       }
     },
     "winRoute": {
@@ -174,21 +174,174 @@
     "loseDetection": {
       "pass": false,
       "cause": "",
-      "steps": 120
+      "steps": 480
+    },
+    "rigPicker": {
+      "pass": true,
+      "id": "stormcrest",
+      "loreName": "Stormcrest",
+      "probed": {
+        "quaternius": true
+      }
+    },
+    "lobbyReturn": {
+      "pass": true,
+      "lobby": {
+        "mode": null,
+        "chapterPick": 0,
+        "visible": true
+      },
+      "hubVisible": true
+    },
+    "regionFilter": {
+      "pass": true,
+      "filter": "wake_cove",
+      "active": [
+        "wake-arch",
+        "tide-viaduct",
+        "storm-spire",
+        "keeper-arcade",
+        "drowned-gate"
+      ],
+      "profiles": [
+        {
+          "regionId": "wake_cove",
+          "name": "Wake Cove",
+          "allowedLandmarkIds": [
+            "wake-arch",
+            "tide-viaduct"
+          ],
+          "allowedLandmarkArchetypes": [
+            "viaduct"
+          ],
+          "sites": [
+            {
+              "id": "tide-viaduct",
+              "archetype": "viaduct"
+            }
+          ]
+        },
+        {
+          "regionId": "keeper_shallows",
+          "name": "Keeper Shallows",
+          "allowedLandmarkIds": [
+            "storm-spire",
+            "keeper-arcade",
+            "drowned-gate"
+          ],
+          "allowedLandmarkArchetypes": [
+            "viaduct",
+            "beacon",
+            "seagate"
+          ],
+          "sites": [
+            {
+              "id": "storm-spire",
+              "archetype": "beacon"
+            },
+            {
+              "id": "keeper-arcade",
+              "archetype": "viaduct"
+            },
+            {
+              "id": "drowned-gate",
+              "archetype": "seagate"
+            }
+          ]
+        },
+        {
+          "regionId": "serpent_reach",
+          "name": "Serpent Reach",
+          "allowedLandmarkIds": [
+            "cinder-harbor",
+            "salt-arcade"
+          ],
+          "allowedLandmarkArchetypes": [
+            "harbor",
+            "viaduct",
+            "seagate"
+          ],
+          "sites": [
+            {
+              "id": "cinder-harbor",
+              "archetype": "harbor"
+            },
+            {
+              "id": "salt-arcade",
+              "archetype": "viaduct"
+            }
+          ]
+        },
+        {
+          "regionId": "rib_wastes",
+          "name": "Rib Wastes",
+          "allowedLandmarkIds": [
+            "bone-sentinel",
+            "gale-spire",
+            "keeper-works"
+          ],
+          "allowedLandmarkArchetypes": [
+            "ribhall",
+            "beacon",
+            "harbor"
+          ],
+          "sites": [
+            {
+              "id": "bone-sentinel",
+              "archetype": "ribhall"
+            },
+            {
+              "id": "gale-spire",
+              "archetype": "beacon"
+            },
+            {
+              "id": "keeper-works",
+              "archetype": "harbor"
+            }
+          ]
+        },
+        {
+          "regionId": "aurora_gate",
+          "name": "Aurora Gate",
+          "allowedLandmarkIds": [
+            "rib-vault",
+            "aurora-crown"
+          ],
+          "allowedLandmarkArchetypes": [
+            "seagate",
+            "ribhall"
+          ],
+          "sites": [
+            {
+              "id": "rib-vault",
+              "archetype": "ribhall"
+            },
+            {
+              "id": "aurora-crown",
+              "archetype": "seagate"
+            }
+          ]
+        }
+      ]
+    },
+    "skyIslands": {
+      "pass": true,
+      "drawCalls": 2,
+      "islandInstances": 10
     }
   },
   "landmark": {
     "ok": true,
     "sites": 12,
-    "buildMs": 52.1,
+    "buildMs": 92.5,
     "bootErrors": []
   },
   "loadAfter": {
-    "uptime": "3:06  up 1 day,  6:35, 1 user, load averages: 9.25 12.86 13.96",
+    "uptime": "3:30  up 1 day,  6:59, 1 user, load averages: 16.27 21.34 17.60",
     "loadAverage": [
-      9.25,
-      12.86,
-      13.96
+      16.27,
+      21.34,
+      17.6
     ]
   },
   "consoleProblems": []
