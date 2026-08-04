@@ -50,10 +50,12 @@ export async function init(S, D, landmarkPath, options = {}) {
       S.chapter = chapter.index;
       S._chapterId = chapter.id;
       S._regionId = snap.regionId;
+      options.onChapterStory?.(chapter, snap);
     },
-    onRegionEnter(region) {
+    onRegionEnter(region, meta, snap) {
       S._regionId = region.id;
       if (options.horizonDirector) _director.applySkyPreset(options.horizonDirector, region.id);
+      options.onRegionStory?.(region, meta, snap);
     }
   });
 

@@ -532,6 +532,7 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { CinematicDofPipeline } from './world-expansion/modules/cinematicDof.js';
 import { HorizonDirector } from './world-expansion/modules/horizonDirector.js';
 import { LandmarkPath } from './world-expansion/modules/landmarkPath.js';
+import { gameStructure } from './world-expansion/modules/gameStructure.js';
 
 const $ = id => document.getElementById(id);
 const bootErrors=[];
@@ -908,16 +909,7 @@ const skullRock=rock(-560,-380,30,26);                          // where the hea
 for(let i=0;i<9;i++){ const a=i/9*6.283, r=150;
   rock(Math.cos(a)*r, 780+Math.sin(a)*r*0.7, 16+(i%3)*5, 60+(i%4)*22); }
 crystal(0,780,44); crystal(-60,820,30); crystal(55,830,34);
-// implicit story: quiet lines when you first cross into each place — no instructions
-const REGIONS=[
-  {x:490,z:-450,r:130,seen:false,line:'Char on the water. Four hearths — and only one was spared.'},
-  {x:-420,z:-400,r:170,seen:false,line:'Ribs like sea-stacks. Whatever hunted the keepers\' fathers... it was real.'},
-  {x:0,z:780,r:200,seen:false,line:'The stacks close ranks behind you. The aurora pours in like a tide. Home?'},
-  {x:530,z:-425,r:40,seen:false,line:'A torch still burns in the standing house. Someone feeds it.'},
-];
-function driveRegions(){ const p=D.group.position;
-  for(const rg of REGIONS){ if(rg.seen) continue;
-    if(Math.hypot(p.x-rg.x,p.z-rg.z)<rg.r){ rg.seen=true; storyPop(rg.line,6); AU.play('ring',0.35); } } }
+// implicit story: region ambient lines come from regions.json via chapter director
 
 /* ---- SERPENT CANYON: a weaving slot of sheer cliffs you can almost kiss at full speed ----
    runs along the beacon 4->6 stretch; gates reward threading it */
@@ -1091,13 +1083,31 @@ const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
 // Landmarks are generated in code (see proceduralLandmarks.js). Palettes are baked into
 // vertex colours, so the whole feature runs on two materials and nightfall is two
 // uniform writes per frame instead of a loop over sixteen cloned materials.
+let structure=null;
+function nextObjectiveTarget(){
+  const nb=S.chapter===0
+    ? tutRings.find(r=>!r.userData.hit)
+    : rings.find(r=>!r.userData.hit);
+  return nb?.position??null;
+}
 const landmarkPath=new LandmarkPath(scene,{flightRoute:route});
 const landmarkReady=landmarkPath.build();
-landmarkReady.then(()=>{
+landmarkReady.then(async ()=>{
   for(const c of landmarkPath.getCollisionProxies()) colliders.push({x:c.x,z:c.z,r:c.radius,top:c.top,landmark:c.id});
   landmarkPath.setCollisionAuthority(true);
+  structure=await gameStructure.init(S,D,landmarkPath,{
+    horizonDirector,
+    getDayAmount:()=>TOD.day,
+    getHeightAboveWater:(pos)=>pos.y-waveH(pos.x,pos.z,S.t),
+    getObjectiveTarget:nextObjectiveTarget,
+    getTowersDestroyed:()=>searchlights.filter(s=>s.disabled>0).length,
+    onChapterStory:(chapter)=>{ if(chapter.popupOnEnter) popup(chapter.popupOnEnter); if(chapter.storyLine) storyPop(chapter.storyLine,5.5); },
+    onRegionStory:(region)=>{ if(region.ambientLine){ storyPop(region.ambientLine,6); AU.play('ring',0.35); } },
+  });
 }).catch(err=>{
   surfaceBootError('landmark build failed', err?.message||err);
+  $('objText').textContent='LANDMARK GEOMETRY FAILED TO BUILD — '+(err&&err.message||err);
+  $('wakehint').textContent='LANDMARK BUILD FAILED';
   $('startBtn').disabled=true;
 });
 const rigChoice=new URLSearchParams(location.search).get('rig');
@@ -1614,24 +1624,14 @@ function driveTutorial(dt){
       popup(left? 'GOOD · '+left+' MORE' : 'YOU CAN FLY');
     } }
   if(tutRings.every(t=>t.userData.hit) && !S.tutDone){
-    S.tutDone=true; S.chapter=1;
+    S.tutDone=true;
+    structure?.director?.enterChapter(1);
     achievement('First Flight','the cove is behind you — the beacon road waits','CHAPTER II');
     storyPop('She answers you now. Out past the stacks, the keepers are lighting their lamps.',6);
     for(const r of rings) r.visible=true;
   }
 }
-const CHAPTERS=[
-  {at:0,n:1,title:'LEARN TO FLY',line:'Three rings. Learn her weight before the open water.'},
-  {at:1,n:2,title:'HOME WATERS',line:'Echo through the rain. The first lights are still slow.'},
-  {at:4,n:3,title:'SERPENT RUN',line:'The canyon tightens. Dive, pull out, and break their lock.'},
-  {at:8,n:4,title:'THE LONG NIGHT',line:'No more shelter. The keepers turn faster now.'},
-  {at:11,n:5,title:'TEMPEST GATE',line:'One beacon remains. Reach the aurora before nightfall.'},
-];
-function advanceChapter(){
-  const next=[...CHAPTERS].reverse().find(c=>S.score>=c.at);
-  if(next && next.n>S.chapter){ S.chapter=next.n; storyPop(next.line,5.5); popup('CHAPTER '+next.n+' · '+next.title); }
-}
-function driveMissions(){
+function driveMissionsFallback(){
   if(S.chapter===0){ $('objText').textContent=`I · learn to fly — rings ${tutRings.filter(r=>r.userData.hit).length}/3`; return; }
   if(S.score<4) $('objText').textContent=`II · home waters — beacons ${S.score}/4 · echo at 1`;
   else if(S.score<8) $('objText').textContent=`III · Serpent Run — beacons ${S.score}/8 · dive and flock`;
@@ -2209,7 +2209,12 @@ function tick(dt){
       AU.play('ring',0.6); shockwave(gm.position,0x2fd6a0); popup('GATE '+gateCount+' / 3');
       S.scales+=gateCount===3?2:1;
       S.detection=Math.max(0,S.detection-0.15); } }                       // the canyon hides you
-  driveTutorial(dt); driveMissions(); driveRegions(); checkSkillUnlocks();
+  driveTutorial(dt);
+  if(structure){
+    const hud=structure.tick({tutorialDone:tutRings.filter(r=>r.userData.hit).length});
+    structure.applyHud(hud);
+  } else driveMissionsFallback();
+  checkSkillUnlocks();
 
   /* ---- water splash when skimming ---- */
   S.splashT=(S.splashT||0)-dt;
@@ -2236,7 +2241,7 @@ function tick(dt){
       popup((clean?'CLEAN ':'')+'BEACON '+S.score+' / '+rings.length+' · +'+earned+' SCALES');
       S.scales=(S.scales||0)+earned; S.detection=Math.max(0,S.detection-.12);
       S.flash=Math.max(S.flash,0.2);
-      advanceChapter();
+      structure?.director?.syncChapterFromProgress(S.score,S.tutDone);
       if(S.score===rings.length) escaped();
     }
   }
@@ -2420,7 +2425,7 @@ function reset(){
   if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; } S._chargeReady=false;
   for(const gm of gates){ gm.userData.hit=false; gm.material.emissiveIntensity=2.2; }
   S.grazeT=0; S.splashT=0; S.hp=S.hpMax; S.hurt=0;
-  for(const rg of REGIONS) rg.seen=false;
+  structure?.reset();
   S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.stormbreakFired=false;
   S.spiral=0; S.spiralFired=false; S.spiralMax=false; S.lift=0; S.beatCd=0; S.poison=0;
   S.bookLost=false; S.violence=0; S.violenceWarned=false; S.bookOpen=false; $('book').classList.remove('on');
@@ -2591,6 +2596,122 @@ addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.upd
   cinematicDof.setSize(renderer.domElement.width,renderer.domElement.height); });
 
 /* ---- debug hooks ---- */
+const SIM_KEYS={climb:'ArrowUp',dive:'ArrowDown',bankL:'KeyA',bankR:'KeyD',turnL:'ArrowLeft',turnR:'ArrowRight',
+  accel:'KeyW',brake:'KeyS',lookL:'KeyQ',lookR:'KeyE'};
+function simClearControls(){ for(const c of Object.values(SIM_KEYS)) key[c]=false; input.flap=false; }
+function simSetControls(spec={}){
+  if(spec.allOff) simClearControls();
+  if(spec.climb!=null) key[SIM_KEYS.climb]=!!spec.climb;
+  if(spec.dive!=null) key[SIM_KEYS.dive]=!!spec.dive;
+  if(spec.bankLeft!=null) key[SIM_KEYS.bankL]=!!spec.bankLeft;
+  if(spec.bankRight!=null) key[SIM_KEYS.bankR]=!!spec.bankRight;
+  if(spec.turnLeft!=null) key[SIM_KEYS.turnL]=!!spec.turnLeft;
+  if(spec.turnRight!=null) key[SIM_KEYS.turnR]=!!spec.turnRight;
+  if(spec.accel!=null) key[SIM_KEYS.accel]=!!spec.accel;
+  if(spec.brake!=null) key[SIM_KEYS.brake]=!!spec.brake;
+  if(spec.flap!=null) input.flap=!!spec.flap;
+}
+function simHeadingTo(x,y,z){
+  const p=D.group.position, dx=x-p.x, dz=z-p.z;
+  return Math.atan2(-dx,-dz);
+}
+function simJumpBeacon(n, opts={}){
+  const score=THREE.MathUtils.clamp(Math.floor(n),0,rings.length);
+  const flyIndex=Math.min(score, rings.length-1);
+  if(opts.setupRun!==false){
+    S.started=true; S.done=false; S.tutDone=true; S.launching=false; S.grace=3;
+    menuEl.classList.add('hide','live'); $('hud').classList.add('on'); $('over').classList.add('hide');
+    for(const r of tutRings) r.userData.hit=true;
+    for(const r of rings) r.visible=true;
+    S.score=score;
+    for(let j=0;j<rings.length;j++){
+      rings[j].userData.hit=j<score;
+      rings[j].material=j<score?ringDone:ringBase.clone();
+    }
+    structure?.director?.syncChapterFromProgress(S.score,true);
+    const hud=structure?.tick({tutorialDone:3});
+    if(hud) structure.applyHud(hud);
+  }
+  const [x,y,z]=route[flyIndex];
+  D.group.position.set(x,y+(opts.yOffset??40),z);
+  if(opts.yaw!=null) D.yaw=opts.yaw;
+  else { const nxt=route[(flyIndex+1)%route.length]; D.yaw=simHeadingTo(nxt[0],nxt[1],nxt[2]); }
+  D.pitch=opts.pitch??0; D.roll=0; D.speed=opts.speed??32; S.prevSpeed=D.speed;
+  return {beacon:flyIndex+1,score,hudScore:S.score,position:[x,y,z],yaw:+D.yaw.toFixed(3),objective:$('objText')?.textContent||''};
+}
+function simJumpChapter(n){
+  const chapter=THREE.MathUtils.clamp(Math.floor(n),0,5);
+  S.started=true; S.done=false; S.launching=false; S.grace=3;
+  menuEl.classList.add('hide','live'); $('hud').classList.add('on'); $('over').classList.add('hide');
+  if(chapter===0){
+    S.chapter=0; S.tutDone=false; S.score=0;
+    for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; r.visible=true; }
+    for(const r of rings){ r.visible=false; r.userData.hit=false; }
+    D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=2.83;
+  } else {
+    S.chapter=chapter; S.tutDone=true;
+    for(const r of tutRings) r.userData.hit=true;
+    for(const r of rings){ r.visible=true; r.userData.hit=false; r.material=ringBase.clone(); }
+    const target=Math.min((chapter===1?0:chapter===2?3:chapter===3?7:chapter===4?10:11), rings.length-1);
+    S.score=target;
+    for(let j=0;j<target;j++){ rings[j].userData.hit=true; rings[j].material=ringDone; }
+    simJumpBeacon(target+1,{speed:34,setupRun:false});
+    structure?.director?.syncChapterFromProgress(S.score,true);
+    const hud=structure?.tick({tutorialDone:3});
+    if(hud) structure.applyHud(hud);
+  }
+  return SIM.state();
+}
+function simJumpState(patch={}){
+  if(patch.started!=null) S.started=!!patch.started;
+  if(patch.done!=null) S.done=!!patch.done;
+  if(patch.chapter!=null) S.chapter=patch.chapter;
+  if(patch.score!=null){
+    S.score=THREE.MathUtils.clamp(patch.score,0,rings.length);
+    for(let i=0;i<rings.length;i++){ rings[i].userData.hit=i<S.score; rings[i].material=(i<S.score?ringDone:ringBase.clone()); }
+    rings.forEach(r=>r.visible=S.tutDone||S.chapter>0);
+  }
+  if(patch.detection!=null) S.detection=THREE.MathUtils.clamp(patch.detection,0,1);
+  if(patch.day!=null){ TOD.day=THREE.MathUtils.clamp(patch.day,0,1); uDay.value=TOD.day; }
+  if(patch.hp!=null) S.hp=THREE.MathUtils.clamp(patch.hp,0,S.hpMax);
+  if(patch.pos) D.group.position.fromArray(patch.pos);
+  if(patch.yaw!=null) D.yaw=patch.yaw;
+  if(patch.speed!=null){ D.speed=patch.speed; S.prevSpeed=patch.speed; }
+  return SIM.state();
+}
+async function simRunSteps({dt=1/60, steps=1, controls=null, reseat=null}={}){
+  if(controls) simSetControls(controls);
+  if(reseat) reseat();
+  for(let i=0;i<steps;i++){ tick(dt); render(dt); }
+  return SIM.snapshot();
+}
+async function simRunUntil(checkFn, {dt=1/60, maxSteps=7200, controls=null, reseat=null, sampleEvery=30}={}){
+  const started=performance.now(), samples=[];
+  if(controls) simSetControls(controls);
+  for(let step=0; step<maxSteps; step++){
+    if(reseat && step>0 && step%180===0) reseat();
+    tick(dt); render(dt);
+    if(step%sampleEvery===0) samples.push({step, ...SIM.state(), motion:SIM.motion()});
+    const verdict=checkFn(SIM.state(), step);
+    if(verdict) return SIM.snapshot({scenario:'runUntil', verdict, steps:step+1, elapsedMs:Math.round(performance.now()-started), samples});
+  }
+  return SIM.snapshot({scenario:'runUntil', verdict:'timeout', steps:maxSteps, elapsedMs:Math.round(performance.now()-started), samples});
+}
+function simSnapshot(extra={}){
+  return {
+    ts:new Date().toISOString(),
+    uptimeSec:+(S.t.toFixed(2)),
+    loopLagMs:+(performance.now()-loopAlive).toFixed(1),
+    bootErrors:bootErrors.slice(),
+    frameStats:SIM.frameStats(),
+    state:SIM.state(),
+    motion:SIM.motion(),
+    expansion:SIM.expansion(),
+    renderInfo:SIM.renderInfo?.()??null,
+    cameraShake:{intensity:CAM_SHAKE.intensity, jerk:+CAM.jerk.value.toFixed(4)},
+    ...extra
+  };
+}
 window.SIM={
   state:()=>({t:+S.t.toFixed(1),flightT:+S.flightT.toFixed(1),started:S.started,done:S.done,det:+S.detection.toFixed(2),score:S.score,
     spd:+D.speed.toFixed(1),pos:D.group.position.toArray().map(v=>+v.toFixed(1)),fpv:S.fpv,
@@ -2601,6 +2722,18 @@ window.SIM={
   start:()=>{ startAudio(); S.started=true; S.grace=3; menuEl.classList.add('hide','live');
     $('hud').classList.add('on'); },
   reset, setFpv:v=>{S.fpv=!!v}, key:(c,v)=>{key[c]=!!v}, shoot, begin,
+  controls:simSetControls, clearControls:simClearControls,
+  jumpBeacon:simJumpBeacon, jumpChapter:simJumpChapter, jumpState:simJumpState,
+  runSteps:simRunSteps, runUntil:simRunUntil, snapshot:simSnapshot,
+  route:()=>route.map((p,i)=>({beacon:i+1,x:p[0],y:p[1],z:p[2]})),
+  win:()=>{ simJumpState({started:true,done:false,chapter:5,score:11,detection:0,day:0.2});
+    simJumpBeacon(12,{speed:36}); return simRunUntil(s=>s.score>=12||s.done,{controls:{accel:true},maxSteps:2400}); },
+  loseDetection:()=>{ simJumpState({started:true,done:false,chapter:2,score:2,detection:0.95,day:0.3});
+    return simRunUntil(s=>s.done,{controls:{accel:true},maxSteps:120}); },
+  loseNightfall:()=>{ simJumpState({started:true,done:false,chapter:4,score:6,detection:0,day:0.98});
+    return simRunUntil(s=>s.done,{controls:{accel:true},maxSteps:600}); },
+  triggerDetected:()=>{ detected(); return SIM.state(); },
+  triggerNightfallLoss:()=>{ TOD.day=1; uDay.value=1; S.keepersWoke=false; driveTimeOfDay(0); return SIM.state(); },
   teleport:(x,y,z,yaw)=>{ D.group.position.set(x,y,z); if(yaw!=null)D.yaw=yaw; },
   warp:(dt,steps=60)=>{ for(let i=0;i<steps;i++) tick(dt); render(); },
   capturePose:name=>{ const poses={
@@ -2681,6 +2814,8 @@ window.SIM={
   setDof:v=>{cinematicDof.enabled=!!v;},
   pause:v=>{S.done=!!v;},
   landmarkReady,
+  chapterHud:()=>structure?.director?.lastHud??null,
+  structureSnapshot:()=>structure?.snapshot()??null,
   strike:()=>{ const p=D.group.position; S.strikeX=p.x; S.strikeZ=p.z; S.strikeT=0.04; },   // force a bolt on us (test)
   uptime:()=>({loopLagMs:+(performance.now()-loopAlive).toFixed(1), bootErrors:bootErrors.slice(), alive:performance.now()-loopAlive<250}),
   bootErrors:()=>bootErrors.slice(),

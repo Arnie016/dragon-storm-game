@@ -1,11 +1,7 @@
 # Chapter Director Integration Status
 
 **Date:** 2026-08-05  
-**Status:** **DEFERRED** — playability agent still running (no `turn_ended` in transcript `9893f02e-1be8-42d6-86f3-367dca13e0d2`).
-
-## Why deferred
-
-The playability agent is actively editing `index.html` and `world-expansion/modules/landmarkPath.js` (load stability, camera shake, SIM harness). Wiring `gameStructure` into `index.html` now would conflict. Integration resumes after that agent finishes or coordinates a handoff.
+**Status:** **INTEGRATED** — playability foundation complete; chapter director wired in `index.html`.
 
 ## HUD preview verification
 
@@ -19,7 +15,15 @@ The playability agent is actively editing `index.html` and `world-expansion/modu
 
 Open: http://localhost:8000/reports/chapter-design/hud-preview.html — renders all five chapter HUD cards from JSON (JS fetch at runtime).
 
-## Live game integration (pending)
+## Live game integration (complete)
+
+Verified 2026-08-05 via CDP (`SIM.jumpBeacon(6)`):
+
+| Check | Result |
+|---|---|
+| `#objText` @ beacon 6 | `III · Serpent Run — beacons 6/8 · dive and flock` |
+| `SIM.chapterHud().chapterRoman` | `III` |
+| `SIM.chapterHud().regionId` | `serpent_reach` |
 
 ### 1. Import and init
 
