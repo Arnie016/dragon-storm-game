@@ -530,7 +530,16 @@ import { HorizonDirector } from './world-expansion/modules/horizonDirector.js';
 import { LandmarkPath } from './world-expansion/modules/landmarkPath.js';
 
 const $ = id => document.getElementById(id);
-addEventListener('error', e => { $('objTag').innerHTML = 'ERR: ' + e.message; });
+const bootErrors=[];
+function surfaceBootError(kind, detail){
+  const msg=`${kind}: ${detail}`;
+  bootErrors.push({t:performance.now(), kind, detail:String(detail)});
+  console.error('[Galevein boot]', kind, detail);
+  $('objText').textContent=msg.slice(0,120);
+  $('wakehint').textContent=kind.toUpperCase();
+}
+addEventListener('error', e => surfaceBootError('runtime error', e.message||e.error));
+addEventListener('unhandledrejection', e => { surfaceBootError('unhandled rejection', e.reason?.message||e.reason); e.preventDefault?.(); });
 
 /* ============================ AUDIO ============================ */
 const AU = {
@@ -562,6 +571,11 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.35;
 document.body.appendChild(renderer.domElement);
+renderer.domElement.addEventListener('webglcontextlost', e => {
+  e.preventDefault();
+  surfaceBootError('webgl context lost', 'WebGL context lost — reload the page');
+});
+renderer.domElement.addEventListener('webglcontextrestored', () => location.reload());
 
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x0a0a1a, 0.00068);
@@ -1079,10 +1093,7 @@ landmarkReady.then(()=>{
   for(const c of landmarkPath.getCollisionProxies()) colliders.push({x:c.x,z:c.z,r:c.radius,top:c.top,landmark:c.id});
   landmarkPath.setCollisionAuthority(true);
 }).catch(err=>{
-  // Loud on purpose: a landmark build failure must never look like an art problem.
-  console.error('LANDMARK GEOMETRY BUILD FAILED',err);
-  $('objText').textContent='LANDMARK GEOMETRY FAILED TO BUILD — '+(err&&err.message||err);
-  $('wakehint').textContent='LANDMARK BUILD FAILED';
+  surfaceBootError('landmark build failed', err?.message||err);
   $('startBtn').disabled=true;
 });
 const rigChoice=new URLSearchParams(location.search).get('rig');
@@ -2541,9 +2552,10 @@ function renderWorld(){
   cinematicDof.render();
 }
 
-let last=performance.now(), fpsE=60, fpsAcc=0;
+let last=performance.now(), fpsE=60, fpsAcc=0, loopAlive=performance.now();
 const frameTimes=[];
 function loop(now){ requestAnimationFrame(loop);
+  loopAlive=now;
   const dt=Math.min((now-last)/1000,0.05); last=now;
   frameTimes.push(dt*1000); if(frameTimes.length>900)frameTimes.shift();
   fpsE+=(1/Math.max(dt,1e-3)-fpsE)*0.06; fpsAcc+=dt;
@@ -2646,6 +2658,8 @@ window.SIM={
   pause:v=>{S.done=!!v;},
   landmarkReady,
   strike:()=>{ const p=D.group.position; S.strikeX=p.x; S.strikeZ=p.z; S.strikeT=0.04; },   // force a bolt on us (test)
+  uptime:()=>({loopLagMs:+(performance.now()-loopAlive).toFixed(1), bootErrors:bootErrors.slice(), alive:performance.now()-loopAlive<250}),
+  bootErrors:()=>bootErrors.slice(),
 };
 </script>
 </body>

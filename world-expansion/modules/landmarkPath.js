@@ -54,40 +54,43 @@ export class LandmarkPath {
   // Synchronous underneath; the promise shape is kept so callers can await it and so a
   // build failure surfaces as a rejection rather than a half-populated scene.
   build() {
-    return new Promise((resolve) => {
-      const started = (typeof performance !== 'undefined' ? performance : Date).now();
-      const proxies = [];
-      const perSite = [];
-      for (const entry of this.route) {
-        const built = buildLandmarkSite(entry, this.materials);
-        entry.object = built.lod;
-        entry.proxies = built.proxies;
-        this.root.add(built.lod);
-        proxies.push(...built.proxies);
-        perSite.push(built.metrics);
+    return new Promise((resolve, reject) => {
+      try {
+        const started = (typeof performance !== 'undefined' ? performance : Date).now();
+        const proxies = [];
+        const perSite = [];
+        for (const entry of this.route) {
+          const built = buildLandmarkSite(entry, this.materials);
+          entry.object = built.lod;
+          entry.proxies = built.proxies;
+          this.root.add(built.lod);
+          proxies.push(...built.proxies);
+          perSite.push(built.metrics);
+        }
+        this._proxies = proxies;
+        if (this.flightRoute) this.clearance = validateRouteClearance(proxies, this.flightRoute);
+        const totals = perSite.reduce((sum, site) => {
+          for (let level = 0; level < 3; level += 1) sum[level] += site.triangles[level];
+          return sum;
+        }, [0, 0, 0]);
+        if (totals[0] > LANDMARK_BUDGET.totalTriangles) {
+          reject(new Error(`Landmark geometry totals ${totals[0]} triangles at LOD0, over the ${LANDMARK_BUDGET.totalTriangles} budget.`));
+          return;
+        }
+        this.metrics = {
+          sites: perSite.length,
+          materials: 2,
+          buildMs: +((typeof performance !== 'undefined' ? performance : Date).now() - started).toFixed(1),
+          trianglesByLevel: totals,
+          shortest: Math.min(...perSite.map((site) => site.height)),
+          tallest: Math.max(...perSite.map((site) => site.height)),
+          perSite
+        };
+        resolve(this.getSnapshot());
+      } catch (error) {
+        this.buildError = error;
+        reject(error);
       }
-      this._proxies = proxies;
-      if (this.flightRoute) this.clearance = validateRouteClearance(proxies, this.flightRoute);
-      const totals = perSite.reduce((sum, site) => {
-        for (let level = 0; level < 3; level += 1) sum[level] += site.triangles[level];
-        return sum;
-      }, [0, 0, 0]);
-      if (totals[0] > LANDMARK_BUDGET.totalTriangles) {
-        throw new Error(`Landmark geometry totals ${totals[0]} triangles at LOD0, over the ${LANDMARK_BUDGET.totalTriangles} budget.`);
-      }
-      this.metrics = {
-        sites: perSite.length,
-        materials: 2,
-        buildMs: +((typeof performance !== 'undefined' ? performance : Date).now() - started).toFixed(1),
-        trianglesByLevel: totals,
-        shortest: Math.min(...perSite.map((site) => site.height)),
-        tallest: Math.max(...perSite.map((site) => site.height)),
-        perSite
-      };
-      resolve(this.getSnapshot());
-    }).catch((error) => {
-      this.buildError = error;
-      throw error;
     });
   }
 
