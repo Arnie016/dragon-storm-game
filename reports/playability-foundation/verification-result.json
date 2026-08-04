@@ -1,0 +1,195 @@
+{
+  "startedAt": "2026-08-04T19:05:09.080Z",
+  "loadBefore": {
+    "uptime": "3:05  up 1 day,  6:34, 1 user, load averages: 11.66 14.01 14.42",
+    "loadAverage": [
+      11.66,
+      14.01,
+      14.42
+    ]
+  },
+  "scenarios": {
+    "idle65s": {
+      "pass": true,
+      "uptime": {
+        "loopLagMs": 2,
+        "bootErrors": [],
+        "alive": true
+      },
+      "state": {
+        "t": 65.8,
+        "flightT": 64.9,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 2,
+        "spd": 62,
+        "pos": [
+          -2017.6,
+          103.1,
+          3298.9
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.513,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "bootErrors": [],
+      "frameStats": {
+        "samples": 900,
+        "p50": 8.3,
+        "p95": 9.3,
+        "p99": 9.4
+      },
+      "cameraShake": 0.35
+    },
+    "jumpBeacon6": {
+      "pass": true,
+      "expected": "III · Serpent Run — beacons 6/8 · dive and flock",
+      "objective": "III · Serpent Run — beacons 6/8 · dive and flock",
+      "chapterHud": {
+        "chapterIndex": 2,
+        "chapterRoman": "III",
+        "chapterTitle": "SERPENT RUN",
+        "chapterLabel": "Chapter III · Serpent Run",
+        "regionId": "serpent_reach",
+        "regionName": "Serpent Reach",
+        "objectiveText": "III · Serpent Run — beacons 6/8 · dive and flock",
+        "goalText": "Thread three canyon gates and reach beacon eight",
+        "distanceM": 4543.68003124334,
+        "distanceLabel": "Next beacon",
+        "distanceText": "4544 m",
+        "heightAboveWater": 104.01413617383031,
+        "heightText": "104 m AGL",
+        "subHints": [
+          "Thread canyon gates for cover",
+          "Climb over harbor works — collect altitude"
+        ],
+        "storyLine": "The canyon tightens. Dive, pull out, and break their lock.",
+        "popupOnEnter": "CHAPTER III · SERPENT RUN",
+        "metaObjective": "",
+        "skyPresetId": "serpent_storm",
+        "ambientLine": "Char on the water. Four hearths — and only one was spared."
+      },
+      "structure": {
+        "chapterIndex": 2,
+        "chapterId": "serpent_run",
+        "chapterTitle": "SERPENT RUN",
+        "regionId": "serpent_reach",
+        "regionName": "Serpent Reach",
+        "seenRegions": [
+          "keeper_shallows",
+          "wake_cove",
+          "serpent_reach"
+        ],
+        "completed": false,
+        "failed": false,
+        "failureReason": "",
+        "hud": {
+          "chapterIndex": 2,
+          "chapterRoman": "III",
+          "chapterTitle": "SERPENT RUN",
+          "chapterLabel": "Chapter III · Serpent Run",
+          "regionId": "serpent_reach",
+          "regionName": "Serpent Reach",
+          "objectiveText": "III · Serpent Run — beacons 6/8 · dive and flock",
+          "goalText": "Thread three canyon gates and reach beacon eight",
+          "distanceM": 4543.68003124334,
+          "distanceLabel": "Next beacon",
+          "distanceText": "4544 m",
+          "heightAboveWater": 104.01413617383031,
+          "heightText": "104 m AGL",
+          "subHints": [
+            "Thread canyon gates for cover",
+            "Climb over harbor works — collect altitude"
+          ],
+          "storyLine": "The canyon tightens. Dive, pull out, and break their lock.",
+          "popupOnEnter": "CHAPTER III · SERPENT RUN",
+          "metaObjective": "",
+          "skyPresetId": "serpent_storm",
+          "ambientLine": "Char on the water. Four hearths — and only one was spared."
+        }
+      },
+      "state": {
+        "t": 65.8,
+        "flightT": 64.9,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 6,
+        "spd": 32,
+        "pos": [
+          520,
+          104,
+          -470
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.513,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      }
+    },
+    "flight120": {
+      "pass": true,
+      "hp": 100,
+      "pos": [
+        -133.2,
+        173.1,
+        -27.6
+      ],
+      "frameStats": {
+        "samples": 900,
+        "p50": 8.3,
+        "p95": 9.3,
+        "p99": 9.4
+      }
+    },
+    "winRoute": {
+      "pass": true,
+      "verdict": true,
+      "score": 12,
+      "finishing": false,
+      "steps": 1
+    },
+    "loseDetection": {
+      "pass": false,
+      "cause": "",
+      "steps": 120
+    }
+  },
+  "landmark": {
+    "ok": true,
+    "sites": 12,
+    "buildMs": 52.1,
+    "bootErrors": []
+  },
+  "loadAfter": {
+    "uptime": "3:06  up 1 day,  6:35, 1 user, load averages: 9.25 12.86 13.96",
+    "loadAverage": [
+      9.25,
+      12.86,
+      13.96
+    ]
+  },
+  "consoleProblems": []
+}
