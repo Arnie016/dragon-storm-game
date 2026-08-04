@@ -493,7 +493,7 @@
         <span class="chip"><b>M</b>mute</span>
         <span class="chip"><b>GOAL</b>follow 12 beacons — never be seen</span>
       </div>
-      <div class="gfxrow">GRAPHICS <b data-g="low">LOW</b><b data-g="med">MED</b><b data-g="high" class="on">HIGH</b></div>
+      <div class="gfxrow">GRAPHICS <b data-g="low">LOW</b><b data-g="med" class="on">MED</b><b data-g="high">HIGH</b></div>
       <div class="foot">headphones recommended · dive into shadow to break a lock</div>
     </div>
   </div>
@@ -524,6 +524,9 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { CinematicDofPipeline } from './world-expansion/modules/cinematicDof.js';
+import { HorizonDirector } from './world-expansion/modules/horizonDirector.js';
+import { LandmarkPath } from './world-expansion/modules/landmarkPath.js';
 
 const $ = id => document.getElementById(id);
 addEventListener('error', e => { $('objTag').innerHTML = 'ERR: ' + e.message; });
@@ -562,6 +565,7 @@ document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x0a0a1a, 0.0030);
 const camera = new THREE.PerspectiveCamera(64, innerWidth/innerHeight, 0.5, 6000);
+const cinematicDof = new CinematicDofPipeline(renderer, scene, camera, { enabled:false, focusRange:42, maxBlur:1.35 });
 
 // ---- time-of-day: 0 = sunset, 1 = deep night (drives sky, sea, light, music, danger) ----
 const TOD={ day:0 };
@@ -610,7 +614,7 @@ sky.frustumCulled=false; scene.add(sky);
 
 /* ---- sea (with a rogue-swell term shared with the JS waveH) ---- */
 const seaUniforms = { uT:{value:0} };
-const sea = new THREE.Mesh(new THREE.PlaneGeometry(4000,4000,220,220), new THREE.ShaderMaterial({
+const sea = new THREE.Mesh(new THREE.PlaneGeometry(9000,9000,220,220), new THREE.ShaderMaterial({
   uniforms:{ ...seaUniforms, fogColor:{value:scene.fog.color}, fogDensity:{value:scene.fog.density},
              uDay, uRA, uRC, uRW }, fog:false,
   vertexShader:`uniform float uT; uniform float uRA; uniform vec2 uRC; uniform float uRW;
@@ -634,6 +638,11 @@ const sea = new THREE.Mesh(new THREE.PlaneGeometry(4000,4000,220,220), new THREE
       gl_FragColor=vec4(mix(col,fogColor,f),1.); }`
 }));
 sea.rotation.x=-Math.PI/2; scene.add(sea);
+const horizonDirector = new HorizonDirector(scene, camera);
+const refreshSeaFog=()=>{
+  sea.material.uniforms.fogColor.value.copy(scene.fog.color);
+  sea.material.uniforms.fogDensity.value=scene.fog.density;
+};
 // rogue swell state (menacing waves that rise and reach toward the dragon)
 const ROG={ amp:0, cx:1e5, cz:1e5, life:0, next:6 };
 function waveH(x,z,t){ const a=x*.8+(-z)*.6, b=x*-.5+(-z)*.9, c=x*.2+(-z)*-1.0;
@@ -979,6 +988,12 @@ const D={ group:new THREE.Group(), model:null, mixer:null, flap:null, glide:null
 D.group.position.copy(START); scene.add(D.group);
 const draco=new DRACOLoader().setDecoderPath('./vendor/draco/');
 const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
+const landmarkPath=new LandmarkPath(scene,loader);
+const landmarkReady=landmarkPath.loadTemplates();
+landmarkReady.then(()=>{
+  for(const c of landmarkPath.getCollisionProxies()) colliders.push({x:c.x,z:c.z,r:c.radius,top:c.top,landmark:c.id});
+  landmarkPath.setCollisionAuthority(true);
+});
 loader.load('dragon_rigged.glb',(g)=>{
   const model=g.scene; D.model=model; model.scale.setScalar(9.0); model.rotation.y=Math.PI;
   // ---- black volcanic obsidian scales: dark PBR + faint ember emissive in the recesses ----
@@ -1802,6 +1817,7 @@ function driveRogue(dt){
 function tick(dt){
   S.t+=dt; seaUniforms.uT.value=S.t; sky.material.uniforms.uT.value=S.t;
   driveTimeOfDay(dt); driveRogue(dt);
+  landmarkPath.update(D.group.position,S.t);
   // escalation: more keepers wake as night falls (extend beam reach + speed)
   for(let i=0;i<searchlights.length;i++){ const sl=searchlights[i];
     sl.pivot.rotation.y=sl.yaw0 + S.t*sl.rate*(1+TOD.day*0.5);
@@ -2266,6 +2282,8 @@ function applyGfx(level){
   streaks.visible=hi||med;
   windLines.visible=hi||med;
   renderer.shadowMap.enabled=hi;
+  cinematicDof.enabled=hi;
+  cinematicDof.setSize(renderer.domElement.width,renderer.domElement.height);
   moon.castShadow=hi;
   if(hi){ moon.shadow.mapSize.set(1024,1024); const c=moon.shadow.camera;
     c.left=-260;c.right=260;c.top=260;c.bottom=-260;c.far=1200; moon.shadow.bias=-0.002;
@@ -2274,7 +2292,7 @@ function applyGfx(level){
   if(D.model) D.model.traverse(o=>{ if(o.isMesh) o.castShadow=hi; });
 }
 document.querySelectorAll('.gfxrow b').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); applyGfx(b.dataset.g); }));
-applyGfx(localStorage.getItem('nf_gfx')||'high');
+applyGfx(localStorage.getItem('nf_gfx')||'med');
 
 /* ============================ CAMERA + LOOP ============================ */
 const _hp=new THREE.Vector3();
@@ -2296,7 +2314,6 @@ function updateStreaks(){
   streakGeo.attributes.position.needsUpdate=true;
 }
 function render(dt=1/60){
-  sky.position.copy(camera.position);
   // acceleration visuals (decay boost on menu / game-over so FOV eases back)
   if(!S.started||S.done){ S.boost*=0.93; S.accel*=0.9; }
   const fov=60 + S.boost*22 + Math.max(0,S.accel)*8;
@@ -2310,7 +2327,7 @@ function render(dt=1/60){
     const a=S.t*0.11+2.1;
     camera.position.set(REST.x+Math.sin(a)*15, REST.y+5.5+Math.sin(S.t*0.3)*1.3, REST.z+Math.cos(a)*15);
     camera.lookAt(REST.x, REST.y+2.5, REST.z);
-    renderer.render(scene,camera); return;
+    renderWorld(); return;
   }
 
   // camera look-around (Q/E), returns to centre when released
@@ -2337,7 +2354,14 @@ function render(dt=1/60){
     const look=D.group.position.clone().add(new THREE.Vector3(0,-1,0));
     camera.lookAt(look); camera.rotateZ(-D.roll*0.10);
   }
-  renderer.render(scene,camera);
+  renderWorld();
+}
+function renderWorld(){
+  sky.position.copy(camera.position);
+  horizonDirector.update(camera.position,S.t,TOD.day);
+  refreshSeaFog();
+  cinematicDof.setFocusWorld(D.group.position);
+  cinematicDof.render();
 }
 
 let last=performance.now(), fpsE=60, fpsAcc=0;
@@ -2350,12 +2374,14 @@ function loop(now){ requestAnimationFrame(loop);
 loop(last);
 
 addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth,innerHeight); });
+  renderer.setSize(innerWidth,innerHeight);
+  cinematicDof.setSize(renderer.domElement.width,renderer.domElement.height); });
 
 /* ---- debug hooks ---- */
 window.SIM={
   state:()=>({t:+S.t.toFixed(1),started:S.started,done:S.done,det:+S.detection.toFixed(2),score:S.score,
     spd:+D.speed.toFixed(1),pos:D.group.position.toArray().map(v=>+v.toFixed(1)),fpv:S.fpv,
+    chapter:S.chapter,tutorial:tutRings.filter(r=>r.userData.hit).length,routeVisible:rings.filter(r=>r.visible).length,cause:S.cause||'',
     charges:+S.charges.toFixed(2), chargeT:+(S.chargeT||0).toFixed(2),
     bolts:bolts.length, disabled:searchlights.filter(s=>s.disabled>0).length}),
   start:()=>{ startAudio(); S.started=true; S.grace=3; menuEl.classList.add('hide','live');
@@ -2365,6 +2391,14 @@ window.SIM={
   warp:(dt,steps=60)=>{ for(let i=0;i<steps;i++) tick(dt); render(); },
   bones:()=>D.boneReport, alive:v=>{ALIVE=v;}, setTurn:v=>{D.turn=v;}, day:v=>{TOD.day=v;uDay.value=v;},
   echo:echoPulse, flockCall:callFlock,
+  expansion:()=>({dof:cinematicDof.enabled,horizon:horizonDirector.getSnapshot(),landmarks:landmarkPath.getSnapshot(),
+    seaFog:sea.material.uniforms.fogDensity.value,sceneFog:scene.fog.density,cameraFar:camera.far}),
+  landmarkBounds:()=>landmarkPath.route.map(e=>{ const size=new THREE.Vector3();
+    if(e.object)new THREE.Box3().setFromObject(e.object).getSize(size);
+    return {id:e.id,position:e.position,size:size.toArray().map(v=>+v.toFixed(1))}; }),
+  setDof:v=>{cinematicDof.enabled=!!v;},
+  pause:v=>{S.done=!!v;},
+  landmarkReady,
   strike:()=>{ const p=D.group.position; S.strikeX=p.x; S.strikeZ=p.z; S.strikeT=0.04; },   // force a bolt on us (test)
 };
 </script>
