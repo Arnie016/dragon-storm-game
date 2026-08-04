@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Galevein: Stormflight — Chapter HUD Preview</title>
+  <style>
+    :root {
+      --bg: #04060d;
+      --panel: rgba(8, 12, 22, 0.82);
+      --edge: rgba(143, 232, 255, 0.22);
+      --text: #d8e8f4;
+      --muted: #7a8fa6;
+      --accent: #8fe6c6;
+      --violet: #9a5cff;
+      --warn: #ffb27a;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: radial-gradient(ellipse 120% 80% at 50% 0%, #121828 0%, var(--bg) 55%);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    header {
+      padding: 32px 24px 12px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(22px, 4vw, 34px);
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 12px 20px 48px;
+      display: grid;
+      gap: 20px;
+    }
+    .card {
+      position: relative;
+      background: var(--panel);
+      border: 1px solid var(--edge);
+      border-radius: 10px;
+      padding: 0;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; top: 0;
+      height: 8px;
+      opacity: 0.55;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--violet), transparent);
+    }
+    .card-inner { padding: 22px 24px 20px; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin-bottom: 14px;
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .meta span.region { color: var(--accent); }
+    .hud-panel {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .chapter-label {
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    #objText, .obj-text {
+      font-size: 15px;
+      line-height: 1.5;
+      letter-spacing: 0.3px;
+    }
+    .obj-text b { color: #fff; font-weight: 600; }
+    .objmeta {
+      display: block;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .objmeta b { color: var(--accent); }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+      font-size: 12px;
+    }
+    .stat {
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 6px;
+    }
+    .stat label {
+      display: block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .goal {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 0 0 10px;
+    }
+    .hints {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .beats {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+      color: var(--warn);
+    }
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .loading { text-align: center; padding: 48px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Galevein: Stormflight</h1>
+    <p>Chapter objective HUD preview — sourced from <code>world-expansion/data/chapters.json</code></p>
+  </header>
+  <main id="root"><div class="loading">Loading chapter data…</div></main>
+  <footer>Standalone preview · not wired to index.html</footer>
+  <script type="module">
+    const SAMPLE = {
+      scores: [0, 2, 6, 10, 11],
+      tutorialDone: [0, 1, 2, 3],
+      distances: [84, 220, 410, 680, 120],
+      heights: [null, 18, 42, null, 56]
+    };
+
+    function fill(template, vars) {
+      return template.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? `{${k}}`);
+    }
+
+    function renderCard(chapter, regions, sampleIndex) {
+      const region = regions.find(r => r.id === chapter.regionId);
+      const score = SAMPLE.scores[sampleIndex] ?? 0;
+      const tutorialDone = chapter.index === 0 ? (SAMPLE.tutorialDone[sampleIndex] ?? 0) : 3;
+      const vars = { score, tutorialDone, totalBeacons: 12, towersDestroyed: 2 };
+      const hud = chapter.hud;
+      const objectiveText = fill(hud.objectiveTemplate, vars);
+      const dist = SAMPLE.distances[sampleIndex];
+      const height = hud.showHeightAboveWater ? SAMPLE.heights[sampleIndex] : null;
+
+      return `
+        <article class="card">
+          <div class="card-inner">
+            <div class="meta">
+              <span>Chapter ${chapter.roman}</span>
+              <span>${chapter.title}</span>
+              <span class="region">${region?.name ?? chapter.regionId}</span>
+            </div>
+            <div class="hud-panel">
+              <div class="chapter-label">${hud.chapterLabel}</div>
+              <div class="obj-text">${objectiveText.replace(/(\d+\/\d+)/g, '<b>$1</b>')}</div>
+              <span class="objmeta">
+                <b>${chapter.index === 0 ? `${tutorialDone}/3` : `${score}/12`}</b>
+                ${chapter.index === 0 ? 'rings' : 'beacons'}
+                · <b>${dist} m</b> to target
+                ${height != null ? ` · <b>${height} m</b> AGL` : ''}
+              </span>
+            </div>
+            <p class="goal">${hud.goalText}</p>
+            <div class="row">
+              <div class="stat"><label>Distance</label>${dist} m</div>
+              <div class="stat"><label>Height AGL</label>${height != null ? `${height} m` : '—'}</div>
+              <div class="stat"><label>Win</label>${chapter.win.condition} ≥ ${chapter.win.threshold ?? '—'}</div>
+            </div>
+            ${hud.subHints?.length ? `<ul class="hints">${hud.subHints.map(h => `<li>${h}</li>`).join('')}</ul>` : ''}
+            <div class="beats">${chapter.storyLine}</div>
+          </div>
+        </article>`;
+    }
+
+    async function main() {
+      const [chaptersDoc, regionsDoc] = await Promise.all([
+        fetch('../../world-expansion/data/chapters.json').then(r => r.json()),
+        fetch('../../world-expansion/data/regions.json').then(r => r.json())
+      ]);
+      const root = document.getElementById('root');
+      root.innerHTML = chaptersDoc.chapters.map((ch, i) =>
+        renderCard(ch, regionsDoc.regions, i)
+      ).join('');
+    }
+
+    main().catch(err => {
+      document.getElementById('root').innerHTML =
+        `<div class="loading">Failed to load: ${err.message}. Serve from repo root.</div>`;
+    });
+  </script>
+</body>
+</html>
