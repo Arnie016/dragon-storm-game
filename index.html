@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Night Fury: Hidden World</title>
+<title>Galevein: Stormflight</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root{ --purple:#a463ff; --teal:#38e6d0; --warn:#ff5a7a;
@@ -350,7 +350,7 @@
     -webkit-background-clip:text; background-clip:text; color:transparent;
     -webkit-text-stroke:1px rgba(216,190,255,.16);
     filter:drop-shadow(0 4px 26px rgba(130,80,240,.42)) drop-shadow(0 1px 0 rgba(0,0,0,.7)); }
-  h1 .fury{ display:block; font-size:.62em; letter-spacing:.42em; text-indent:.42em; font-weight:700;
+  h1 .galevein{ display:block; font-size:.62em; letter-spacing:.42em; text-indent:.42em; font-weight:700;
     background:linear-gradient(180deg,#a9f5e8 5%, #38b9a6 55%, #0f5a4e 100%);
     -webkit-background-clip:text; background-clip:text; }
   h1.bad,h1.good{ font-size:52px; letter-spacing:3px; }
@@ -414,7 +414,7 @@
     <div class="mini">FPS<b id="fpsV">–</b></div>
     <div class="mini">SCALES<b id="scalesV">0</b></div>
   </div>
-  <div class="panel" id="objTag"><span id="objText">reach the cove — <b>12 beacons before nightfall</b></span>
+  <div class="panel" id="objTag"><span id="objText">reach the Tempest Gate — <b>12 beacons before nightfall</b></span>
     <span class="objmeta"><b id="beaconV">0/12</b> beacons · <b id="duskV">dusk</b></span></div>
   <div class="panel" id="abil">
     <span class="ab" id="abEcho"><b>C</b>ECHO</span>
@@ -432,7 +432,7 @@
   <div id="shop"><div id="shopInner">
     <div class="bk-head"><div class="bk-rune">⚒</div>
       <div class="bk-title">THE FORGE</div>
-      <div class="bk-sub">Gobber's saddle-work · <b>B</b> to close · <b id="shScales">0</b> scales</div></div>
+      <div class="bk-sub">the old ironsmith's saddle-work · <b>B</b> to close · <b id="shScales">0</b> scales</div></div>
     <div id="shopList"></div>
     <div class="bk-foot">every fitting makes her answer faster</div>
   </div></div>
@@ -440,17 +440,17 @@
     <div id="bookInner">
       <div class="bk-head">
         <div class="bk-rune">◈</div>
-        <div class="bk-title">BOOK OF DRAGONS</div>
+        <div class="bk-title">FLIGHT CODEX</div>
         <div class="bk-sub">strapped to the saddle · <b>TAB</b> to close</div>
       </div>
       <div class="bk-card">
-        <div class="bk-name">NIGHT FURY</div>
+        <div class="bk-name">GALEVEIN</div>
         <div class="bk-art">🐉</div>
         <div class="bk-stats">
           <span>⚔ ATTACK<b id="stAtk">14</b></span><span>➤ SPEED<b id="stSpd">18</b></span>
           <span>⛨ ARMOUR<b id="stArm">10</b></span><span>✸ FIREPOWER<b id="stFire">15</b></span>
         </div>
-        <div class="bk-note">"the unholy offspring of lightning and death itself"</div>
+        <div class="bk-note">"where thunder learns to wear a wing"</div>
       </div>
       <div class="bk-skills" id="bkSkills"></div>
       <div class="bk-foot" id="bkFoot">skills reveal themselves as you earn them</div>
@@ -460,7 +460,7 @@
     <div class="ach-n" id="achName">—</div><div class="ach-d" id="achDesc">—</div>
     <div class="ach-key" id="achKey">—</div></div></div>
   <div id="chargeHud"><div id="chargeRing"><i></i></div><div id="chargeTxt">SPIT</div></div>
-  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> fury dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> book · <b>B</b> forge · <b>M</b> mute</div>
+  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> stormbreak dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> codex · <b>B</b> forge · <b>M</b> mute</div>
 </div>
 
 <div class="screen" id="menu">
@@ -468,14 +468,14 @@
   <div class="ripple" id="rippleLoop"></div>
   <div class="ripple" id="rippleHit"></div>
   <div id="spotted">SPOTTED</div>
-  <div id="wakehint">A NIGHT FURY RESTS · CLICK TO SKIP</div>
+  <div id="wakehint">A GALEVEIN RESTS · CLICK TO SKIP</div>
   <div class="card">
     <div>
-      <div class="kicker">STORM WARDEN · HIDDEN WORLD</div>
-      <h1>NIGHT<span class="fury">FURY</span></h1>
+      <div class="kicker">STORM WARDEN · SABLE REACH</div>
+      <h1>GALE<span class="galevein">VEIN: STORMFLIGHT</span></h1>
       <div class="ornament" style="justify-content:center">◈</div>
       <div class="sub">The keepers sweep the black water with searchlights.<br>
-        Ride the fury through the storm to the hidden cove — <b>never be seen.</b></div>
+        Guide Rook through the storm-lashed reach to the Tempest Gate — <b>never be seen.</b></div>
     </div>
     <div class="playwrap">
       <button class="play" id="startBtn" aria-label="Take flight"><span class="tri"></span></button>
@@ -571,7 +571,7 @@ const cinematicDof = new CinematicDofPipeline(renderer, scene, camera, { enabled
 const TOD={ day:0 };
 const uDay={value:0}, uRA={value:0}, uRC={value:new THREE.Vector2(1e5,1e5)}, uRW={value:3200};
 
-// Hidden-World palette lighting (colours animated by time-of-day each frame)
+// Tempest Gate palette lighting (colours animated by time-of-day each frame)
 const moon = new THREE.DirectionalLight(0xffd9a0, 1.15); moon.position.set(-260,120,140); scene.add(moon);   // sun@dusk -> moon
 const rimP = new THREE.DirectionalLight(0xb072ff, 0.9); rimP.position.set(220,120,180); scene.add(rimP);
 const fillT = new THREE.DirectionalLight(0x2fd6c0, 0.45); fillT.position.set(60,-40,-220); scene.add(fillT);
@@ -826,7 +826,7 @@ for(let i=0;i<5;i++){
   colliders.push({x:-330-i*46+44,z:-410+i*10,r:6,top:50}); colliders.push({x:-330-i*46-44,z:-410+i*10,r:6,top:50});
 }
 const skullRock=rock(-560,-380,30,26);                          // where the head came to rest
-// THE HIDDEN COVE — sea-stack ring, the aurora pours into it like a curtain
+// THE TEMPEST GATE — sea-stack ring, the aurora pours into it like a curtain
 for(let i=0;i<9;i++){ const a=i/9*6.283, r=150;
   rock(Math.cos(a)*r, 780+Math.sin(a)*r*0.7, 16+(i%3)*5, 60+(i%4)*22); }
 crystal(0,780,44); crystal(-60,820,30); crystal(55,830,34);
@@ -841,7 +841,7 @@ function driveRegions(){ const p=D.group.position;
   for(const rg of REGIONS){ if(rg.seen) continue;
     if(Math.hypot(p.x-rg.x,p.z-rg.z)<rg.r){ rg.seen=true; storyPop(rg.line,6); AU.play('ring',0.35); } } }
 
-/* ---- SERPENT CANYON: a weaving slot of sheer cliffs you can almost kiss (HTTYD-style traverse) ----
+/* ---- SERPENT CANYON: a weaving slot of sheer cliffs you can almost kiss at full speed ----
    runs along the beacon 4->6 stretch; gates reward threading it */
 const cliffMat=new THREE.MeshStandardMaterial({ color:0x1b1f2c, roughness:.9, flatShading:true });
 function cliff(x,z,w,h,rotY){
@@ -970,7 +970,7 @@ const ringDone=new THREE.MeshStandardMaterial({ color:0x0f2e26, emissive:0x2fd6a
 const route=[[0,44,200],[150,70,-40],[-90,66,-150],[-170,72,-10],          // home waters + canyon
   [140,60,-260],[420,70,-380],[520,64,-470],                                  // out to the Drowned Village
   [180,80,-560],[-320,90,-420],[-560,96,240],                                 // under the Bone Arches
-  [-260,110,560],[0,120,780]];                                                // north to the Hidden Cove
+  [-260,110,560],[0,120,780]];                                                // north to the Tempest Gate
 for(let i=0;i<N_RINGS;i++){
   const [x,y,z]=route[i];
   const m=new THREE.Mesh(new THREE.TorusGeometry(RING_R,1.3,10,40), ringBase.clone());
@@ -1151,21 +1151,21 @@ const S={ t:0, started:false, done:false, detection:0, score:0, fpv:false, shake
   camYaw:0, camPitch:0, nextThunder:5, cause:'', shootCd:0, flash:0,
   boost:0, accel:0, prevSpeed:26, boomed:false,
   charges:3, chargeT:-1,                          // plasma pool + hold-to-charge timer (-1 = idle)
-  nightfall:330, dayHold:100, grace:0, keepersWoke:false,       // race the sunset to the cove (longer dusk)
+  nightfall:330, dayHold:100, grace:0, keepersWoke:false,       // race the sunset to the Tempest Gate (longer dusk)
   hp:100, hpMax:100, hurt:0,                        // the dragon can be shot down
   echoCd:0, echoR:0, echoOn:false, lift:0, beatCd:0, poison:0, spiral:0,
   bookOpen:false, bookLost:false, violence:0, violenceWarned:false, shopOpen:false, scales:0,
   chapter:0, tutDone:false, spiralFired:false, spiralMax:false, tier:0,                  // echolocation pulse
-  dive:0, diveFired:false,                          // fury dive -> sonic boom
+  dive:0, stormbreakFired:false,                    // stormbreak dive -> sonic boom
   turn:0, pTurn:0, pPitch:0, muted:false };
 
 /* ---- plasma lightning (X): a jagged bolt from the mouth that shatters towers ---- */
 const bolts=[], BOLT_SEG=16;
 function shoot(power=0.35){
   if(S.shootCd>0 || !D.model || S.charges<1) return; S.shootCd=0.4; S.charges-=1;
-  // three distinct tiers: SPIT (fast, cheap) / BOLT / FURYBLAST (screen-shaking)
+  // three distinct tiers: SPIT (fast, cheap) / BOLT / ARC BURST (screen-shaking)
   S.tier = power>0.85 ? 2 : (power>0.45 ? 1 : 0);
-  if(S.tier===2){ popup('FURY BLAST'); S.shootCd=0.65; }
+  if(S.tier===2){ popup('ARC BURST'); S.shootCd=0.65; }
   if(S.superCharge){ power=1.25; S.superCharge=0; popup('STORMFIRE'); }   // harvested lightning
   const head=new THREE.Vector3(); (D.mouth||D.headNode||D.group).getWorldPosition(head);
   const dir=new THREE.Vector3(-Math.sin(D.yaw),Math.sin(D.pitch)*0.95,-Math.cos(D.yaw)).normalize();
@@ -1206,7 +1206,7 @@ function shoot(power=0.35){
   if(th){ setTimeout(()=>{ try{ th.currentTime=0; th.playbackRate=1.5-power*0.7; th.volume=0.2+power*0.45;
     th.play().catch(()=>{}); }catch(e){} }, 40+power*70); }
   S.flash=Math.max(S.flash,0.14+power*0.34);
-  if(power>0.55){ AU.play('crash',0.4+power*0.35); addViolence(0.55); }  // fury blasts strain the strap
+  if(power>0.55){ AU.play('crash',0.4+power*0.35); addViolence(0.55); }  // arc bursts strain the strap
   if(power>0.8){ S.shake=Math.max(S.shake,0.5); }
   D.recoil=0.4+power*0.6; S.shake=Math.max(S.shake,0.2+power*0.35);   // felt kick when you fire
 }
@@ -1291,7 +1291,7 @@ function plasmaImpact(pos,power){
     }
     S.shake=Math.max(S.shake,0.5+power*0.4);
   }
-  // FURY BLAST leaves a crater ring of fire and a lingering scorch flash
+  // ARC BURST leaves a crater ring of fire and a lingering scorch flash
   if(power>0.85){
     for(let i=0;i<14;i++){ const a=i/14*6.283;
       smallBurst(pos.x+Math.cos(a)*13, pos.y+1, pos.z+Math.sin(a)*13, 0xff9a3c); }
@@ -1411,11 +1411,11 @@ const SKILLS=[
   {k:'W / S',   name:'Beat & Brake',  d:'drive the wings, spill the air',        have:()=>true},
   {k:'SPACE',   name:'Downbeat',      d:'each stroke lifts you against gravity', have:()=>true},
   {k:'UP / DOWN',name:'Climb & Dive', d:'read the wind with your body',          have:()=>true},
-  {k:'X',       name:'Plasma Breath', d:'hold to charge: spit, bolt, fury',      have:()=>true},
+  {k:'X',       name:'Plasma Breath', d:'hold to charge: spit, bolt, arc burst', have:()=>true},
   {k:'V',       name:"Rider's Eye",   d:'ride first-person',                     have:()=>true},
   {k:'C',       name:'Echolocation',  d:'see the world by sound',                have:()=>S.score>=1},
   {k:'HOLD A/D',name:'Spiral to Ultra',d:'wind the corkscrew, then release',     have:()=>S.score>=2},
-  {k:'DOWN,UP', name:'Fury Dive',     d:'scream down, pull up: sonic boom',      have:()=>S.score>=3},
+  {k:'DOWN,UP', name:'Stormbreak Dive',d:'scream down, pull up: sonic boom',     have:()=>S.score>=3},
   {k:'F',       name:'Dragon Call',   d:'the wild flock hides you',              have:()=>S.score>=4},
 ];
 function renderBook(){
@@ -1500,7 +1500,7 @@ function driveMissions(){
   for(const m of MISSIONS){ if(!m.done && m.check()){ m.done=true;
     if(m.story){ storyPop(m.story); AU.play('ring',0.6); S.flash=Math.max(S.flash,0.25); } } }
   const cur=MISSIONS.find(m=>!m.done);
-  $('objText').textContent = cur ? cur.label(t) : 'the cove is open — finish the flight';
+  $('objText').textContent = cur ? cur.label(t) : 'the Tempest Gate is open — finish the flight';
 }
 
 /* ---- explosion burst (expanding fireball + flash light) ---- */
@@ -1568,7 +1568,7 @@ function updateTowerCombat(dt){
   }
   updateFoeBolts(dt);
 }
-/* ================= UNIQUE 1: ECHOLOCATION — a Night Fury sees by sound =================
+/* ================= UNIQUE 1: ECHOLOCATION — a Galevein reads the storm by sound =================
    A sonar wave rips outward and pings every beacon / gate / tower it touches, so you can
    read the map through rain, fog and full dark. */
 const echoMesh=new THREE.Mesh(new THREE.SphereGeometry(1,26,18),
@@ -1601,7 +1601,7 @@ function updateEcho(dt){
   if(S.echoR>680){ S.echoOn=false; echoMesh.visible=false; }
 }
 
-/* ================= UNIQUE 2: FURY DIVE -> SONIC BOOM =================
+/* ================= UNIQUE 2: STORMBREAK DIVE -> SONIC BOOM =================
    Hold a steep screaming dive to charge it, then pull up hard: the boom blinds
    every searchlight in range and blows the sea open beneath you. */
 function sonicBoom(){
@@ -1627,7 +1627,7 @@ function sonicBoom(){
     smallBurst(p.x+Math.cos(a)*r, wh+1, p.z+Math.sin(a)*r, 0xcfe4f0); } }
 }
 // SPIRAL ACCELERATION: hold a hard turn at speed and the dragon corkscrews, winding up
-// a burst of ultra-acceleration (HTTYD's spiral dive). Release the turn to fire out of it.
+// a burst of ultra-acceleration through a hard spiral. Release the turn to fire out of it.
 function driveSpiral(dt){
   const hard = Math.abs(D.turn)>0.85 && D.speed>28;
   S.spiral = THREE.MathUtils.clamp(S.spiral + (hard? dt*0.55 : -dt*1.1), 0, 1);
@@ -1647,7 +1647,7 @@ function driveSpiral(dt){
   }
   if(S.spiral<0.15){ S.spiralFired=false; S.spiralMax=false; }
 }
-function driveFuryDive(dt){
+function driveStormbreakDive(dt){
   const diving = D.pitch < -0.5 && D.speed > 30;
   S.dive = THREE.MathUtils.clamp(S.dive + (diving? dt*0.6 : -dt*1.0), 0, 1);
   if(diving){
@@ -1655,8 +1655,8 @@ function driveFuryDive(dt){
     S.shake=Math.max(S.shake, S.dive*0.28);
     if(WIND.ctx) WIND.bp.frequency.value += S.dive*900;   // rising shriek
   }
-  if(S.dive>0.5 && D.pitch>-0.12 && !S.diveFired){ S.diveFired=true; sonicBoom(); }
-  if(S.dive<0.12) S.diveFired=false;
+  if(S.dive>0.5 && D.pitch>-0.12 && !S.stormbreakFired){ S.stormbreakFired=true; sonicBoom(); }
+  if(S.dive<0.12) S.stormbreakFired=false;
 }
 
 /* ================= UNIQUE 3: STORM LIGHTNING HARVEST =================
@@ -1784,7 +1784,7 @@ function driveTimeOfDay(dt){
   // music: warm menu bed at dusk -> dark tension at night
   if(AU.on&&!S.muted){ if(AU.el.menu){ AU.el.menu.volume=(1-d)*0.34; if(AU.el.menu.paused&&d<0.95)AU.el.menu.play().catch(()=>{});}
     if(AU.el.music) AU.el.music.volume=0.16+d*0.34; }
-  // full night without reaching the cove: every keeper wakes
+  // full night without reaching the Tempest Gate: every keeper wakes
   if(d>=1 && !S.keepersWoke && S.started && !S.done){ S.keepersWoke=true;
     if(S.score<rings.length){ popup('THE KEEPERS ARE AWAKE'); S.flash=Math.max(S.flash,0.45); AU.play('detected',0.5); } }
 }
@@ -1857,7 +1857,7 @@ function tick(dt){
   const CRUISE=26, GRAV=13;
   const thrust=(input.flap?26:0) + throttle*20;             // W drives forward, flap bursts
   D.speed += (thrust - Math.sin(D.pitch)*GRAV*1.15 - (D.speed-CRUISE)*0.42)*dt;
-  D.speed = THREE.MathUtils.clamp(D.speed, 13, 62 + (S.dive||0)*20 + (S.spiral||0)*34);   // fury dive breaks the ceiling
+  D.speed = THREE.MathUtils.clamp(D.speed, 13, 62 + (S.dive||0)*20 + (S.spiral||0)*34);   // stormbreak dive breaks the ceiling
 
   /* ---- acceleration factor drives all the speed FX ---- */
   const inst=(D.speed-S.prevSpeed)/Math.max(dt,1e-3); S.prevSpeed=D.speed;
@@ -1921,7 +1921,7 @@ function tick(dt){
     if(cp>=1 && !S._chargeReady){ S._chargeReady=true; AU.play('flap',0.3); }        // "fully charged" tick
   } else if(D.mouth && D.mouth.scale.x>0.01){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; S._chargeReady=false; }
   updateBolts(dt); updateShocks(dt); updateDebris(dt); updateBursts(dt); updateTowers(dt); updateTowerCombat(dt);
-  updateEcho(dt); driveFuryDive(dt); driveSpiral(dt); updateStorm(dt); updateFlock(dt);
+  updateEcho(dt); driveStormbreakDive(dt); driveSpiral(dt); updateStorm(dt); updateFlock(dt);
   S.hurt=Math.max(0,S.hurt-dt*2); S.hp=Math.min(S.hpMax,S.hp+dt*1.5);   // slow regen between hits
 
   // wind gusts (all directions) — calmed while you're deliberately skimming a cliff
@@ -2126,7 +2126,7 @@ function hud(litNow){
     ch.style.top=((-v.y*0.5+0.5)*innerHeight-40)+'px';
     ch.style.setProperty('--cp',(cp*100).toFixed(0));
     ch.className='on'+(cp>=1?' full':'');
-    $('chargeTxt').textContent = cp>0.85?'FURY BLAST' : cp>0.45?'BOLT' : 'SPIT';
+    $('chargeTxt').textContent = cp>0.85?'ARC BURST' : cp>0.45?'BOLT' : 'SPIT';
   } else ch.className='';
   // --- damage + rain lens ---
   const hpf2=Math.max(0,S.hp)/S.hpMax;
@@ -2163,9 +2163,9 @@ function showOver(kick,title,cls,sub){
 function detected(){ if(S.done)return; AU.play('detected',0.9); showOver('DETECTED','SPOTTED','bad',
   'The searchlight found you. The keepers loose their bolts into the dark.'); }
 function crash(reason){ if(S.done)return; S.cause=reason; AU.play('crash',0.9); S.shake=1; showOver('WRECKED',reason,'bad',
-  'Even a Night Fury cannot fly through stone.'); }
-function escaped(){ if(S.done)return; AU.play('ring',0.9); showOver('ESCAPED','HIDDEN WORLD','good',
-  'All twelve beacons, unseen. The cove opens and the storm closes behind you.'); }
+  'Even a Galevein cannot fly through stone.'); }
+function escaped(){ if(S.done)return; AU.play('ring',0.9); showOver('ESCAPED','TEMPEST GATE','good',
+  'All twelve beacons, unseen. The Gate opens, and the Sable Reach falls behind you.'); }
 
 /* ---- start / restart: armour shutter closes, he leaps, shutter opens on the flight ---- */
 /* WebAudio wind rush: filtered noise whose brightness+level rise with airspeed (better than an mp3) */
@@ -2243,7 +2243,7 @@ function reset(){
   for(const m of MISSIONS) m.done=false;
   S.grazeT=0; S.splashT=0; S.hp=S.hpMax; S.hurt=0;
   for(const rg of REGIONS) rg.seen=false;
-  S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.diveFired=false;
+  S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.stormbreakFired=false;
   S.spiral=0; S.spiralFired=false; S.spiralMax=false; S.lift=0; S.beatCd=0; S.poison=0;
   S.bookLost=false; S.violence=0; S.violenceWarned=false; S.bookOpen=false; $('book').classList.remove('on');
   S.shopOpen=false; $('shop').classList.remove('on'); S.scales=0;
@@ -2274,7 +2274,7 @@ $('muteBtn').addEventListener('click',()=>setMuted(!S.muted));
 
 /* ---- graphics presets: LOW / MED / HIGH (persisted) ---- */
 function applyGfx(level){
-  localStorage.setItem('nf_gfx',level);
+  localStorage.setItem('galevein_gfx',level);
   document.querySelectorAll('.gfxrow b').forEach(b=>b.classList.toggle('on',b.dataset.g===level));
   const hi=level==='high', med=level==='med';
   renderer.setPixelRatio(hi?Math.min(devicePixelRatio,2):med?1.5:1);
@@ -2292,7 +2292,7 @@ function applyGfx(level){
   if(D.model) D.model.traverse(o=>{ if(o.isMesh) o.castShadow=hi; });
 }
 document.querySelectorAll('.gfxrow b').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); applyGfx(b.dataset.g); }));
-applyGfx(localStorage.getItem('nf_gfx')||'med');
+applyGfx(localStorage.getItem('galevein_gfx')||'med');
 
 /* ============================ CAMERA + LOOP ============================ */
 const _hp=new THREE.Vector3();

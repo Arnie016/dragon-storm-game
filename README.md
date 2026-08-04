@@ -1,6 +1,6 @@
-# Dragon Storm Game
+# Galevein: Stormflight
 
-Dragon Storm is a self-contained three.js flying game. Fly a Night Fury through a storm, learn the controls in the cove, evade searchlights, collect all twelve beacon rings, and reach the Hidden World.
+Galevein: Stormflight is a self-contained three.js flying game. Guide Rook, a Galevein, through the Sable Reach; learn the controls in the cove, evade searchlights, gather all twelve beacon rings, and reach the Tempest Gate.
 
 ## Run locally
 
@@ -26,7 +26,7 @@ Do not open `index.html` with `file://`. The game loads ES modules and the rigge
 - Dive with Down, then pull up with Up: sonic boom
 - `Q` / `E`: look around
 - `V`: switch chase / rider view
-- `Tab`: Book of Dragons
+- `Tab`: Flight Codex
 - `B`: The Forge
 - `M` or the sound button: mute/unmute
 
@@ -34,6 +34,6 @@ Do not open `index.html` with `file://`. The game loads ES modules and the rigge
 
 - Guided three-ring flight tutorial and a twelve-beacon win route
 - Searchlight stealth, combat, health, crashes, win/lose screens, and restart
-- Plasma breath, echolocation, flock stealth, spiral acceleration, fury dive, and lightning harvest
-- The Forge upgrades and Book of Dragons skill tracking
+- Plasma breath, echolocation, flock stealth, spiral acceleration, Stormbreak Dive, and lightning harvest
+- The Forge upgrades and Flight Codex skill tracking
 - Dynamic weather, sea life, storm audio, graphics presets, and local vendored assets
