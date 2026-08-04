@@ -1,12 +1,11 @@
 import array
 import hashlib
 import json
-import struct
-import sys
+import math
 from pathlib import Path
 
 import bpy
-from mathutils import Vector
+from mathutils import Vector, kdtree
 
 
 ROOT = Path("/Users/arnav/Desktop/dragon-storm-game")
@@ -22,8 +21,16 @@ OUTPUTS = {
     for rig in SOURCES
 }
 REQUIRED_ACTIONS = {"Flap": [1.0, 39.0], "Glide": [1.0, 73.0]}
-GLB_JSON = 0x4E4F534A
-GLB_BIN = 0x004E4942
+DRACO_SETTINGS = {
+    "compressionLevel": 6,
+    "positionQuantizationBits": 14,
+    "normalQuantizationBits": 10,
+    "texcoordQuantizationBits": 12,
+    "colorQuantizationBits": 10,
+    "genericQuantizationBits": 12,
+}
+REGION_NAMES = ("head", "snout", "earFinsCrest", "neck", "torso", "limbs", "tail")
+LIMB_PREFIXES = ("shoulder.", "forearm.", "finger", "thigh.", "shin.", "foot.")
 
 
 def clamp(value, low=0.0, high=1.0):
@@ -125,7 +132,12 @@ def clear_scene():
         bpy.ops.object.mode_set(mode="OBJECT")
     bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete(use_global=False)
-    for collection in (bpy.data.actions, bpy.data.armatures, bpy.data.meshes):
+    for collection in (
+        bpy.data.actions,
+        bpy.data.armatures,
+        bpy.data.meshes,
+        bpy.data.materials,
+    ):
         for datablock in list(collection):
             if datablock.users == 0:
                 collection.remove(datablock)
@@ -152,17 +164,11 @@ def action_ranges():
 
 
 def topology_contract(mesh):
-    digest = hashlib.sha256()
-    for polygon in mesh.data.polygons:
-        digest.update(len(polygon.vertices).to_bytes(2, "little"))
-        for index in polygon.vertices:
-            digest.update(int(index).to_bytes(4, "little"))
     return {
         "vertices": len(mesh.data.vertices),
         "edges": len(mesh.data.edges),
         "polygons": len(mesh.data.polygons),
         "loops": len(mesh.data.loops),
-        "polygonIndexSha256": digest.hexdigest(),
     }
 
 
@@ -199,356 +205,311 @@ def weight_stats(mesh, armature):
     return result
 
 
-def calculate_sculpt(mesh, variant):
+def vertex_regions(coordinate, weights):
+    x, y, z = coordinate
+    regions = []
+    head = weights.get("head", 0.0)
+    neck = weights.get("neck", 0.0)
+    torso = weights.get("chest", 0.0) + weights.get("hips", 0.0)
+    tail = sum(weights.get(f"tail{index}", 0.0) for index in range(1, 6))
+    limbs = sum(
+        weight for name, weight in weights.items()
+        if name.startswith(LIMB_PREFIXES)
+    )
+    if head > 0.05:
+        regions.append("head")
+        if y < -0.31:
+            regions.append("snout")
+        if z > 0.59 and abs(x) > 0.018 and y > -0.36:
+            regions.append("earFinsCrest")
+    if neck > 0.05:
+        regions.append("neck")
+    if torso > 0.05:
+        regions.append("torso")
+    if limbs > 0.05:
+        regions.append("limbs")
+    if tail > 0.05:
+        regions.append("tail")
+    return regions, tail > 0.05
+
+
+def derive_sculpt(mesh, variant):
     group_names = {group.index: group.name for group in mesh.vertex_groups}
     delta_function = DELTA_FUNCTIONS[variant]
-    source = []
-    expected = []
+    source = [vertex.co.copy() for vertex in mesh.data.vertices]
+    body_length = max(co.y for co in source) - min(co.y for co in source)
     deltas = []
-    moved = 0
-    max_displacement = 0.0
-    displacement_sum = 0.0
-    for vertex in mesh.data.vertices:
-        coordinate = vertex.co.copy()
+    region_accumulators = {
+        name: {"vertices": 0, "sum": 0.0, "max": 0.0}
+        for name in REGION_NAMES
+    }
+    tail_flags = bytearray(len(source))
+    for index, (vertex, coordinate) in enumerate(zip(mesh.data.vertices, source)):
         weights = {
             group_names[entry.group]: entry.weight
             for entry in vertex.groups if entry.weight > 1e-8
         }
         delta = delta_function(coordinate, weights)
-        source.append(coordinate)
         deltas.append(delta)
-        expected.append(coordinate + delta)
         distance = delta.length
-        moved += distance > 1e-7
-        max_displacement = max(max_displacement, distance)
-        displacement_sum += distance
+        regions, is_tail = vertex_regions(coordinate, weights)
+        tail_flags[index] = is_tail
+        for name in regions:
+            stats = region_accumulators[name]
+            stats["vertices"] += 1
+            stats["sum"] += distance
+            stats["max"] = max(stats["max"], distance)
+    region_stats = {}
+    for name, stats in region_accumulators.items():
+        mean = stats["sum"] / stats["vertices"] if stats["vertices"] else 0.0
+        region_stats[name] = {
+            "vertices": stats["vertices"],
+            "meanWorldUnits": mean,
+            "maxWorldUnits": stats["max"],
+            "meanPercentBodyLength": mean / body_length * 100.0,
+            "maxPercentBodyLength": stats["max"] / body_length * 100.0,
+        }
+    expected = [coordinate + delta for coordinate, delta in zip(source, deltas)]
+    tail_stretch = edge_stretch(mesh, source, expected, tail_flags)
     return {
-        "source": source,
-        "expected": expected,
         "deltas": deltas,
-        "movedVertices": moved,
-        "maxDisplacement": max_displacement,
-        "meanDisplacement": displacement_sum / len(source),
+        "expected": expected,
+        "bodyLength": body_length,
+        "regions": region_stats,
+        "tailEdgeStretch": tail_stretch,
     }
 
 
-def parse_glb(path):
-    data = path.read_bytes()
-    magic, version, total_length = struct.unpack_from("<4sII", data, 0)
-    if magic != b"glTF" or version != 2 or total_length != len(data):
-        raise RuntimeError(f"Invalid GLB header: {path}")
-    offset = 12
-    chunks = {}
-    while offset < len(data):
-        length, chunk_type = struct.unpack_from("<II", data, offset)
-        offset += 8
-        chunks[chunk_type] = data[offset:offset + length]
-        offset += length
-    document = json.loads(chunks[GLB_JSON].rstrip(b" \x00").decode())
-    return document, chunks[GLB_BIN]
-
-
-def draco_payload(document, binary):
-    extension = document["meshes"][0]["primitives"][0]["extensions"][
-        "KHR_draco_mesh_compression"
-    ]
-    view = document["bufferViews"][extension["bufferView"]]
-    start = view.get("byteOffset", 0)
-    return binary[start:start + view["byteLength"]]
-
-
-def write_morph_glb(source, output, values, count, minimum, maximum, target_name):
-    document, binary = parse_glb(source)
-    primitive = document["meshes"][0]["primitives"][0]
-    if primitive.get("targets"):
-        raise RuntimeError(f"{source.name} already has morph targets")
-    if sys.byteorder != "little":
-        values.byteswap()
-    delta_bytes = values.tobytes()
-    logical_length = document["buffers"][0]["byteLength"]
-    binary = binary[:logical_length]
-    padding = (-len(binary)) % 4
-    binary += b"\x00" * padding
-    byte_offset = len(binary)
-    binary += delta_bytes
-    view_index = len(document.setdefault("bufferViews", []))
-    document["bufferViews"].append({
-        "buffer": 0,
-        "byteOffset": byte_offset,
-        "byteLength": len(delta_bytes),
-        "target": 34962,
-    })
-    accessor_index = len(document.setdefault("accessors", []))
-    document["accessors"].append({
-        "bufferView": view_index,
-        "byteOffset": 0,
-        "componentType": 5126,
-        "count": count,
-        "type": "VEC3",
-        "min": minimum,
-        "max": maximum,
-    })
-    primitive["targets"] = [{"POSITION": accessor_index}]
-    mesh = document["meshes"][0]
-    mesh["weights"] = [1.0]
-    mesh.setdefault("extras", {})["targetNames"] = [target_name]
-    document["buffers"][0]["byteLength"] = len(binary)
-    json_bytes = json.dumps(document, separators=(",", ":")).encode()
-    json_bytes += b" " * ((-len(json_bytes)) % 4)
-    binary += b"\x00" * ((-len(binary)) % 4)
-    total_length = 12 + 8 + len(json_bytes) + 8 + len(binary)
-    output.write_bytes(
-        struct.pack("<4sII", b"glTF", 2, total_length)
-        + struct.pack("<II", len(json_bytes), GLB_JSON) + json_bytes
-        + struct.pack("<II", len(binary), GLB_BIN) + binary
-    )
-
-
-def derive_accessor_mapping(source, count, rig):
-    epsilon = 1e-5
-    values = array.array("f", [0.0]) * (count * 3)
-    for index in range(count):
-        values[index * 3] = index * epsilon
-    temporary = Path(f"/tmp/galevein-{rig}-accessor-map.glb")
-    write_morph_glb(
-        source,
-        temporary,
-        values,
-        count,
-        [0.0, 0.0, 0.0],
-        [(count - 1) * epsilon, 0.0, 0.0],
-        "AccessorIndexMap",
-    )
-    _, mesh = import_rig(temporary)
-    shape_keys = mesh.data.shape_keys.key_blocks
-    basis, target = shape_keys[0], shape_keys[1]
-    mapping = array.array("I")
-    seen = bytearray(count)
-    max_decode_error = 0.0
-    for index in range(count):
-        encoded_value = target.data[index].co.x - basis.data[index].co.x
-        logical_index = int(round(encoded_value / epsilon))
-        if logical_index < 0 or logical_index >= count or seen[logical_index]:
-            raise RuntimeError(
-                f"Invalid Draco accessor permutation for {rig} at decoded {index}: "
-                f"{logical_index}"
-            )
-        seen[logical_index] = 1
-        mapping.append(logical_index)
-        max_decode_error = max(
-            max_decode_error, abs(encoded_value - logical_index * epsilon)
-        )
-    temporary.unlink()
-    digest = hashlib.sha256(mapping.tobytes()).hexdigest()
-    return mapping, {
-        "vertices": count,
-        "permutationPass": all(seen),
-        "maxIndexSignalDecodeError": max_decode_error,
-        "decodedToAccessorSha256": digest,
-    }
-
-
-def patch_glb_with_morph(source, output, deltas, target_name, mapping):
-    values = array.array("f", [0.0]) * (len(deltas) * 3)
-    minimum = [float("inf")] * 3
-    maximum = [float("-inf")] * 3
-    for decoded_index, delta in enumerate(deltas):
-        logical_index = mapping[decoded_index]
-        gltf_delta = (delta.x, delta.z, -delta.y)
-        for axis in range(3):
-            value = gltf_delta[axis]
-            values[logical_index * 3 + axis] = value
-            minimum[axis] = min(minimum[axis], value)
-            maximum[axis] = max(maximum[axis], value)
-    write_morph_glb(
-        source, output, values, len(deltas), minimum, maximum, target_name
-    )
-
-
-def compare_coordinates(expected, actual):
-    if len(expected) != len(actual):
-        return {"pass": False, "maxError": None, "mismatchesAbove2e4": None}
-    max_error = 0.0
-    mismatches = 0
-    for left, right in zip(expected, actual):
-        error = (left - right).length
-        max_error = max(max_error, error)
-        mismatches += error > 2e-4
+def edge_stretch(mesh, source, expected, tail_flags):
+    count = 0
+    ratio_sum = 0.0
+    min_ratio = float("inf")
+    max_ratio = 0.0
+    for edge in mesh.data.edges:
+        left, right = edge.vertices
+        if not (tail_flags[left] or tail_flags[right]):
+            continue
+        before = (source[left] - source[right]).length
+        if before <= 1e-10:
+            continue
+        ratio = (expected[left] - expected[right]).length / before
+        count += 1
+        ratio_sum += ratio
+        min_ratio = min(min_ratio, ratio)
+        max_ratio = max(max_ratio, ratio)
     return {
-        "pass": mismatches == 0,
-        "maxError": max_error,
-        "mismatchesAbove2e4": mismatches,
+        "edges": count,
+        "meanRatio": ratio_sum / count if count else 1.0,
+        "minRatio": min_ratio if count else 1.0,
+        "maxRatio": max_ratio,
     }
 
 
-def validate_output(source, output, source_coordinates, expected, source_topology):
-    source_document, source_binary = parse_glb(source)
-    output_document, output_binary = parse_glb(output)
-    source_draco = draco_payload(source_document, source_binary)
-    output_draco = draco_payload(output_document, output_binary)
-    armature, mesh = import_rig(output)
+def derive_membrane_mapping(corrected_coordinates):
+    tree = kdtree.KDTree(len(corrected_coordinates))
+    for index, coordinate in enumerate(corrected_coordinates):
+        tree.insert(coordinate, index)
+    tree.balance()
+    _, membrane_mesh = import_rig(SOURCES["membrane"])
+    mapping = array.array("I")
+    distances = []
+    for vertex in membrane_mesh.data.vertices:
+        _, index, distance = tree.find(vertex.co)
+        mapping.append(index)
+        distances.append(distance)
+    distances.sort()
+    return mapping, {
+        "vertices": len(mapping),
+        "meanNearestDistance": sum(distances) / len(distances),
+        "p95NearestDistance": distances[int(len(distances) * 0.95)],
+        "maxNearestDistance": distances[-1],
+    }
+
+
+def apply_deltas(mesh, deltas, mapping=None):
+    if mapping is None:
+        for vertex, delta in zip(mesh.data.vertices, deltas):
+            vertex.co += delta
+    else:
+        for vertex, corrected_index in zip(mesh.data.vertices, mapping):
+            vertex.co += deltas[corrected_index]
+    if getattr(mesh.data, "has_custom_normals", False):
+        bpy.context.view_layer.objects.active = mesh
+        mesh.select_set(True)
+        bpy.ops.mesh.customdata_custom_splitnormals_clear()
+    mesh.data.update()
+
+
+def export_baked(path):
+    bpy.ops.export_scene.gltf(
+        filepath=str(path),
+        export_format="GLB",
+        export_draco_mesh_compression_enable=True,
+        export_draco_mesh_compression_level=DRACO_SETTINGS["compressionLevel"],
+        export_draco_position_quantization=DRACO_SETTINGS["positionQuantizationBits"],
+        export_draco_normal_quantization=DRACO_SETTINGS["normalQuantizationBits"],
+        export_draco_texcoord_quantization=DRACO_SETTINGS["texcoordQuantizationBits"],
+        export_draco_color_quantization=DRACO_SETTINGS["colorQuantizationBits"],
+        export_draco_generic_quantization=DRACO_SETTINGS["genericQuantizationBits"],
+        export_animations=True,
+        export_animation_mode="ACTIONS",
+        export_force_sampling=True,
+        export_skins=True,
+        export_influence_nb=4,
+        export_all_influences=False,
+        export_leaf_bone=False,
+        export_optimize_animation_size=True,
+    )
+
+
+def glb_contract(path):
+    data = path.read_bytes()
+    json_length = int.from_bytes(data[12:16], "little")
+    document = json.loads(data[20:20 + json_length].rstrip(b" \x00").decode())
+    primitive = document["meshes"][0]["primitives"][0]
+    attributes = {
+        name: document["accessors"][accessor]["count"]
+        for name, accessor in primitive["attributes"].items()
+    }
+    return {
+        "dracoCompressed": "KHR_draco_mesh_compression" in primitive.get("extensions", {}),
+        "morphTargets": len(primitive.get("targets", [])),
+        "meshWeights": document["meshes"][0].get("weights", []),
+        "attributeCounts": attributes,
+    }
+
+
+def surface_shift(expected, exported_vertices, sample_limit=100000):
+    tree = kdtree.KDTree(len(exported_vertices))
+    for index, vertex in enumerate(exported_vertices):
+        tree.insert(vertex.co, index)
+    tree.balance()
+    stride = max(1, len(expected) // sample_limit)
+    distances = []
+    for index in range(0, len(expected), stride):
+        _, _, distance = tree.find(expected[index])
+        distances.append(distance)
+    distances.sort()
+    return {
+        "sampledVertices": len(distances),
+        "meanWorldUnits": sum(distances) / len(distances),
+        "p95WorldUnits": distances[int(len(distances) * 0.95)],
+        "maxWorldUnits": distances[-1],
+    }
+
+
+def validate_export(path, expected, source_topology):
+    armature, mesh = import_rig(path)
     topology = topology_contract(mesh)
     weights = weight_stats(mesh, armature)
     actions = action_ranges()
-    shape_keys = mesh.data.shape_keys.key_blocks if mesh.data.shape_keys else []
-    if len(shape_keys) != 2:
-        raise RuntimeError(f"{output.name} imported with {len(shape_keys)} shape keys")
-    basis = shape_keys[0]
-    target = shape_keys[1]
-    basis_order = compare_coordinates(source_coordinates, [item.co for item in basis.data])
-    target_order = compare_coordinates(expected, [item.co for item in target.data])
+    contract = glb_contract(path)
+    shift = surface_shift(expected, mesh.data.vertices)
+    attribute_counts = contract["attributeCounts"]
+    required_attributes = ("POSITION", "NORMAL", "TEXCOORD_0", "JOINTS_0", "WEIGHTS_0")
+    attributes_aligned = all(
+        attribute_counts.get(name) == source_topology["vertices"]
+        for name in required_attributes
+    )
     validation = {
         "topology": topology,
         "vertexCountUnchanged": topology["vertices"] == source_topology["vertices"],
         "edgeCountUnchanged": topology["edges"] == source_topology["edges"],
         "polygonCountUnchanged": topology["polygons"] == source_topology["polygons"],
-        "polygonOrderingUnchanged": (
-            topology["polygonIndexSha256"] == source_topology["polygonIndexSha256"]
-        ),
-        "baseVertexOrdering": basis_order,
-        "morphVertexOrdering": target_order,
-        "dracoPayloadByteIdentical": source_draco == output_draco,
-        "dracoPayloadSha256": hashlib.sha256(output_draco).hexdigest(),
-        "morphDefaultWeight": target.value,
         "weights": weights,
         "actions": actions,
         "requiredActionsPass": all(
             actions.get(name) == frame_range
             for name, frame_range in REQUIRED_ACTIONS.items()
         ),
-        "outputBytes": output.stat().st_size,
+        "glb": contract,
+        "requiredAttributeCountsAligned": attributes_aligned,
+        "normalLoops": len(mesh.data.corner_normals),
+        "surfaceShiftAfterDraco": shift,
+        "positionQuantizationStepUpperBound": (
+            max(mesh.dimensions) / ((2 ** DRACO_SETTINGS["positionQuantizationBits"]) - 1)
+        ),
+        "outputBytes": path.stat().st_size,
     }
     validation["pass"] = all((
         validation["vertexCountUnchanged"],
         validation["edgeCountUnchanged"],
         validation["polygonCountUnchanged"],
-        validation["polygonOrderingUnchanged"],
-        basis_order["pass"],
-        target_order["pass"],
-        validation["dracoPayloadByteIdentical"],
-        abs(target.value - 1.0) < 1e-6,
         weights["zeroWeight"] == 0,
         weights["overFour"] == 0,
         weights["negativeWeights"] == 0,
         weights["invalidJoints"] == 0,
         weights["deviates1e3"] == 0,
         validation["requiredActionsPass"],
+        contract["dracoCompressed"],
+        contract["morphTargets"] == 0,
+        not contract["meshWeights"],
+        attributes_aligned,
+        validation["normalLoops"] == source_topology["loops"],
     ))
     if not validation["pass"]:
-        raise RuntimeError(f"Validation failed for {output.name}: {validation}")
-    return armature, mesh, validation
-
-
-def point_at(obj, target):
-    obj.rotation_euler = (Vector(target) - obj.location).to_track_quat("-Z", "Y").to_euler()
-
-
-def render_angles(variant, armature, mesh):
-    render_dir = REPORT_DIR / "renders"
-    render_dir.mkdir(parents=True, exist_ok=True)
-    scene = bpy.context.scene
-    scene.render.engine = "BLENDER_EEVEE"
-    scene.render.resolution_x = 768
-    scene.render.resolution_y = 768
-    scene.render.resolution_percentage = 100
-    scene.render.image_settings.file_format = "PNG"
-    scene.world.color = (0.018, 0.026, 0.045)
-    material = bpy.data.materials.new(f"{variant}_clay")
-    material.diffuse_color = (0.12, 0.31, 0.42, 1.0)
-    material.metallic = 0.22
-    material.roughness = 0.38
-    mesh.data.materials.clear()
-    mesh.data.materials.append(material)
-    if armature.animation_data:
-        armature.animation_data.action = None
-    bpy.context.scene.frame_set(1)
-    camera_data = bpy.data.cameras.new("ComparisonCamera")
-    camera = bpy.data.objects.new("ComparisonCamera", camera_data)
-    bpy.context.collection.objects.link(camera)
-    camera.data.lens = 58
-    scene.camera = camera
-    for location, energy, size in (
-        ((1.25, -1.3, 1.55), 1100, 3.0),
-        ((-1.0, -0.4, 1.1), 800, 2.5),
-        ((0.0, 1.2, 1.4), 950, 2.4),
-    ):
-        light_data = bpy.data.lights.new("StudioArea", "AREA")
-        light_data.energy = energy
-        light_data.shape = "DISK"
-        light_data.size = size
-        light = bpy.data.objects.new("StudioArea", light_data)
-        light.location = location
-        point_at(light, (0.0, 0.0, 0.38))
-        bpy.context.collection.objects.link(light)
-    views = {
-        "front": ((0.0, -1.55, 0.55), (0.0, 0.0, 0.34)),
-        "side": ((1.40, -0.05, 0.55), (0.0, 0.0, 0.34)),
-        "threequarter": ((1.05, -1.18, 0.88), (0.0, 0.0, 0.34)),
-    }
-    paths = {}
-    for name, (location, target) in views.items():
-        camera.location = location
-        point_at(camera, target)
-        path = render_dir / f"{variant}-{name}.png"
-        scene.render.filepath = str(path)
-        bpy.ops.render.render(write_still=True)
-        paths[name] = str(path)
-    return paths
+        raise RuntimeError(f"Validation failed for {path.name}: {validation}")
+    return validation
 
 
 def main():
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    report = {"strategy": (
-        "The original Draco primitive is retained byte-for-byte. A single default-on "
-        "POSITION morph target stores the displacement, preserving base vertex indices, "
-        "topology, skin attributes, and animation data exactly."
-    ), "accessorMappings": {}, "variants": {}}
-    mappings = {}
-    for rig, source in SOURCES.items():
-        _, mesh = import_rig(source)
-        mappings[rig], mapping_report = derive_accessor_mapping(
-            source, len(mesh.data.vertices), rig
-        )
-        report["accessorMappings"][rig] = mapping_report
+    _, corrected_mesh = import_rig(SOURCES["corrected"])
+    corrected_coordinates = [vertex.co.copy() for vertex in corrected_mesh.data.vertices]
+    membrane_mapping, mapping_report = derive_membrane_mapping(corrected_coordinates)
+    del corrected_coordinates
+    report = {
+        "strategy": (
+            "Displacements are baked into base POSITION, geometric normals are "
+            "recomputed, and every primitive attribute is jointly re-encoded with Draco."
+        ),
+        "dracoSettings": DRACO_SETTINGS,
+        "membraneToCorrectedGeometryMapping": mapping_report,
+        "variants": {},
+    }
     for variant in VARIANTS:
         report["variants"][variant] = {}
-        for rig, source in SOURCES.items():
-            armature, mesh = import_rig(source)
-            source_topology = topology_contract(mesh)
-            source_weights = weight_stats(mesh, armature)
-            source_actions = action_ranges()
-            sculpt = calculate_sculpt(mesh, variant)
-            output = OUTPUTS[(variant, rig)]
-            patch_glb_with_morph(
-                source,
-                output,
-                sculpt["deltas"],
-                f"Galevein_{variant}",
-                mappings[rig],
-            )
-            validated_armature, validated_mesh, validation = validate_output(
-                source, output, sculpt["source"], sculpt["expected"], source_topology
-            )
-            entry = {
-                "source": str(source),
-                "output": str(output),
-                "query": variant if rig == "corrected" else f"{variant}-membrane",
-                "sourceTopology": source_topology,
-                "sourceWeights": source_weights,
-                "sourceActions": source_actions,
-                "sculpt": {
-                    "movedVertices": sculpt["movedVertices"],
-                    "maxDisplacement": sculpt["maxDisplacement"],
-                    "meanDisplacement": sculpt["meanDisplacement"],
-                },
-                "validation": validation,
-            }
-            if rig == "corrected":
-                entry["renders"] = render_angles(variant, validated_armature, validated_mesh)
-            report["variants"][variant][rig] = entry
+        corrected_armature, corrected_mesh = import_rig(SOURCES["corrected"])
+        corrected_topology = topology_contract(corrected_mesh)
+        sculpt = derive_sculpt(corrected_mesh, variant)
+        apply_deltas(corrected_mesh, sculpt["deltas"])
+        corrected_output = OUTPUTS[(variant, "corrected")]
+        export_baked(corrected_output)
+        corrected_validation = validate_export(
+            corrected_output, sculpt["expected"], corrected_topology
+        )
+        del sculpt["expected"]
+        report["variants"][variant]["corrected"] = {
+            "source": str(SOURCES["corrected"]),
+            "output": str(corrected_output),
+            "query": variant,
+            "bodyLengthWorldUnits": sculpt["bodyLength"],
+            "regionDisplacements": sculpt["regions"],
+            "tailEdgeStretch": sculpt["tailEdgeStretch"],
+            "validation": corrected_validation,
+        }
+
+        membrane_armature, membrane_mesh = import_rig(SOURCES["membrane"])
+        membrane_topology = topology_contract(membrane_mesh)
+        membrane_expected = [
+            vertex.co + sculpt["deltas"][corrected_index]
+            for vertex, corrected_index in zip(membrane_mesh.data.vertices, membrane_mapping)
+        ]
+        apply_deltas(membrane_mesh, sculpt["deltas"], membrane_mapping)
+        membrane_output = OUTPUTS[(variant, "membrane")]
+        export_baked(membrane_output)
+        membrane_validation = validate_export(
+            membrane_output, membrane_expected, membrane_topology
+        )
+        report["variants"][variant]["membrane"] = {
+            "source": str(SOURCES["membrane"]),
+            "output": str(membrane_output),
+            "query": f"{variant}-membrane",
+            "validation": membrane_validation,
+        }
     report_path = REPORT_DIR / "build-report.json"
     report_path.write_text(json.dumps(report, indent=2) + "\n")
-    print("GALEVEIN_VARIANTS=" + json.dumps(report, separators=(",", ":")))
+    print("GALEVEIN_BAKED=" + json.dumps(report, separators=(",", ":")))
 
 
 if __name__ == "__main__":

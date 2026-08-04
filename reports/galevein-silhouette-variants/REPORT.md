@@ -1,109 +1,144 @@
-# Galevein silhouette variants
+# Galevein silhouette variants — baked pass
 
-## Scope and legal boundary
+## Commercial and legal boundary
 
-This pass reduces overlap with recognizable creature-design traits. It is not legal
-clearance, does not establish that any legal threshold has been met, and should not be
-treated as a substitute for qualified review before a commercial release.
+This work reduces overlap with recognizable design traits. It is not legal clearance and
+does not establish that any legal threshold has been met. A qualified reviewer should
+assess any candidate before commercial release.
 
-## Topology-preservation method
+## Baked export result
 
-Blender's normal Draco export path was rejected during the build because it re-ordered
-decoded vertices even though it carried positions and skin attributes together. The final
-files instead retain each source GLB's existing Draco primitive byte-for-byte and append a
-single default-on `POSITION` morph target containing only the sculpt displacement.
+The permanent morph targets have been removed. Each displacement is now baked into base
+`POSITION`; custom imported normals are cleared so geometric normals are recomputed, and
+`POSITION`, `NORMAL`, `TEXCOORD_0`, `JOINTS_0`, and `WEIGHTS_0` are jointly re-encoded
+through Blender's Draco encoder.
 
-That method preserves the source vertex indices, triangle ordering, skin attributes,
-skeleton, and animations exactly while moving the rendered vertices before skinning.
-It costs file size: corrected variants are about 28.59 MB and membrane variants about
-28.92 MB, versus about 16 MB for the source files. The original Draco payload is still
-used unchanged by `DRACOLoader`; the added morph target is uncompressed float data.
+Matched explicit settings are compression level 6, position 14 bits, normal 10 bits,
+texcoord 12 bits, color 10 bits, and generic attributes 12 bits. The six files are
+14.31–14.49 MiB each instead of roughly 29 MiB. Every output has zero morph targets and
+no mesh-level morph weights.
 
-For every one of the six files:
+All six files pass:
 
-- Vertex count is unchanged at 1,080,189.
-- Edge count is unchanged at 1,242,070.
-- Polygon count is unchanged at 468,563.
-- The decoded polygon-index hash matches its source.
-- The base Draco payload SHA-256 matches its source byte-for-byte.
-- Base per-index coordinate error is exactly 0.
-- Applied morph per-index error is at most 1.74e-7, with zero mismatches above 2e-4.
-- There are zero unweighted vertices, zero negative weights, zero invalid joints, zero
-  vertices above four influences, and zero sums outside the 1e-3 runtime tolerance.
-- `Flap` remains frames 1-39 and `Glide` remains frames 1-73.
+- 1,080,189 vertices, 1,242,070 edges, 468,563 polygons, and 1,405,689 loops.
+- All five required primitive attributes contain 1,080,189 entries.
+- Zero unweighted vertices, negative weights, invalid joints, or vertices above four
+  influences; all sums are within the 1e-3 runtime tolerance.
+- `Flap` remains frames 1–39 and `Glide` remains frames 1–73.
+- Corrected/membrane geometry correspondence was solved spatially before baking:
+  mean nearest-source error 2.24e-7, p95 4.17e-7, maximum 5.40e-7 world units.
 
-Full machine-readable evidence is in `build-report.json`.
+Draco surface shift was measured rather than assumed. Across the six files, sampled
+nearest-surface displacement is:
 
-## Variants
+- Mean: 2.96e-5 to 3.08e-5 world units.
+- p95: 4.26e-5 to 4.42e-5 world units.
+- Maximum: 5.26e-5 to 5.47e-5 world units.
 
-### Voltspine — strongest
+Body length is 0.899995 world units, so the worst measured Draco shift is about 0.0061%
+of body length. It is measurable but negligible relative to the sculpt displacement.
+Full evidence is in `build-report.json`.
 
-Queries: `?rig=voltspine` and `?rig=voltspine-membrane`
+## Regional displacement
 
-The skull is compressed into a narrow wedge, the paired head fins are pulled inward and
-up into a tall storm-spine, the torso is deeper and narrower, and the terminal tail
-surfaces are folded into an asymmetric vertical lightning fork. This is the strongest
-silhouette departure because the head crown and tail termination both stop reading as the
-source design's familiar paired-fin arrangement.
-
-Renders: `renders/voltspine-front.png`, `renders/voltspine-side.png`,
-`renders/voltspine-threequarter.png`.
+Values below are `mean / maximum` displacement, followed by `mean / maximum` as a
+percentage of the 0.899995-unit body length.
 
 ### Stormcrest
 
-Queries: `?rig=stormcrest` and `?rig=stormcrest-membrane`
+- Head: 0.03384 / 0.10091 units; 3.76% / 11.21%.
+- Snout: 0.06685 / 0.10091 units; 7.43% / 11.21%.
+- Ear-fins/crest: 0.03376 / 0.10091 units; 3.75% / 11.21%.
+- Neck: 0.00777 / 0.08345 units; 0.86% / 9.27%.
+- Torso: 0.00520 / 0.02494 units; 0.58% / 2.77%.
+- Limbs and wings: 0.00098 / 0.02058 units; 0.11% / 2.29%.
+- Tail: 0.02584 / 0.20900 units; 2.87% / 23.22%.
 
-The muzzle is lengthened and tapered, the brow is sharpened, the head fins are drawn
-inward and swept backward into a three-point crest, the neck and chest gain depth, and
-the tail fins are compressed into a raised vertical vane. It reads more heraldic and
-storm-bird-like than the source, but the broad wing/body relationship is still familiar.
+### Voltspine
 
-Renders: `renders/stormcrest-front.png`, `renders/stormcrest-side.png`,
-`renders/stormcrest-threequarter.png`.
+- Head: 0.02539 / 0.13058 units; 2.82% / 14.51%.
+- Snout: 0.04496 / 0.13058 units; 5.00% / 14.51%.
+- Ear-fins/crest: 0.04011 / 0.13058 units; 4.46% / 14.51%.
+- Neck: 0.00866 / 0.04881 units; 0.96% / 5.42%.
+- Torso: 0.00754 / 0.03454 units; 0.84% / 3.84%.
+- Limbs and wings: 0.00171 / 0.02850 units; 0.19% / 3.17%.
+- Tail: 0.02533 / 0.23459 units; 2.81% / 26.07%.
 
-### Thunderhook — weakest
+### Thunderhook
 
-Queries: `?rig=thunderhook` and `?rig=thunderhook-membrane`
+- Head: 0.03390 / 0.10175 units; 3.77% / 11.31%.
+- Snout: 0.06574 / 0.10175 units; 7.30% / 11.31%.
+- Ear-fins/crest: 0.03077 / 0.06763 units; 3.42% / 7.51%.
+- Neck: 0.00845 / 0.08239 units; 0.94% / 9.15%.
+- Torso: 0.00391 / 0.02041 units; 0.43% / 2.27%.
+- Limbs and wings: 0.00063 / 0.01266 units; 0.07% / 1.41%.
+- Tail: 0.02615 / 0.15483 units; 2.91% / 17.20%.
 
-The muzzle is pulled into a longer downturned hook, the upper head fins are flattened
-into swept cheek ridges, the neck is thickened, and the terminal tail is narrowed and
-extended into a low needle-like profile. The head profile changes materially in side
-view, but the paired appendage roots remain readable from the rear. This is the weakest
-commercial-risk-reduction option of the three.
+The owner's 2–3% working threshold is reasonable for broad silhouette regions. The
+snout, crest, and localized tail extrema clear it. Neck, torso, limbs, and nearly the
+entire wing planform do not. This explains both observations: the variants are visibly
+different in properly framed side and top views, while the previous renders hid those
+differences and the overall creature still shares most of its body language.
 
-Renders: `renders/thunderhook-front.png`, `renders/thunderhook-side.png`,
-`renders/thunderhook-threequarter.png`.
+## Silhouette evidence and tail diagnosis
 
-## Runtime and deformation checks
+Flat, unshaded comparisons against the base are:
 
-`verify_rig_runtime.py` was run for every corrected/membrane pair with cache disabled and
-900 measured frames. All six runtime GPU-input weight audits passed. `Flap` and `Glide`
-loaded for every file; membrane variants report all six membrane bones.
+- `silhouettes/side-comparison.png`
+- `silhouettes/threequarter-comparison.png`
+- `silhouettes/top-comparison.png`
 
-Thirty in-engine captures are under `in-engine/`: rest, wing-up, wing-down, leap, and
-dive for both rig types of all three designs. The capture report records zero console
-warnings/errors, zero external requests, and zero requests to the old `audio/` directory
-for every variant. No new neck, tail, wing-root, or membrane pinching is visible at
-gameplay scale in the four animated checks. The rest camera is partly occluded by level
-geometry, so the consistent Blender views are the better rest-silhouette evidence.
+The frayed terminal tail geometry is already present in the unmodified base; the base
+side and three-quarter silhouettes show it directly. No connectivity is torn and topology
+counts are unchanged. The displacement does reshape and sometimes exaggerate those fins.
+Tail-edge maximum stretch is 3.88× for Stormcrest, 5.19× for Voltspine, and 2.61× for
+Thunderhook. Voltspine's long vertical fork is therefore an intentional but severe local
+stretch, not newly disconnected geometry; it remains the highest pinching/shading risk.
 
-Performance is not fully cleared. Voltspine measured p95 9.1 ms for both rigs and
-Thunderhook measured p95 9.2 ms for both rigs. Stormcrest's first pair measured p95
-33.4/25.0 ms and its warmed retest measured 16.8/16.8 ms while machine load averages were
-roughly 100-130. This does not meet the requested approximately 10 ms threshold. The
-result is confounded by severe ambient load, but it remains a failed performance check
-until repeated in a stable load window.
+## Runtime and deformation
 
-## Limits of topology-only change
+The baked files were reloaded in-engine with cache disabled. All six GPU-input weight
+audits pass. Thirty fresh baked captures under `in-engine-baked/` cover rest, wing-up,
+wing-down, leap, and dive for corrected and membrane forms. The capture report records
+zero console warnings/errors, zero external requests, and zero requests to the old
+`audio/` directory.
 
-The bat-like wing planform, wing-finger count, limb attachment points, broad skeletal
-proportions, eye placement, and the connectivity roots of the head and tail appendages
-cannot be replaced cleanly by moving existing vertices. The ear-fin surfaces can be
-folded into crests or ridges, but cannot be removed or turned into genuinely new separate
-anatomy. The same is true of the tail-fin roots. Texture and surface-detail recognition
-were outside this geometry-only pass.
+The clean visible-tab representative performance sample used baked Stormcrest corrected
+as the warm-up and measured its membrane counterpart immediately afterward:
 
-Blunt recommendation: Voltspine is the only variant here that changes both high-value
-recognition zones strongly enough to justify further review. Stormcrest is a viable
-second choice. Thunderhook should not be selected if risk reduction is the main goal.
-Even Voltspine should receive qualified commercial-release review.
+- Stormcrest membrane: p50 8.3 ms, p95 9.3 ms, p99 9.4 ms over 900 frames.
+- Load average before: 11.34 / 16.54 / 32.44.
+- Load average after: 11.16 / 16.42 / 32.30.
+
+The first shader-warm-up sample in that same visible window measured p95 16.8 ms; the
+next sample fell to 9.3 ms at effectively unchanged load. The old 16.8-vs-9.1 variant gap
+was not a credible geometry effect.
+
+## Blunt assessment
+
+The prior renders were defective evidence: they were cropped, overexposed, and lacked a
+base reference. The corrected silhouettes show real differences. Voltspine and Stormcrest
+materially change the head and tail; Thunderhook changes the side profile.
+
+That does not mean this route produces a genuinely new overall creature design. The
+top-down comparison is dominated by the unchanged wing planform, shoulder placement,
+limb attachment, torso proportions, and appendage roots. Eye placement, facial topology,
+surface language, and wing-finger structure also remain fixed.
+
+Plain conclusion: vertex movement can reduce a few high-value recognizable traits, but
+it cannot confidently turn this asset into an independently designed commercial hero
+creature. None of these variants should be represented as sufficient on its own. If the
+owner needs strong commercial confidence, commissioning or sourcing a genuinely different
+mesh is the defensible route. Of these limited-risk-reduction options, Voltspine is the
+most visibly different but also has the worst local tail stretching; Stormcrest is the
+safer geometry compromise.
+
+## Redundant files after selection
+
+Nothing was deleted. Once a design is selected, the two unselected corrected/membrane
+pairs become redundant (four GLBs, about 58 MiB). If membrane testing is abandoned, the
+selected membrane GLB is also redundant. The old morph-era blobs no longer exist as
+working-tree files because the same six paths were replaced by baked exports, but they
+remain in Git history. `renders/`, `in-engine/`, and the pre-bake runtime JSON files are
+historical evidence superseded by `silhouettes/`, `in-engine-baked/`, and
+`runtime-baked-*.json`; they can be pruned separately after review.

@@ -1,0 +1,112 @@
+{
+  "baseUrl": "http://127.0.0.1:8000/index.html",
+  "cdp": "http://127.0.0.1:9224",
+  "framesPerRig": 300,
+  "order": "original-first",
+  "rigs": {
+    "voltspine": {
+      "url": "http://127.0.0.1:8000/index.html?rig=voltspine&verification=1785862860757927000",
+      "weights": {
+        "meshes": 1,
+        "vertices": 1080189,
+        "zeroWeight": 0,
+        "deviates1e3": 0,
+        "negativeWeights": 0,
+        "minSum": 0.999999955,
+        "maxSum": 1.000000045,
+        "meanSum": 1.000000009,
+        "influences": {
+          "0": 0,
+          "1": 88224,
+          "2": 96485,
+          "3": 388927,
+          "4": 506553
+        },
+        "minJoint": 0,
+        "maxJoint": 22,
+        "invalidJoints": 0
+      },
+      "weightChecks": {
+        "zeroWeightPass": true,
+        "normalizationPass": true,
+        "negativeWeightPass": true,
+        "jointRangePass": true,
+        "influenceCeilingPass": true
+      },
+      "frames": {
+        "samples": 304,
+        "p50": 8.3,
+        "p95": 9.1,
+        "p99": 9.1
+      },
+      "loadBefore": {
+        "loadAverage": [
+          4.27,
+          8.54,
+          22.53
+        ],
+        "uptime": "1:01  up 1 day,  4:30, 1 user, load averages: 4.27 8.54 22.53"
+      },
+      "loadAfter": {
+        "loadAverage": [
+          4.27,
+          8.54,
+          22.53
+        ],
+        "uptime": "1:01  up 1 day,  4:30, 1 user, load averages: 4.27 8.54 22.53"
+      }
+    },
+    "voltspine-membrane": {
+      "url": "http://127.0.0.1:8000/index.html?rig=voltspine-membrane&verification=1785862871936216000",
+      "weights": {
+        "meshes": 1,
+        "vertices": 1080189,
+        "zeroWeight": 0,
+        "deviates1e3": 0,
+        "negativeWeights": 0,
+        "minSum": 0.999999955,
+        "maxSum": 1.000000045,
+        "meanSum": 1.000000007,
+        "influences": {
+          "0": 0,
+          "1": 88224,
+          "2": 82858,
+          "3": 203922,
+          "4": 705185
+        },
+        "minJoint": 0,
+        "maxJoint": 28,
+        "invalidJoints": 0
+      },
+      "weightChecks": {
+        "zeroWeightPass": true,
+        "normalizationPass": true,
+        "negativeWeightPass": true,
+        "jointRangePass": true,
+        "influenceCeilingPass": true
+      },
+      "frames": {
+        "samples": 300,
+        "p50": 8.3,
+        "p95": 9.1,
+        "p99": 9.3
+      },
+      "loadBefore": {
+        "loadAverage": [
+          4.27,
+          8.54,
+          22.53
+        ],
+        "uptime": "1:01  up 1 day,  4:30, 1 user, load averages: 4.27 8.54 22.53"
+      },
+      "loadAfter": {
+        "loadAverage": [
+          4.33,
+          8.48,
+          22.43
+        ],
+        "uptime": "1:01  up 1 day,  4:30, 1 user, load averages: 4.33 8.48 22.43"
+      }
+    }
+  }
+}

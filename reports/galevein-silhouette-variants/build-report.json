@@ -1,18 +1,18 @@
 {
-  "strategy": "The original Draco primitive is retained byte-for-byte. A single default-on POSITION morph target stores the displacement, preserving base vertex indices, topology, skin attributes, and animation data exactly.",
-  "accessorMappings": {
-    "corrected": {
-      "vertices": 1080189,
-      "permutationPass": true,
-      "maxIndexSignalDecodeError": 1.966800690311743e-06,
-      "decodedToAccessorSha256": "392efe6efed93380ace48406c7c8407132af9633c1580d06734b900ff1e0a8a3"
-    },
-    "membrane": {
-      "vertices": 1080189,
-      "permutationPass": true,
-      "maxIndexSignalDecodeError": 3.8567447653292675e-06,
-      "decodedToAccessorSha256": "392efe6efed93380ace48406c7c8407132af9633c1580d06734b900ff1e0a8a3"
-    }
+  "strategy": "Displacements are baked into base POSITION, geometric normals are recomputed, and every primitive attribute is jointly re-encoded with Draco.",
+  "dracoSettings": {
+    "compressionLevel": 6,
+    "positionQuantizationBits": 14,
+    "normalQuantizationBits": 10,
+    "texcoordQuantizationBits": 12,
+    "colorQuantizationBits": 10,
+    "genericQuantizationBits": 12
+  },
+  "membraneToCorrectedGeometryMapping": {
+    "vertices": 1080189,
+    "meanNearestDistance": 2.2379992801271625e-07,
+    "p95NearestDistance": 4.174985122062935e-07,
+    "maxNearestDistance": 5.399486440182955e-07
   },
   "variants": {
     "stormcrest": {
@@ -20,70 +20,74 @@
         "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_corrected.glb",
         "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_stormcrest_corrected.glb",
         "query": "stormcrest",
-        "sourceTopology": {
-          "vertices": 1080189,
-          "edges": 1242070,
-          "polygons": 468563,
-          "loops": 1405689,
-          "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
-        },
-        "sourceWeights": {
-          "vertices": 1080189,
-          "zeroWeight": 0,
-          "overFour": 0,
-          "negativeWeights": 0,
-          "invalidJoints": 0,
-          "deviates1e3": 0,
-          "minSum": 0.9998168349266052,
-          "maxSum": 1.0001832023262978,
-          "influences": {
-            "0": 0,
-            "1": 88224,
-            "2": 96485,
-            "3": 388927,
-            "4": 506553
+        "bodyLengthWorldUnits": 0.8999947011470795,
+        "regionDisplacements": {
+          "head": {
+            "vertices": 163716,
+            "meanWorldUnits": 0.03384131169204317,
+            "maxWorldUnits": 0.10091445685105316,
+            "meanPercentBodyLength": 3.760167881978756,
+            "maxPercentBodyLength": 11.212783444439575
+          },
+          "snout": {
+            "vertices": 68136,
+            "meanWorldUnits": 0.06685076021758753,
+            "maxWorldUnits": 0.10091445685105316,
+            "meanPercentBodyLength": 7.427905979044493,
+            "maxPercentBodyLength": 11.212783444439575
+          },
+          "earFinsCrest": {
+            "vertices": 24450,
+            "meanWorldUnits": 0.03376143406975688,
+            "maxWorldUnits": 0.10091445685105316,
+            "meanPercentBodyLength": 3.751292538359012,
+            "maxPercentBodyLength": 11.212783444439575
+          },
+          "neck": {
+            "vertices": 139488,
+            "meanWorldUnits": 0.007768122913122702,
+            "maxWorldUnits": 0.08345418613482829,
+            "meanPercentBodyLength": 0.8631298499004401,
+            "maxPercentBodyLength": 9.272741942642837
+          },
+          "torso": {
+            "vertices": 346793,
+            "meanWorldUnits": 0.005197456470624046,
+            "maxWorldUnits": 0.024940908480436504,
+            "meanPercentBodyLength": 0.5774985634915049,
+            "maxPercentBodyLength": 2.771228369305765
+          },
+          "limbs": {
+            "vertices": 688324,
+            "meanWorldUnits": 0.0009784338836701524,
+            "maxWorldUnits": 0.02057553431664239,
+            "meanPercentBodyLength": 0.10871551603838323,
+            "maxPercentBodyLength": 2.2861839397963166
+          },
+          "tail": {
+            "vertices": 174856,
+            "meanWorldUnits": 0.025837783229412072,
+            "maxWorldUnits": 0.20900278199765707,
+            "meanPercentBodyLength": 2.8708817059123546,
+            "maxPercentBodyLength": 23.22266805918686
           }
         },
-        "sourceActions": {
-          "Flap": [
-            1.0,
-            39.0
-          ],
-          "Glide": [
-            1.0,
-            73.0
-          ]
-        },
-        "sculpt": {
-          "movedVertices": 567247,
-          "maxDisplacement": 0.20900278199765707,
-          "meanDisplacement": 0.010288492959340484
+        "tailEdgeStretch": {
+          "edges": 203116,
+          "meanRatio": 1.0654346622952184,
+          "minRatio": 0.25085990697503924,
+          "maxRatio": 3.8783525122721616
         },
         "validation": {
           "topology": {
             "vertices": 1080189,
             "edges": 1242070,
             "polygons": 468563,
-            "loops": 1405689,
-            "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
+            "loops": 1405689
           },
           "vertexCountUnchanged": true,
           "edgeCountUnchanged": true,
           "polygonCountUnchanged": true,
-          "polygonOrderingUnchanged": true,
-          "baseVertexOrdering": {
-            "pass": true,
-            "maxError": 0.0,
-            "mismatchesAbove2e4": 0
-          },
-          "morphVertexOrdering": {
-            "pass": true,
-            "maxError": 1.737759081973225e-07,
-            "mismatchesAbove2e4": 0
-          },
-          "dracoPayloadByteIdentical": true,
-          "dracoPayloadSha256": "14ec8361316586abcbb5dae0b3318fd3575206cbe26d82a7f97931dae25fec69",
-          "morphDefaultWeight": 1.0,
           "weights": {
             "vertices": 1080189,
             "zeroWeight": 0,
@@ -92,7 +96,7 @@
             "invalidJoints": 0,
             "deviates1e3": 0,
             "minSum": 0.9998168349266052,
-            "maxSum": 1.0001832023262978,
+            "maxSum": 1.0001831948757172,
             "influences": {
               "0": 0,
               "1": 88224,
@@ -112,83 +116,45 @@
             ]
           },
           "requiredActionsPass": true,
-          "outputBytes": 28594632,
+          "glb": {
+            "dracoCompressed": true,
+            "morphTargets": 0,
+            "meshWeights": [],
+            "attributeCounts": {
+              "POSITION": 1080189,
+              "NORMAL": 1080189,
+              "TEXCOORD_0": 1080189,
+              "JOINTS_0": 1080189,
+              "WEIGHTS_0": 1080189
+            }
+          },
+          "requiredAttributeCountsAligned": true,
+          "normalLoops": 1405689,
+          "surfaceShiftAfterDraco": {
+            "sampledVertices": 108019,
+            "meanWorldUnits": 3.0429186189007154e-05,
+            "p95WorldUnits": 4.382052429718897e-05,
+            "maxWorldUnits": 5.448989395517856e-05
+          },
+          "positionQuantizationStepUpperBound": 6.629717347823183e-05,
+          "outputBytes": 15018684,
           "pass": true
-        },
-        "renders": {
-          "front": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/stormcrest-front.png",
-          "side": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/stormcrest-side.png",
-          "threequarter": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/stormcrest-threequarter.png"
         }
       },
       "membrane": {
         "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_membrane.glb",
         "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_stormcrest_membrane.glb",
         "query": "stormcrest-membrane",
-        "sourceTopology": {
-          "vertices": 1080189,
-          "edges": 1242070,
-          "polygons": 468563,
-          "loops": 1405689,
-          "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
-        },
-        "sourceWeights": {
-          "vertices": 1080189,
-          "zeroWeight": 0,
-          "overFour": 0,
-          "negativeWeights": 0,
-          "invalidJoints": 0,
-          "deviates1e3": 0,
-          "minSum": 0.9998168349266052,
-          "maxSum": 1.0001831948757172,
-          "influences": {
-            "0": 0,
-            "1": 88224,
-            "2": 82858,
-            "3": 203922,
-            "4": 705185
-          }
-        },
-        "sourceActions": {
-          "Flap": [
-            1.0,
-            39.0
-          ],
-          "Glide": [
-            1.0,
-            73.0
-          ]
-        },
-        "sculpt": {
-          "movedVertices": 565416,
-          "maxDisplacement": 0.20900278199765707,
-          "meanDisplacement": 0.010279237641453559
-        },
         "validation": {
           "topology": {
             "vertices": 1080189,
             "edges": 1242070,
             "polygons": 468563,
-            "loops": 1405689,
-            "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
+            "loops": 1405689
           },
           "vertexCountUnchanged": true,
           "edgeCountUnchanged": true,
           "polygonCountUnchanged": true,
-          "polygonOrderingUnchanged": true,
-          "baseVertexOrdering": {
-            "pass": true,
-            "maxError": 0.0,
-            "mismatchesAbove2e4": 0
-          },
-          "morphVertexOrdering": {
-            "pass": true,
-            "maxError": 1.3328003749250113e-07,
-            "mismatchesAbove2e4": 0
-          },
-          "dracoPayloadByteIdentical": true,
-          "dracoPayloadSha256": "2b19906ff3f14e0cd80ca530902e9a95d880c7394a377f4436c23e6d3a862f2a",
-          "morphDefaultWeight": 1.0,
           "weights": {
             "vertices": 1080189,
             "zeroWeight": 0,
@@ -217,7 +183,28 @@
             ]
           },
           "requiredActionsPass": true,
-          "outputBytes": 28922060,
+          "glb": {
+            "dracoCompressed": true,
+            "morphTargets": 0,
+            "meshWeights": [],
+            "attributeCounts": {
+              "POSITION": 1080189,
+              "NORMAL": 1080189,
+              "TEXCOORD_0": 1080189,
+              "JOINTS_0": 1080189,
+              "WEIGHTS_0": 1080189
+            }
+          },
+          "requiredAttributeCountsAligned": true,
+          "normalLoops": 1405689,
+          "surfaceShiftAfterDraco": {
+            "sampledVertices": 108019,
+            "meanWorldUnits": 3.0434290312318063e-05,
+            "p95WorldUnits": 4.385982174426317e-05,
+            "maxWorldUnits": 5.4660707974107936e-05
+          },
+          "positionQuantizationStepUpperBound": 6.629719530743702e-05,
+          "outputBytes": 15174652,
           "pass": true
         }
       }
@@ -227,70 +214,74 @@
         "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_corrected.glb",
         "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_voltspine_corrected.glb",
         "query": "voltspine",
-        "sourceTopology": {
-          "vertices": 1080189,
-          "edges": 1242070,
-          "polygons": 468563,
-          "loops": 1405689,
-          "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
-        },
-        "sourceWeights": {
-          "vertices": 1080189,
-          "zeroWeight": 0,
-          "overFour": 0,
-          "negativeWeights": 0,
-          "invalidJoints": 0,
-          "deviates1e3": 0,
-          "minSum": 0.9998168349266052,
-          "maxSum": 1.0001832023262978,
-          "influences": {
-            "0": 0,
-            "1": 88224,
-            "2": 96485,
-            "3": 388927,
-            "4": 506553
+        "bodyLengthWorldUnits": 0.8999947011470795,
+        "regionDisplacements": {
+          "head": {
+            "vertices": 163716,
+            "meanWorldUnits": 0.025385216063073576,
+            "maxWorldUnits": 0.13057627057759763,
+            "meanPercentBodyLength": 2.820596169146229,
+            "maxPercentBodyLength": 14.508559929427687
+          },
+          "snout": {
+            "vertices": 68136,
+            "meanWorldUnits": 0.04495816993275147,
+            "maxWorldUnits": 0.13057627057759763,
+            "meanPercentBodyLength": 4.995381625630737,
+            "maxPercentBodyLength": 14.508559929427687
+          },
+          "earFinsCrest": {
+            "vertices": 24450,
+            "meanWorldUnits": 0.04010602015885717,
+            "maxWorldUnits": 0.13057627057759763,
+            "meanPercentBodyLength": 4.4562506987808295,
+            "maxPercentBodyLength": 14.508559929427687
+          },
+          "neck": {
+            "vertices": 139488,
+            "meanWorldUnits": 0.008663126765192921,
+            "maxWorldUnits": 0.04881458094626718,
+            "meanPercentBodyLength": 0.9625753078491925,
+            "maxPercentBodyLength": 5.423874261042985
+          },
+          "torso": {
+            "vertices": 346793,
+            "meanWorldUnits": 0.00754485292387635,
+            "maxWorldUnits": 0.0345377640723508,
+            "meanPercentBodyLength": 0.8383219272580307,
+            "maxPercentBodyLength": 3.837551935398178
+          },
+          "limbs": {
+            "vertices": 688324,
+            "meanWorldUnits": 0.001709997644589438,
+            "maxWorldUnits": 0.028501812322409826,
+            "meanPercentBodyLength": 0.19000085693948834,
+            "maxPercentBodyLength": 3.166886681230803
+          },
+          "tail": {
+            "vertices": 174856,
+            "meanWorldUnits": 0.025330059569464655,
+            "maxWorldUnits": 0.23458648257360243,
+            "meanPercentBodyLength": 2.814467633773896,
+            "maxPercentBodyLength": 26.06531819294186
           }
         },
-        "sourceActions": {
-          "Flap": [
-            1.0,
-            39.0
-          ],
-          "Glide": [
-            1.0,
-            73.0
-          ]
-        },
-        "sculpt": {
-          "movedVertices": 560882,
-          "maxDisplacement": 0.23458648257360243,
-          "meanDisplacement": 0.009521765577807737
+        "tailEdgeStretch": {
+          "edges": 203116,
+          "meanRatio": 1.1223627440522173,
+          "minRatio": 0.2196120959931644,
+          "maxRatio": 5.187398193666893
         },
         "validation": {
           "topology": {
             "vertices": 1080189,
             "edges": 1242070,
             "polygons": 468563,
-            "loops": 1405689,
-            "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
+            "loops": 1405689
           },
           "vertexCountUnchanged": true,
           "edgeCountUnchanged": true,
           "polygonCountUnchanged": true,
-          "polygonOrderingUnchanged": true,
-          "baseVertexOrdering": {
-            "pass": true,
-            "maxError": 0.0,
-            "mismatchesAbove2e4": 0
-          },
-          "morphVertexOrdering": {
-            "pass": true,
-            "maxError": 1.666000468656264e-07,
-            "mismatchesAbove2e4": 0
-          },
-          "dracoPayloadByteIdentical": true,
-          "dracoPayloadSha256": "14ec8361316586abcbb5dae0b3318fd3575206cbe26d82a7f97931dae25fec69",
-          "morphDefaultWeight": 1.0,
           "weights": {
             "vertices": 1080189,
             "zeroWeight": 0,
@@ -299,7 +290,7 @@
             "invalidJoints": 0,
             "deviates1e3": 0,
             "minSum": 0.9998168349266052,
-            "maxSum": 1.0001832023262978,
+            "maxSum": 1.0001831948757172,
             "influences": {
               "0": 0,
               "1": 88224,
@@ -319,83 +310,45 @@
             ]
           },
           "requiredActionsPass": true,
-          "outputBytes": 28594632,
+          "glb": {
+            "dracoCompressed": true,
+            "morphTargets": 0,
+            "meshWeights": [],
+            "attributeCounts": {
+              "POSITION": 1080189,
+              "NORMAL": 1080189,
+              "TEXCOORD_0": 1080189,
+              "JOINTS_0": 1080189,
+              "WEIGHTS_0": 1080189
+            }
+          },
+          "requiredAttributeCountsAligned": true,
+          "normalLoops": 1405689,
+          "surfaceShiftAfterDraco": {
+            "sampledVertices": 108019,
+            "meanWorldUnits": 2.9647950133880247e-05,
+            "p95WorldUnits": 4.266835458111018e-05,
+            "maxWorldUnits": 5.3219348046695814e-05
+          },
+          "positionQuantizationStepUpperBound": 7.313979979596979e-05,
+          "outputBytes": 15034248,
           "pass": true
-        },
-        "renders": {
-          "front": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/voltspine-front.png",
-          "side": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/voltspine-side.png",
-          "threequarter": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/voltspine-threequarter.png"
         }
       },
       "membrane": {
         "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_membrane.glb",
         "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_voltspine_membrane.glb",
         "query": "voltspine-membrane",
-        "sourceTopology": {
-          "vertices": 1080189,
-          "edges": 1242070,
-          "polygons": 468563,
-          "loops": 1405689,
-          "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
-        },
-        "sourceWeights": {
-          "vertices": 1080189,
-          "zeroWeight": 0,
-          "overFour": 0,
-          "negativeWeights": 0,
-          "invalidJoints": 0,
-          "deviates1e3": 0,
-          "minSum": 0.9998168349266052,
-          "maxSum": 1.0001831948757172,
-          "influences": {
-            "0": 0,
-            "1": 88224,
-            "2": 82858,
-            "3": 203922,
-            "4": 705185
-          }
-        },
-        "sourceActions": {
-          "Flap": [
-            1.0,
-            39.0
-          ],
-          "Glide": [
-            1.0,
-            73.0
-          ]
-        },
-        "sculpt": {
-          "movedVertices": 559051,
-          "maxDisplacement": 0.23458648257360243,
-          "meanDisplacement": 0.009502682448692883
-        },
         "validation": {
           "topology": {
             "vertices": 1080189,
             "edges": 1242070,
             "polygons": 468563,
-            "loops": 1405689,
-            "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
+            "loops": 1405689
           },
           "vertexCountUnchanged": true,
           "edgeCountUnchanged": true,
           "polygonCountUnchanged": true,
-          "polygonOrderingUnchanged": true,
-          "baseVertexOrdering": {
-            "pass": true,
-            "maxError": 0.0,
-            "mismatchesAbove2e4": 0
-          },
-          "morphVertexOrdering": {
-            "pass": true,
-            "maxError": 1.3328003749250113e-07,
-            "mismatchesAbove2e4": 0
-          },
-          "dracoPayloadByteIdentical": true,
-          "dracoPayloadSha256": "2b19906ff3f14e0cd80ca530902e9a95d880c7394a377f4436c23e6d3a862f2a",
-          "morphDefaultWeight": 1.0,
           "weights": {
             "vertices": 1080189,
             "zeroWeight": 0,
@@ -424,7 +377,28 @@
             ]
           },
           "requiredActionsPass": true,
-          "outputBytes": 28922064,
+          "glb": {
+            "dracoCompressed": true,
+            "morphTargets": 0,
+            "meshWeights": [],
+            "attributeCounts": {
+              "POSITION": 1080189,
+              "NORMAL": 1080189,
+              "TEXCOORD_0": 1080189,
+              "JOINTS_0": 1080189,
+              "WEIGHTS_0": 1080189
+            }
+          },
+          "requiredAttributeCountsAligned": true,
+          "normalLoops": 1405689,
+          "surfaceShiftAfterDraco": {
+            "sampledVertices": 108019,
+            "meanWorldUnits": 2.9662756752929504e-05,
+            "p95WorldUnits": 4.2636951548047364e-05,
+            "maxWorldUnits": 5.259086174191907e-05
+          },
+          "positionQuantizationStepUpperBound": 7.313978524316633e-05,
+          "outputBytes": 15189904,
           "pass": true
         }
       }
@@ -434,70 +408,74 @@
         "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_corrected.glb",
         "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_thunderhook_corrected.glb",
         "query": "thunderhook",
-        "sourceTopology": {
-          "vertices": 1080189,
-          "edges": 1242070,
-          "polygons": 468563,
-          "loops": 1405689,
-          "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
-        },
-        "sourceWeights": {
-          "vertices": 1080189,
-          "zeroWeight": 0,
-          "overFour": 0,
-          "negativeWeights": 0,
-          "invalidJoints": 0,
-          "deviates1e3": 0,
-          "minSum": 0.9998168349266052,
-          "maxSum": 1.0001832023262978,
-          "influences": {
-            "0": 0,
-            "1": 88224,
-            "2": 96485,
-            "3": 388927,
-            "4": 506553
+        "bodyLengthWorldUnits": 0.8999947011470795,
+        "regionDisplacements": {
+          "head": {
+            "vertices": 163716,
+            "meanWorldUnits": 0.03389889368153137,
+            "maxWorldUnits": 0.10174942853252036,
+            "meanPercentBodyLength": 3.76656591847995,
+            "maxPercentBodyLength": 11.305558621938177
+          },
+          "snout": {
+            "vertices": 68136,
+            "meanWorldUnits": 0.06574420377274405,
+            "maxWorldUnits": 0.10174942853252036,
+            "meanPercentBodyLength": 7.30495453906011,
+            "maxPercentBodyLength": 11.305558621938177
+          },
+          "earFinsCrest": {
+            "vertices": 24450,
+            "meanWorldUnits": 0.030768037432723536,
+            "maxWorldUnits": 0.06762624948528015,
+            "meanPercentBodyLength": 3.418690953792109,
+            "maxPercentBodyLength": 7.514071960544631
+          },
+          "neck": {
+            "vertices": 139488,
+            "meanWorldUnits": 0.008445140123774652,
+            "maxWorldUnits": 0.08238686069544394,
+            "meanPercentBodyLength": 0.9383544273106253,
+            "maxPercentBodyLength": 9.15414952892929
+          },
+          "torso": {
+            "vertices": 346793,
+            "meanWorldUnits": 0.003910089527533829,
+            "maxWorldUnits": 0.020409442365170734,
+            "meanPercentBodyLength": 0.4344569498631784,
+            "maxPercentBodyLength": 2.26772916986712
+          },
+          "limbs": {
+            "vertices": 688324,
+            "meanWorldUnits": 0.0006260211249327394,
+            "maxWorldUnits": 0.01266186749279356,
+            "meanPercentBodyLength": 0.06955831230282249,
+            "maxPercentBodyLength": 1.4068824490472556
+          },
+          "tail": {
+            "vertices": 174856,
+            "meanWorldUnits": 0.02614808697678907,
+            "maxWorldUnits": 0.15482681048436014,
+            "meanPercentBodyLength": 2.9053601030608602,
+            "maxPercentBodyLength": 17.2030802278088
           }
         },
-        "sourceActions": {
-          "Flap": [
-            1.0,
-            39.0
-          ],
-          "Glide": [
-            1.0,
-            73.0
-          ]
-        },
-        "sculpt": {
-          "movedVertices": 573136,
-          "maxDisplacement": 0.15482681048436014,
-          "meanDisplacement": 0.010074813457192978
+        "tailEdgeStretch": {
+          "edges": 203116,
+          "meanRatio": 1.05336493369298,
+          "minRatio": 0.2826664821916033,
+          "maxRatio": 2.607607692104729
         },
         "validation": {
           "topology": {
             "vertices": 1080189,
             "edges": 1242070,
             "polygons": 468563,
-            "loops": 1405689,
-            "polygonIndexSha256": "e10a97bb9ac23d8601e7793f494ea783a23381d411d01c5d8726b0dc691f4ddd"
+            "loops": 1405689
           },
           "vertexCountUnchanged": true,
           "edgeCountUnchanged": true,
           "polygonCountUnchanged": true,
-          "polygonOrderingUnchanged": true,
-          "baseVertexOrdering": {
-            "pass": true,
-            "maxError": 0.0,
-            "mismatchesAbove2e4": 0
-          },
-          "morphVertexOrdering": {
-            "pass": true,
-            "maxError": 1.3328003749250113e-07,
-            "mismatchesAbove2e4": 0
-          },
-          "dracoPayloadByteIdentical": true,
-          "dracoPayloadSha256": "14ec8361316586abcbb5dae0b3318fd3575206cbe26d82a7f97931dae25fec69",
-          "morphDefaultWeight": 1.0,
           "weights": {
             "vertices": 1080189,
             "zeroWeight": 0,
@@ -506,7 +484,7 @@
             "invalidJoints": 0,
             "deviates1e3": 0,
             "minSum": 0.9998168349266052,
-            "maxSum": 1.0001832023262978,
+            "maxSum": 1.0001831948757172,
             "influences": {
               "0": 0,
               "1": 88224,
@@ -526,83 +504,45 @@
             ]
           },
           "requiredActionsPass": true,
-          "outputBytes": 28594636,
+          "glb": {
+            "dracoCompressed": true,
+            "morphTargets": 0,
+            "meshWeights": [],
+            "attributeCounts": {
+              "POSITION": 1080189,
+              "NORMAL": 1080189,
+              "TEXCOORD_0": 1080189,
+              "JOINTS_0": 1080189,
+              "WEIGHTS_0": 1080189
+            }
+          },
+          "requiredAttributeCountsAligned": true,
+          "normalLoops": 1405689,
+          "surfaceShiftAfterDraco": {
+            "sampledVertices": 108019,
+            "meanWorldUnits": 3.0757130626746294e-05,
+            "p95WorldUnits": 4.416848241817206e-05,
+            "maxWorldUnits": 5.43578207725659e-05
+          },
+          "positionQuantizationStepUpperBound": 6.64931269768342e-05,
+          "outputBytes": 15004412,
           "pass": true
-        },
-        "renders": {
-          "front": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/thunderhook-front.png",
-          "side": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/thunderhook-side.png",
-          "threequarter": "/Users/arnav/Desktop/dragon-storm-game/reports/galevein-silhouette-variants/renders/thunderhook-threequarter.png"
         }
       },
       "membrane": {
         "source": "/Users/arnav/Desktop/dragon-storm-game/dragon_rigged_membrane.glb",
         "output": "/Users/arnav/Desktop/dragon-storm-game/dragon_galevein_thunderhook_membrane.glb",
         "query": "thunderhook-membrane",
-        "sourceTopology": {
-          "vertices": 1080189,
-          "edges": 1242070,
-          "polygons": 468563,
-          "loops": 1405689,
-          "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
-        },
-        "sourceWeights": {
-          "vertices": 1080189,
-          "zeroWeight": 0,
-          "overFour": 0,
-          "negativeWeights": 0,
-          "invalidJoints": 0,
-          "deviates1e3": 0,
-          "minSum": 0.9998168349266052,
-          "maxSum": 1.0001831948757172,
-          "influences": {
-            "0": 0,
-            "1": 88224,
-            "2": 82858,
-            "3": 203922,
-            "4": 705185
-          }
-        },
-        "sourceActions": {
-          "Flap": [
-            1.0,
-            39.0
-          ],
-          "Glide": [
-            1.0,
-            73.0
-          ]
-        },
-        "sculpt": {
-          "movedVertices": 571305,
-          "maxDisplacement": 0.1548268088278156,
-          "meanDisplacement": 0.010069115248043936
-        },
         "validation": {
           "topology": {
             "vertices": 1080189,
             "edges": 1242070,
             "polygons": 468563,
-            "loops": 1405689,
-            "polygonIndexSha256": "6ff365275808f158170709603a1ada52fd41aba746f96e17817747ae2a31f943"
+            "loops": 1405689
           },
           "vertexCountUnchanged": true,
           "edgeCountUnchanged": true,
           "polygonCountUnchanged": true,
-          "polygonOrderingUnchanged": true,
-          "baseVertexOrdering": {
-            "pass": true,
-            "maxError": 0.0,
-            "mismatchesAbove2e4": 0
-          },
-          "morphVertexOrdering": {
-            "pass": true,
-            "maxError": 1.3328003749250113e-07,
-            "mismatchesAbove2e4": 0
-          },
-          "dracoPayloadByteIdentical": true,
-          "dracoPayloadSha256": "2b19906ff3f14e0cd80ca530902e9a95d880c7394a377f4436c23e6d3a862f2a",
-          "morphDefaultWeight": 1.0,
           "weights": {
             "vertices": 1080189,
             "zeroWeight": 0,
@@ -631,7 +571,28 @@
             ]
           },
           "requiredActionsPass": true,
-          "outputBytes": 28922064,
+          "glb": {
+            "dracoCompressed": true,
+            "morphTargets": 0,
+            "meshWeights": [],
+            "attributeCounts": {
+              "POSITION": 1080189,
+              "NORMAL": 1080189,
+              "TEXCOORD_0": 1080189,
+              "JOINTS_0": 1080189,
+              "WEIGHTS_0": 1080189
+            }
+          },
+          "requiredAttributeCountsAligned": true,
+          "normalLoops": 1405689,
+          "surfaceShiftAfterDraco": {
+            "sampledVertices": 108019,
+            "meanWorldUnits": 3.0785982647692746e-05,
+            "p95WorldUnits": 4.416648152982816e-05,
+            "maxWorldUnits": 5.427746509667486e-05
+          },
+          "positionQuantizationStepUpperBound": 6.649315608244112e-05,
+          "outputBytes": 15159800,
           "pass": true
         }
       }
