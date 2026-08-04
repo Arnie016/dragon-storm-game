@@ -26,8 +26,8 @@ All nine MP3 files in this directory are original procedural works created from 
 - **`flap.mp3`** — Short filtered-air displacement with an asymmetric wing envelope and a quiet descending membrane-load thump.
 - **`crash.mp3`** — Broadband impact transient, three damped resonant body modes, and a randomized high-passed debris tail.
 - **`zap.mp3`** — Unstable FM/ring-modulated arc core, descending carrier motion, bright noise, and rapid spark interruptions.
-- **`ring.mp3`** — Slightly inharmonic additive partials with staggered attacks and independent decays, plus a restrained body tone.
-- **`detected.mp3`** — Compact two-stage rising alert with a low supporting partial, shaped to remain present without a piercing top end.
+- **`ring.mp3`** — Slightly inharmonic additive partials with reinforced presence harmonics, staggered attacks, and independent decays.
+- **`detected.mp3`** — Compact two-stage rising presence-band alert with restrained upper harmonics and a quiet low supporting partial.
 - **`music_tension.mp3`** — Non-melodic beating low drone, unstable tritone color, filtered air, and a repeating pressure pulse.
 
 ## Measured output
@@ -40,13 +40,25 @@ Loudness and true peak are ffmpeg `loudnorm` measurements of the final decoded M
 | `amb_sea.mp3` | 16.000 s | 44100 Hz | 2 | 128 kb/s | 257,088 B | 13.83 kHz | -16.8 dB | -28.31 | -13.59 dBTP | 15,939 B | PASS; jump 0.001573, 0.35× local p95 |
 | `thunder.mp3` | 3.800 s | 44100 Hz | 2 | 128 kb/s | 61,902 B | 15.31 kHz | -16.2 dB | -21.29 | -3.54 dBTP | 4,078 B | n/a |
 | `flap.mp3` | 0.680 s | 44100 Hz | 1 | 96 kb/s | 9,135 B | 14.43 kHz | -12.8 dB | -20.47 | -9.89 dBTP | 13,389 B | n/a |
-| `crash.mp3` | 1.100 s | 44100 Hz | 1 | 96 kb/s | 14,151 B | 18.09 kHz | -11.6 dB | -18.25 | -1.71 dBTP | 3,537 B | n/a |
+| `crash.mp3` | 1.100 s | 44100 Hz | 1 | 96 kb/s | 14,151 B | 18.05 kHz | -11.6 dB | -19.78 | -4.06 dBTP | 3,537 B | n/a |
 | `zap.mp3` | 0.780 s | 44100 Hz | 1 | 96 kb/s | 10,076 B | 18.69 kHz | -12.4 dB | -18.29 | -2.58 dBTP | 9,998 B | n/a |
-| `ring.mp3` | 1.450 s | 44100 Hz | 1 | 96 kb/s | 18,226 B | 10.35 kHz | -28.4 dB | -19.47 | -2.81 dBTP | 7,302 B | n/a |
-| `detected.mp3` | 0.720 s | 44100 Hz | 1 | 96 kb/s | 9,449 B | 1.18 kHz | -42.4 dB | -17.43 | -10.68 dBTP | 6,301 B | n/a |
+| `ring.mp3` | 1.450 s | 44100 Hz | 1 | 96 kb/s | 18,226 B | 10.35 kHz | -28.5 dB | -19.51 | -2.74 dBTP | 7,302 B | n/a |
+| `detected.mp3` | 0.720 s | 44100 Hz | 1 | 96 kb/s | 9,449 B | 5.36 kHz | -41.6 dB | -17.44 | -14.36 dBTP | 6,301 B | n/a |
 | `music_tension.mp3` | 20.000 s | 44100 Hz | 1 | 96 kb/s | 240,789 B | 3.93 kHz | -47.3 dB | -24.45 | -9.58 dBTP | 16,205 B | PASS; jump 0.001273, 0.29× local p95 |
 
 Synthesized nine-file payload: **877,904 B**. Staged ten-file CC0 payload: **1,018,725 B**. Release payload with the retained **926,741 B** menu track: **1,804,645 B** (+77.1% versus the staged set), leaving **695,355 B** below the 2.5 MB release ceiling.
+
+## Alert masking audit
+
+Decoded 2–5 kHz power relative to each file's total power:
+
+| Cue | Relative 2–5 kHz power |
+|---|---:|
+| `wind.mp3` | -8.51 dB |
+| `detected.mp3` | -1.10 dB |
+| `flap.mp3` | -4.14 dB |
+
+The alert's presence-band concentration is **+7.41 dB versus wind** and **+3.04 dB versus flap**, before its higher overall one-shot loudness is considered.
 
 ## Spectrogram evidence
 
@@ -64,4 +76,4 @@ Each pair uses the same ffmpeg `showspectrumpic` settings. These prove spectral 
 
 ## Quality assessment
 
-Objective evidence supports the wind, sea, thunder, and tension cues as substantive semantic replacements rather than renamed generic effects: their staged counterparts lack the expected sustained or two-stage spectral structure. Ring, flap, zap, crash, and detected are technically clean and purpose-built, but remain **adequate pending an in-game listening pass**. No claim of subjective superiority is made without human playback. Thunder has visibly distinct crack and rumble stages; physical weight still requires speaker/headphone judgment.
+Objective evidence supports the wind, sea, thunder, and tension cues as substantive semantic replacements rather than renamed generic effects: their staged counterparts lack the expected sustained or two-stage spectral structure. The detection alert now concentrates energy in the 2–5 kHz presence band instead of competing with wind below 1 kHz. Ring, flap, zap, crash, and detected remain **adequate pending an in-game listening pass**. No claim of subjective superiority is made without human playback. Thunder has visibly distinct crack and rumble stages; physical weight still requires speaker/headphone judgment.

@@ -27,7 +27,7 @@ SPECS = {
     "amb_sea": {"duration": 16.0, "channels": 2, "rate": SR, "lufs": -28.0, "bitrate": "128k", "loop": True},
     "thunder": {"duration": 3.8, "channels": 2, "rate": SR, "lufs": -19.0, "bitrate": "128k", "loop": False},
     "flap": {"duration": 0.68, "channels": 1, "rate": SR, "lufs": -20.0, "bitrate": "96k", "loop": False},
-    "crash": {"duration": 1.1, "channels": 1, "rate": SR, "lufs": -18.0, "bitrate": "96k", "loop": False},
+    "crash": {"duration": 1.1, "channels": 1, "rate": SR, "lufs": -19.5, "true_peak": -3.0, "bitrate": "96k", "loop": False},
     "zap": {"duration": 0.78, "channels": 1, "rate": SR, "lufs": -18.0, "bitrate": "96k", "loop": False},
     "ring": {"duration": 1.45, "channels": 1, "rate": SR, "lufs": -19.0, "bitrate": "96k", "loop": False},
     "detected": {"duration": 0.72, "channels": 1, "rate": SR, "lufs": -17.0, "bitrate": "96k", "loop": False},
@@ -41,8 +41,8 @@ APPROACHES = {
     "flap": "Short filtered-air displacement with an asymmetric wing envelope and a quiet descending membrane-load thump.",
     "crash": "Broadband impact transient, three damped resonant body modes, and a randomized high-passed debris tail.",
     "zap": "Unstable FM/ring-modulated arc core, descending carrier motion, bright noise, and rapid spark interruptions.",
-    "ring": "Slightly inharmonic additive partials with staggered attacks and independent decays, plus a restrained body tone.",
-    "detected": "Compact two-stage rising alert with a low supporting partial, shaped to remain present without a piercing top end.",
+    "ring": "Slightly inharmonic additive partials with reinforced presence harmonics, staggered attacks, and independent decays.",
+    "detected": "Compact two-stage rising presence-band alert with restrained upper harmonics and a quiet low supporting partial.",
     "music_tension": "Non-melodic beating low drone, unstable tritone color, filtered air, and a repeating pressure pulse.",
 }
 
@@ -212,9 +212,9 @@ def synth_ring(rng, duration):
         (1.000, 0.58, 2.6, 0.000),
         (2.014, 0.31, 3.7, 0.004),
         (2.731, 0.22, 4.8, 0.008),
-        (4.087, 0.13, 6.1, 0.012),
-        (5.432, 0.075, 7.4, 0.017),
-        (7.113, 0.070, 7.6, 0.020),
+        (4.087, 0.18, 6.1, 0.012),
+        (5.432, 0.14, 7.4, 0.017),
+        (7.113, 0.10, 7.6, 0.020),
         (11.731, 0.070, 8.2, 0.023),
         (16.907, 0.050, 9.0, 0.026),
         (21.407, 0.035, 9.8, 0.029),
@@ -230,17 +230,17 @@ def synth_ring(rng, duration):
 def synth_detected(rng, duration):
     n = round(duration * SR)
     t = np.arange(n) / SR
-    split = 0.29
+    split = 0.28
     local_a = np.minimum(t, split)
     local_b = np.maximum(0.0, t - split)
-    phase_a = 2 * np.pi * (690.0 * local_a + 380.0 * local_a**2)
-    phase_b = 2 * np.pi * (860.0 * local_b + 510.0 * local_b**2)
-    tone_a = np.sin(phase_a) * (t < split)
-    tone_b = np.sin(phase_b + phase_a[round(split * SR) - 1]) * (t >= split)
-    support = 0.26 * np.sin(2 * np.pi * 345.0 * t)
+    phase_a = 2 * np.pi * (1_850.0 * local_a + 475.0 * local_a**2)
+    phase_b = 2 * np.pi * (2_450.0 * local_b + 425.0 * local_b**2)
+    tone_a = (np.sin(phase_a) + 0.30 * np.sin(2.0 * phase_a)) * (t < split)
+    tone_b = (np.sin(phase_b) + 0.24 * np.sin(2.0 * phase_b)) * (t >= split)
+    support = 0.10 * np.sin(2 * np.pi * 925.0 * t)
     envelope = np.minimum(1.0, t * 90.0) * np.exp(-np.maximum(0.0, t - 0.48) * 12.0)
-    texture = 0.025 * butter_filter(rng.standard_normal(n), 1_000, 7_500, 2)
-    return peak_safe((0.72 * tone_a + 0.88 * tone_b + support + texture) * envelope)
+    texture = 0.035 * butter_filter(rng.standard_normal(n), 1_800, 6_500, 2)
+    return peak_safe((0.82 * tone_a + 0.90 * tone_b + support + texture) * envelope)
 
 
 def synth_tension(rng, duration):
@@ -282,7 +282,7 @@ def parse_loudnorm(stderr):
     return json.loads(matches[-1])
 
 
-def loudnorm_measure(path, target):
+def loudnorm_measure(path, target, true_peak=-2.0):
     result = run(
         [
             FFMPEG,
@@ -291,7 +291,7 @@ def loudnorm_measure(path, target):
             "-i",
             path,
             "-af",
-            f"loudnorm=I={target}:TP=-2.0:LRA=7:print_format=json",
+            f"loudnorm=I={target}:TP={true_peak}:LRA=7:print_format=json",
             "-f",
             "null",
             "-",
@@ -302,7 +302,8 @@ def loudnorm_measure(path, target):
 
 
 def encode_loudnorm(wav_path, mp3_path, spec):
-    first = loudnorm_measure(wav_path, spec["lufs"])
+    true_peak = spec.get("true_peak", -2.0)
+    first = loudnorm_measure(wav_path, spec["lufs"], true_peak)
     measured = (
         f"measured_I={first['input_i']}:measured_TP={first['input_tp']}:"
         f"measured_LRA={first['input_lra']}:measured_thresh={first['input_thresh']}:"
@@ -318,7 +319,7 @@ def encode_loudnorm(wav_path, mp3_path, spec):
             "-i",
             wav_path,
             "-af",
-            f"loudnorm=I={spec['lufs']}:TP=-2.0:LRA=7:{measured}",
+            f"loudnorm=I={spec['lufs']}:TP={true_peak}:LRA=7:{measured}",
             "-ar",
             spec["rate"],
             "-ac",
@@ -416,10 +417,22 @@ def spectral_metrics(path, channels, sample_rate):
     active = frequencies[level_db >= peak_db - 60.0]
     band = (frequencies >= 8_000) & (frequencies <= 12_000)
     band_db = 10.0 * math.log10((float(np.sum(power[band])) + 1e-20) / total)
+    bands = {}
+    for label, low, high in (
+        ("0_500", 0, 500),
+        ("500_1000", 500, 1_000),
+        ("1000_2000", 1_000, 2_000),
+        ("2000_5000", 2_000, 5_000),
+        ("5000_8000", 5_000, 8_000),
+        ("8000_16000", 8_000, 16_000),
+    ):
+        mask = (frequencies >= low) & (frequencies < high)
+        bands[label] = 10.0 * math.log10((float(np.sum(power[mask])) + 1e-20) / total)
     return {
         "rolloff_99_9_hz": float(frequencies[rolloff_index]),
         "upper_active_60db_hz": float(active[-1]) if len(active) else 0.0,
         "band_8_12khz_db": band_db,
+        "bands_db": bands,
     }
 
 
@@ -468,6 +481,10 @@ def write_notes(metrics):
             f"{item['lufs']:.2f} | {item['true_peak']:.2f} dBTP | {item['cc0_size']:,} B | {loop_text} |"
         )
     approaches = "\n".join(f"- **`{name}.mp3`** — {APPROACHES[name]}" for name in SPECS)
+    presence = {
+        name: metrics[name]["spectral"]["bands_db"]["2000_5000"]
+        for name in ("wind", "detected", "flap")
+    }
     spectrograms = "\n".join(
         f"- `{name}.mp3`: [`spectrograms/{name}_synth.png`](spectrograms/{name}_synth.png) / "
         f"[`spectrograms/{name}_cc0.png`](spectrograms/{name}_cc0.png)"
@@ -507,6 +524,18 @@ Loudness and true peak are ffmpeg `loudnorm` measurements of the final decoded M
 
 Synthesized nine-file payload: **{synth_total:,} B**. Staged ten-file CC0 payload: **{staged_total:,} B**. Release payload with the retained **{retained_menu:,} B** menu track: **{release_total:,} B** ({(release_total / staged_total - 1) * 100:+.1f}% versus the staged set), leaving **{2_500_000 - release_total:,} B** below the 2.5 MB release ceiling.
 
+## Alert masking audit
+
+Decoded 2–5 kHz power relative to each file's total power:
+
+| Cue | Relative 2–5 kHz power |
+|---|---:|
+| `wind.mp3` | {presence['wind']:.2f} dB |
+| `detected.mp3` | {presence['detected']:.2f} dB |
+| `flap.mp3` | {presence['flap']:.2f} dB |
+
+The alert's presence-band concentration is **{presence['detected'] - presence['wind']:+.2f} dB versus wind** and **{presence['detected'] - presence['flap']:+.2f} dB versus flap**, before its higher overall one-shot loudness is considered.
+
 ## Spectrogram evidence
 
 Each pair uses the same ffmpeg `showspectrumpic` settings. These prove spectral structure and duration differences, not subjective listening quality.
@@ -515,7 +544,7 @@ Each pair uses the same ffmpeg `showspectrumpic` settings. These prove spectral 
 
 ## Quality assessment
 
-Objective evidence supports the wind, sea, thunder, and tension cues as substantive semantic replacements rather than renamed generic effects: their staged counterparts lack the expected sustained or two-stage spectral structure. Ring, flap, zap, crash, and detected are technically clean and purpose-built, but remain **adequate pending an in-game listening pass**. No claim of subjective superiority is made without human playback. Thunder has visibly distinct crack and rumble stages; physical weight still requires speaker/headphone judgment.
+Objective evidence supports the wind, sea, thunder, and tension cues as substantive semantic replacements rather than renamed generic effects: their staged counterparts lack the expected sustained or two-stage spectral structure. The detection alert now concentrates energy in the 2–5 kHz presence band instead of competing with wind below 1 kHz. Ring, flap, zap, crash, and detected remain **adequate pending an in-game listening pass**. No claim of subjective superiority is made without human playback. Thunder has visibly distinct crack and rumble stages; physical weight still requires speaker/headphone judgment.
 """
     (ROOT / "SYNTHESIS_NOTES.md").write_text(text)
 
@@ -545,7 +574,7 @@ def main():
             encode_loudnorm(wav_path, mp3_path, spec)
             decode_check(mp3_path)
             final = probe(mp3_path)
-            measured = loudnorm_measure(mp3_path, spec["lufs"])
+            measured = loudnorm_measure(mp3_path, spec["lufs"], spec.get("true_peak", -2.0))
             final.update(
                 {
                     "lufs": float(measured["input_i"]),
