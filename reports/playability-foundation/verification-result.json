@@ -1,35 +1,35 @@
 {
-  "startedAt": "2026-08-04T19:29:00.701Z",
+  "startedAt": "2026-08-04T19:32:55.265Z",
   "loadBefore": {
-    "uptime": "3:28  up 1 day,  6:58, 1 user, load averages: 16.17 22.21 17.54",
+    "uptime": "3:32  up 1 day,  7:02, 1 user, load averages: 8.51 16.00 16.05",
     "loadAverage": [
-      16.17,
-      22.21,
-      17.54
+      8.51,
+      16,
+      16.05
     ]
   },
   "scenarios": {
     "idle65s": {
       "pass": true,
       "uptime": {
-        "loopLagMs": 1.2,
+        "loopLagMs": 8,
         "bootErrors": [],
         "alive": true
       },
       "state": {
-        "t": 65,
-        "flightT": 63.7,
+        "t": 64.3,
+        "flightT": 63.2,
         "started": true,
         "done": false,
         "det": 0,
         "score": 2,
-        "spd": 62,
+        "spd": 52.4,
         "pos": [
-          -2997.2,
-          130.9,
-          2257.1
+          -1693.6,
+          109,
+          2768.4
         ],
-        "fpv": false,
+        "fpv": true,
         "chapter": 1,
         "tutorial": 3,
         "routeVisible": 12,
@@ -37,7 +37,7 @@
         "scales": 0,
         "hp": 100,
         "hpMax": 100,
-        "day": 0.511,
+        "day": 0.507,
         "finishing": false,
         "charges": 3,
         "chargeT": -1,
@@ -48,8 +48,8 @@
       "frameStats": {
         "samples": 900,
         "p50": 8.3,
-        "p95": 8.7,
-        "p99": 9.3
+        "p95": 9.3,
+        "p99": 12.6
       },
       "cameraShake": 0.35
     },
@@ -66,11 +66,11 @@
         "regionName": "Serpent Reach",
         "objectiveText": "III · Serpent Run — beacons 6/8 · dive and flock",
         "goalText": "Thread three canyon gates and reach beacon eight",
-        "distanceM": 4451.096898507877,
+        "distanceM": 3922.4858515841834,
         "distanceLabel": "Next beacon",
-        "distanceText": "4451 m",
-        "heightAboveWater": 130.4806209794432,
-        "heightText": "130 m AGL",
+        "distanceText": "3922 m",
+        "heightAboveWater": 98.28779291948453,
+        "heightText": "98 m AGL",
         "subHints": [
           "Thread canyon gates for cover",
           "Climb over harbor works — collect altitude"
@@ -104,11 +104,11 @@
           "regionName": "Serpent Reach",
           "objectiveText": "III · Serpent Run — beacons 6/8 · dive and flock",
           "goalText": "Thread three canyon gates and reach beacon eight",
-          "distanceM": 4451.096898507877,
+          "distanceM": 3922.4858515841834,
           "distanceLabel": "Next beacon",
-          "distanceText": "4451 m",
-          "heightAboveWater": 130.4806209794432,
-          "heightText": "130 m AGL",
+          "distanceText": "3922 m",
+          "heightAboveWater": 98.28779291948453,
+          "heightText": "98 m AGL",
           "subHints": [
             "Thread canyon gates for cover",
             "Climb over harbor works — collect altitude"
@@ -121,8 +121,8 @@
         }
       },
       "state": {
-        "t": 65,
-        "flightT": 63.7,
+        "t": 64.3,
+        "flightT": 63.2,
         "started": true,
         "done": false,
         "det": 0,
@@ -133,7 +133,7 @@
           104,
           -470
         ],
-        "fpv": false,
+        "fpv": true,
         "chapter": 2,
         "tutorial": 3,
         "routeVisible": 12,
@@ -141,7 +141,7 @@
         "scales": 0,
         "hp": 100,
         "hpMax": 100,
-        "day": 0.511,
+        "day": 0.507,
         "finishing": false,
         "charges": 3,
         "chargeT": -1,
@@ -153,15 +153,15 @@
       "pass": true,
       "hp": 100,
       "pos": [
-        -134.3,
-        172.5,
-        -41.4
+        -152,
+        139.3,
+        -24
       ],
       "frameStats": {
         "samples": 900,
         "p50": 8.3,
-        "p95": 8.7,
-        "p99": 9.3
+        "p95": 9.3,
+        "p99": 12.6
       }
     },
     "winRoute": {
@@ -172,17 +172,58 @@
       "steps": 1
     },
     "loseDetection": {
-      "pass": false,
+      "pass": true,
       "cause": "",
-      "steps": 480
+      "steps": 0
     },
     "rigPicker": {
       "pass": true,
-      "id": "stormcrest",
-      "loreName": "Stormcrest",
-      "probed": {
-        "quaternius": true
-      }
+      "active": {
+        "id": "stormcrest",
+        "loreName": "Stormcrest",
+        "probed": {
+          "quaternius": true
+        }
+      },
+      "picker": [
+        {
+          "id": "stormcrest",
+          "loreName": "Stormcrest",
+          "epithet": "Warden of the Sable Reach",
+          "default": true
+        },
+        {
+          "id": "corrected",
+          "loreName": "Obsidian Gale",
+          "epithet": "First Flight Shell",
+          "default": false
+        },
+        {
+          "id": "voltspine",
+          "loreName": "Voltspine",
+          "epithet": "Lightning Ridge Silhouette",
+          "default": false
+        },
+        {
+          "id": "thunderhook",
+          "loreName": "Thunderhook",
+          "epithet": "Hooked Tail Warden",
+          "default": false
+        },
+        {
+          "id": "quaternius",
+          "loreName": "Ember Wyrm",
+          "epithet": "Quaternius CC0 · trial mount",
+          "default": false
+        }
+      ],
+      "pickerIds": [
+        "stormcrest",
+        "corrected",
+        "voltspine",
+        "thunderhook",
+        "quaternius"
+      ]
     },
     "lobbyReturn": {
       "pass": true,
@@ -198,9 +239,6 @@
       "filter": "wake_cove",
       "active": [
         "wake-arch",
-        "tide-viaduct",
-        "storm-spire",
-        "keeper-arcade",
         "drowned-gate"
       ],
       "profiles": [
@@ -333,15 +371,15 @@
   "landmark": {
     "ok": true,
     "sites": 12,
-    "buildMs": 92.5,
+    "buildMs": 142.6,
     "bootErrors": []
   },
   "loadAfter": {
-    "uptime": "3:30  up 1 day,  6:59, 1 user, load averages: 16.27 21.34 17.60",
+    "uptime": "3:34  up 1 day,  7:03, 1 user, load averages: 22.30 18.13 16.81",
     "loadAverage": [
-      16.27,
-      21.34,
-      17.6
+      22.3,
+      18.13,
+      16.81
     ]
   },
   "consoleProblems": []

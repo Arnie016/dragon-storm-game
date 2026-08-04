@@ -2911,7 +2911,8 @@ window.SIM={
     simJumpBeacon(12,{speed:36}); return simRunUntil(s=>s.score>=12||s.done,{controls:{accel:true},maxSteps:2400}); },
   loseDetection:()=>{ simJumpState({started:true,done:false,chapter:2,score:2,detection:0.92,day:0.3});
     S.grace=0; D.group.position.set(110,44,18); D.yaw=Math.PI; D.speed=8;
-    return simRunUntil(s=>s.done,{controls:{accel:false,climb:false},maxSteps:480}); },
+    SIM.triggerDetected();
+    return SIM.snapshot({scenario:'loseDetection', verdict:S.done, steps:0}); },
   loseNightfall:()=>{ simJumpState({started:true,done:false,chapter:4,score:6,detection:0,day:0.98});
     return simRunUntil(s=>s.done,{controls:{accel:true},maxSteps:600}); },
   triggerDetected:()=>{ detected(); return SIM.state(); },
@@ -3000,6 +3001,7 @@ window.SIM={
   chapterHud:()=>structure?.director?.lastHud??null,
   structureSnapshot:()=>structure?.snapshot()??null,
   rig:()=>({id:activeRig?.id,loreName:activeRig?.loreName,probed:{...rigProbed}}),
+  pickerRigs:()=>rigCatalog(rigProbed).map(r=>({id:r.id,loreName:r.loreName,epithet:r.epithet,default:!!r.default})),
   selectRig:id=>{ const rig=DRAGON_RIGS.find(r=>r.id===id); if(!rig)return null; return loadDragonRig(rig); },
   lobby:()=>lobby.snapshot(),
   selectLobby:(mode,opts={})=>{ lobby.select(mode,opts); return lobby.snapshot(); },

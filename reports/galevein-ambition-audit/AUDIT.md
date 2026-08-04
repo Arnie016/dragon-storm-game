@@ -6,7 +6,7 @@ Branch: `fix/playable-session` · Play URL: http://localhost:8000/
 
 | Feature | Status | Evidence |
 |---|---|---|
-| Dragon picker (Stormcrest / Obsidian Gale / Quaternius CC0) | ✅ | `world-expansion/modules/dragonRigs.js`, `#rigPicker`, `?rig=` |
+| Dragon picker (Stormcrest / Obsidian Gale / Voltspine / Thunderhook / Ember Wyrm) | ✅ | `world-expansion/modules/dragonRigs.js`, `#rigPicker`, `?rig=` |
 | Region landmark filter | ✅ | `landmarkPath.setRegionFilter()` wired from `onRegionStory` |
 | Sky silhouettes (floating islands) | ✅ | `horizonDirector.islands` instanced planes (+1 draw call) |
 | Lobby hub MVP | ✅ | `#lobbyHub` Story / Practice / Chapter; win/loss → hub |
@@ -18,11 +18,13 @@ Branch: `fix/playable-session` · Play URL: http://localhost:8000/
 |---|---|---|---|
 | `stormcrest` | Stormcrest | `dragon_galevein_stormcrest_corrected.glb` | yes |
 | `corrected` | Obsidian Gale | `dragon_rigged_corrected.glb` | |
+| `voltspine` | Voltspine | `dragon_galevein_voltspine_corrected.glb` | |
+| `thunderhook` | Thunderhook | `dragon_galevein_thunderhook_corrected.glb` | |
 | `quaternius` | Ember Wyrm | `licensed-assets/models/dragon_quaternius_cc0.glb` | probe-gated |
 
 Quaternius uses `Dragon_Flying` clip; procedural alive layer reduced (`ALIVE=0.35`).
 
-Legacy `?rig=voltspine` etc. removed from picker — still loadable if mapped manually (not in catalog).
+All five rigs render in `#rigPicker` via `rigCatalog()`; Stormcrest remains default.
 
 ## Region landmark filter
 
@@ -57,12 +59,17 @@ Initial filter: `wake_cove` at boot.
 
 ## SIM scenarios (extended)
 
-Existing 4/4 in `reports/playability-foundation/run-scenarios.mjs` plus:
+Existing 9/9 in `reports/playability-foundation/run-scenarios.mjs`:
 
 | id | Check |
 |---|---|
-| `rigPicker` | `SIM.rig().id === 'stormcrest'` default |
-| `lobbyVisible` | After `SIM.returnLobby()`, hub visible |
+| `idle65s` | Loop alive 65s, no crash |
+| `jumpBeacon6` | HUD objective string contract |
+| `flight120` | HP > 0 after 120 accel steps |
+| `winRoute` | Score 12 or finishing |
+| `loseDetection` | `SIM.triggerDetected()` → `done: true` |
+| `rigPicker` | Default `stormcrest`; picker lists all five rigs |
+| `lobbyReturn` | Hub visible after `SIM.returnLobby()` |
 | `regionFilter` | `SIM.regionLandmarks().filter` set after chapter jump |
 | `skyIslands` | `SIM.expansion().horizon.drawCalls === 2` |
 
@@ -74,7 +81,6 @@ Run: `node reports/playability-foundation/run-scenarios.mjs` (server on :8000).
 |---|---|
 | 3D hub geometry (120×120 platform) | MVP uses DOM overlay — zero extra draws |
 | Cloud save / GameLift | Spec only per GAME_STRUCTURE.md |
-| Voltspine / Thunderhook in picker | Out of scope this pass; assets remain on disk |
 | Quaternius bone remap | Flying clip only; full alive layer needs alias map |
 
 ## Files touched

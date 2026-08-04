@@ -82,11 +82,15 @@ try {
     steps: loseDet.steps
   };
 
-  // Scenario 5: dragon rig default
-  const rig = await browser.cdp.eval('return SIM.rig();');
+  // Scenario 5: dragon rig default + full picker catalog
+  const rig = await browser.cdp.eval('return { active: SIM.rig(), picker: SIM.pickerRigs() };');
+  const expectedPicker = ['stormcrest', 'corrected', 'voltspine', 'thunderhook', 'quaternius'];
+  const pickerIds = rig.picker?.map((r) => r.id) ?? [];
   results.scenarios.rigPicker = {
-    pass: rig?.id === 'stormcrest',
-    ...rig
+    pass: rig.active?.id === 'stormcrest' && expectedPicker.every((id) => pickerIds.includes(id)),
+    active: rig.active,
+    picker: rig.picker,
+    pickerIds
   };
 
   // Scenario 6: lobby return
