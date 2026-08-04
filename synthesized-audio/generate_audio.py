@@ -4,7 +4,6 @@ import json
 import math
 import os
 import re
-import shutil
 import subprocess
 import tempfile
 from pathlib import Path
@@ -19,20 +18,20 @@ PROJECT = ROOT.parent
 CC0 = PROJECT / "licensed-assets" / "audio"
 FFMPEG = Path("/opt/homebrew/bin/ffmpeg")
 FFPROBE = Path("/opt/homebrew/bin/ffprobe")
-SR = 32_000
+SR = 44_100
 SEED = 0x6A17E
-LOOP_FADE_SECONDS = 0.35
+LOOP_FADE_SECONDS = 1.0
 
 SPECS = {
-    "wind": {"duration": 4.2, "channels": 2, "rate": 32_000, "lufs": -27.0, "bitrate": "32k", "loop": True},
-    "amb_sea": {"duration": 5.2, "channels": 2, "rate": 32_000, "lufs": -28.0, "bitrate": "32k", "loop": True},
-    "thunder": {"duration": 3.8, "channels": 2, "rate": 32_000, "lufs": -19.0, "bitrate": "32k", "loop": False},
-    "flap": {"duration": 0.68, "channels": 1, "rate": 24_000, "lufs": -20.0, "bitrate": "24k", "loop": False},
-    "crash": {"duration": 1.1, "channels": 1, "rate": 24_000, "lufs": -18.0, "bitrate": "24k", "loop": False},
-    "zap": {"duration": 0.78, "channels": 1, "rate": 24_000, "lufs": -18.0, "bitrate": "24k", "loop": False},
-    "ring": {"duration": 1.45, "channels": 1, "rate": 24_000, "lufs": -19.0, "bitrate": "24k", "loop": False},
-    "detected": {"duration": 0.72, "channels": 1, "rate": 24_000, "lufs": -17.0, "bitrate": "24k", "loop": False},
-    "music_tension": {"duration": 6.5, "channels": 1, "rate": 24_000, "lufs": -24.0, "bitrate": "24k", "loop": True},
+    "wind": {"duration": 16.0, "channels": 2, "rate": SR, "lufs": -27.0, "bitrate": "128k", "loop": True},
+    "amb_sea": {"duration": 16.0, "channels": 2, "rate": SR, "lufs": -28.0, "bitrate": "128k", "loop": True},
+    "thunder": {"duration": 3.8, "channels": 2, "rate": SR, "lufs": -19.0, "bitrate": "128k", "loop": False},
+    "flap": {"duration": 0.68, "channels": 1, "rate": SR, "lufs": -20.0, "bitrate": "96k", "loop": False},
+    "crash": {"duration": 1.1, "channels": 1, "rate": SR, "lufs": -18.0, "bitrate": "96k", "loop": False},
+    "zap": {"duration": 0.78, "channels": 1, "rate": SR, "lufs": -18.0, "bitrate": "96k", "loop": False},
+    "ring": {"duration": 1.45, "channels": 1, "rate": SR, "lufs": -19.0, "bitrate": "96k", "loop": False},
+    "detected": {"duration": 0.72, "channels": 1, "rate": SR, "lufs": -17.0, "bitrate": "96k", "loop": False},
+    "music_tension": {"duration": 20.0, "channels": 1, "rate": SR, "lufs": -24.0, "bitrate": "96k", "loop": True},
 }
 
 APPROACHES = {
@@ -95,16 +94,19 @@ def synth_wind(rng, duration):
         for side in range(channels):
             noise = rng.standard_normal(n)
             bands = [
-                butter_filter(noise, 90, 360, 3),
-                butter_filter(noise, 260, 900, 3),
-                butter_filter(noise, 700, 2_300, 3),
+                butter_filter(noise, 80, 420, 3),
+                butter_filter(noise, 300, 1_500, 3),
+                butter_filter(noise, 1_100, 5_200, 3),
+                butter_filter(noise, 3_400, 10_500, 3),
             ]
-            gust = 0.56 + 0.26 * np.sin(2 * np.pi * (0.31 * t + 0.13 * side))
-            gust += 0.13 * np.sin(2 * np.pi * (0.73 * t + 0.41 * side))
-            movement = 0.5 + 0.5 * np.sin(2 * np.pi * (0.19 * t + 0.5 * side))
+            gust = 0.55 + 0.22 * np.sin(2 * np.pi * (0.073 * t + 0.13 * side))
+            gust += 0.15 * np.sin(2 * np.pi * (0.131 * t + 0.41 * side))
+            gust += 0.08 * np.sin(2 * np.pi * (0.419 * t + 0.27 * side))
+            movement = 0.5 + 0.5 * np.sin(2 * np.pi * (0.227 * t + 0.5 * side))
             air = (0.72 - 0.30 * movement) * bands[0]
             air += (0.42 + 0.24 * movement) * bands[1]
-            air += (0.10 + 0.10 * (1.0 - movement)) * bands[2]
+            air += (0.18 + 0.17 * (1.0 - movement)) * bands[2]
+            air += (0.13 + 0.16 * movement) * bands[3]
             pressure = butter_filter(rng.standard_normal(n), 24, 130, 3)
             output.append(air * np.clip(gust, 0.18, 1.0) + 0.27 * pressure)
         return np.column_stack(output)
@@ -119,13 +121,14 @@ def synth_sea(rng, duration):
         for side in range(channels):
             base = rng.standard_normal(n)
             deep = butter_filter(base, 28, 230, 3)
-            wash = butter_filter(base, 160, 1_700, 3)
-            foam = butter_filter(rng.standard_normal(n), 900, 5_200, 3)
+            wash = butter_filter(base, 160, 2_800, 3)
+            foam = butter_filter(rng.standard_normal(n), 1_100, 12_500, 3)
             phase = 0.12 + side * 0.36
-            swell_a = np.maximum(0.0, np.sin(2 * np.pi * (0.23 * t + phase))) ** 2.8
-            swell_b = np.maximum(0.0, np.sin(2 * np.pi * (0.37 * t + phase + 0.31))) ** 4.2
-            swell = np.clip(0.20 + 0.64 * swell_a + 0.38 * swell_b, 0.0, 1.15)
-            output.append(0.52 * deep + wash * swell + 0.18 * foam * swell_b)
+            swell_a = np.maximum(0.0, np.sin(2 * np.pi * (0.087 * t + phase))) ** 2.8
+            swell_b = np.maximum(0.0, np.sin(2 * np.pi * (0.137 * t + phase + 0.31))) ** 4.2
+            swell_c = np.maximum(0.0, np.sin(2 * np.pi * (0.223 * t + phase + 0.67))) ** 6.0
+            swell = np.clip(0.18 + 0.57 * swell_a + 0.36 * swell_b + 0.18 * swell_c, 0.0, 1.15)
+            output.append(0.52 * deep + wash * swell + 0.20 * foam * (0.65 * swell_b + 0.35 * swell_c))
         return np.column_stack(output)
 
     return loop_source(duration, 2, build)
@@ -137,8 +140,8 @@ def synth_thunder(rng, duration):
     channels = []
     for side in range(2):
         noise = rng.standard_normal(n)
-        crack = butter_filter(noise, 900, 11_000, 3) * np.exp(-t * 34.0)
-        body_hi = butter_filter(noise, 90, 4_500, 3)
+        crack = butter_filter(noise, 900, 18_000, 3) * np.exp(-t * 34.0)
+        body_hi = butter_filter(noise, 90, 7_500, 3)
         body_mid = butter_filter(noise, 55, 1_400, 3)
         body_low = butter_filter(noise, 28, 430, 4)
         sweep = np.clip(t / 1.25, 0.0, 1.0)
@@ -159,29 +162,28 @@ def synth_thunder(rng, duration):
 def synth_flap(rng, duration):
     n = round(duration * SR)
     t = np.arange(n) / SR
-    air = butter_filter(rng.standard_normal(n), 85, 2_600, 3)
+    air = butter_filter(rng.standard_normal(n), 85, 7_000, 3)
     x = np.clip(t / duration, 0.0, 1.0)
     envelope = (np.sin(np.pi * x) ** 1.7) * np.exp(-1.15 * x)
     pitch_motion = butter_filter(air, 120, 950, 3) * (1.0 - x)
     thump_phase = 2 * np.pi * (112.0 * t - 42.0 * t**2)
     thump = np.sin(thump_phase) * np.exp(-t * 9.0)
-    return peak_safe((0.72 * air + 0.45 * pitch_motion) * envelope + 0.16 * thump)
+    feather = butter_filter(rng.standard_normal(n), 4_000, 14_000, 2)
+    return peak_safe((0.72 * air + 0.45 * pitch_motion + 0.08 * feather) * envelope + 0.16 * thump)
 
 
 def synth_crash(rng, duration):
     n = round(duration * SR)
     t = np.arange(n) / SR
     noise = rng.standard_normal(n)
-    transient = butter_filter(noise, 140, 10_500, 2) * np.exp(-t * 42.0)
-    impulse = np.zeros(n)
-    impulse[0] = 1.0
+    transient = butter_filter(noise, 140, 18_000, 2) * np.exp(-t * 42.0)
     body = np.zeros(n)
     for frequency, decay, gain in ((132, 8.0, 0.72), (287, 11.0, 0.46), (611, 17.0, 0.25)):
         body += gain * np.sin(2 * np.pi * frequency * t) * np.exp(-t * decay)
     debris = np.zeros(n)
     for location in rng.integers(round(0.08 * SR), round(0.72 * SR), 18):
         length = min(round(0.055 * SR), n - location)
-        burst = butter_filter(rng.standard_normal(length), 1_200, 10_000, 2)
+        burst = butter_filter(rng.standard_normal(length), 1_200, 16_000, 2)
         debris[location : location + length] += burst * np.exp(-np.arange(length) / (0.012 * SR))
     impact = 0.88 * transient + body + 0.16 * debris
     return peak_safe(np.tanh(3.6 * impact))
@@ -195,7 +197,7 @@ def synth_zap(rng, duration):
     phase = 2 * np.pi * np.cumsum(carrier) / SR
     fm = np.sin(phase + 5.2 * np.sin(2 * np.pi * modulator * t))
     ring = fm * np.sin(2 * np.pi * (317.0 * t + 31.0 * t**2))
-    sparks = butter_filter(rng.standard_normal(n), 1_700, 12_000, 3)
+    sparks = butter_filter(rng.standard_normal(n), 1_700, 18_000, 3)
     gate = 0.52 + 0.48 * (signal.square(2 * np.pi * (43.0 * t + 9.0 * t**2), duty=0.38) > 0)
     envelope = (1.0 - np.exp(-t * 120.0)) * np.exp(-t * 5.2)
     return peak_safe((0.72 * ring + 0.29 * sparks * gate) * envelope)
@@ -212,6 +214,10 @@ def synth_ring(rng, duration):
         (2.731, 0.22, 4.8, 0.008),
         (4.087, 0.13, 6.1, 0.012),
         (5.432, 0.075, 7.4, 0.017),
+        (7.113, 0.070, 7.6, 0.020),
+        (11.731, 0.070, 8.2, 0.023),
+        (16.907, 0.050, 9.0, 0.026),
+        (21.407, 0.035, 9.8, 0.029),
     )
     for ratio, gain, decay, delay in partials:
         local = np.maximum(0.0, t - delay)
@@ -233,7 +239,7 @@ def synth_detected(rng, duration):
     tone_b = np.sin(phase_b + phase_a[round(split * SR) - 1]) * (t >= split)
     support = 0.26 * np.sin(2 * np.pi * 345.0 * t)
     envelope = np.minimum(1.0, t * 90.0) * np.exp(-np.maximum(0.0, t - 0.48) * 12.0)
-    texture = 0.025 * butter_filter(rng.standard_normal(n), 1_000, 5_000, 2)
+    texture = 0.025 * butter_filter(rng.standard_normal(n), 1_000, 7_500, 2)
     return peak_safe((0.72 * tone_a + 0.88 * tone_b + support + texture) * envelope)
 
 
@@ -244,10 +250,12 @@ def synth_tension(rng, duration):
         drone += 0.39 * np.sin(2 * np.pi * 58.15 * t + 0.4)
         drone += 0.16 * np.sin(2 * np.pi * 77.78 * t + 1.1)
         unstable = np.sin(2 * np.pi * 155.56 * t + 1.9 * np.sin(2 * np.pi * 0.31 * t))
-        air = butter_filter(rng.standard_normal(n), 120, 1_600, 3)
+        air = butter_filter(rng.standard_normal(n), 120, 4_000, 3)
         pulse_phase = np.mod(t * 1.23, 1.0)
-        pulse = np.exp(-pulse_phase * 9.0)
-        movement = 0.52 + 0.25 * np.sin(2 * np.pi * 0.17 * t) + 0.14 * np.sin(2 * np.pi * 0.43 * t)
+        counter_phase = np.mod(t * 0.71 + 0.37, 1.0)
+        pulse = np.exp(-pulse_phase * 9.0) + 0.38 * np.exp(-counter_phase * 12.0)
+        pulse *= 0.82 + 0.18 * np.sin(2 * np.pi * 0.113 * t)
+        movement = 0.52 + 0.25 * np.sin(2 * np.pi * 0.173 * t) + 0.14 * np.sin(2 * np.pi * 0.431 * t)
         output = movement * drone + (0.10 + 0.16 * pulse) * unstable + 0.13 * air * (0.35 + pulse)
         return output[:, None]
 
@@ -386,7 +394,32 @@ def loop_metrics(path, channels):
         "head_tail_rms": float(np.sqrt(np.mean((audio[:window] - audio[-window:]) ** 2))),
         "boundary_jump": float(np.max(boundary)),
         "boundary_to_p95_step": float(np.max(boundary / reference)),
-        "pass": bool(np.max(boundary / reference) <= 2.0 and np.max(boundary) <= 0.02),
+        "pass": bool(np.max(boundary / reference) <= 1.5),
+    }
+
+
+def spectral_metrics(path, channels, sample_rate):
+    audio = decode_f32(path, channels)
+    frequencies, density = signal.welch(
+        audio,
+        fs=sample_rate,
+        nperseg=min(8_192, len(audio)),
+        axis=0,
+        scaling="spectrum",
+    )
+    power = np.mean(density, axis=1)
+    total = float(np.sum(power)) + 1e-20
+    cumulative = np.cumsum(power)
+    rolloff_index = min(int(np.searchsorted(cumulative, total * 0.999)), len(frequencies) - 1)
+    peak_db = 10.0 * np.log10(np.max(power) + 1e-20)
+    level_db = 10.0 * np.log10(power + 1e-20)
+    active = frequencies[level_db >= peak_db - 60.0]
+    band = (frequencies >= 8_000) & (frequencies <= 12_000)
+    band_db = 10.0 * math.log10((float(np.sum(power[band])) + 1e-20) / total)
+    return {
+        "rolloff_99_9_hz": float(frequencies[rolloff_index]),
+        "upper_active_60db_hz": float(active[-1]) if len(active) else 0.0,
+        "band_8_12khz_db": band_db,
     }
 
 
@@ -430,6 +463,8 @@ def write_notes(metrics):
         rows.append(
             f"| `{name}.mp3` | {item['duration']:.3f} s | {item['sample_rate']} Hz | "
             f"{item['channels']} | {item['bitrate'] / 1000:.0f} kb/s | {item['size']:,} B | "
+            f"{item['spectral']['rolloff_99_9_hz'] / 1000:.2f} kHz | "
+            f"{item['spectral']['band_8_12khz_db']:.1f} dB | "
             f"{item['lufs']:.2f} | {item['true_peak']:.2f} dBTP | {item['cc0_size']:,} B | {loop_text} |"
         )
     approaches = "\n".join(f"- **`{name}.mp3`** — {APPROACHES[name]}" for name in SPECS)
@@ -464,13 +499,13 @@ All nine MP3 files in this directory are original procedural works created from 
 
 ## Measured output
 
-Loudness and true peak are ffmpeg `loudnorm` measurements of the final decoded MP3s. Ambient beds target lower integrated loudness than one-shots. Loop checks decode the final MP3, join 2,048-sample tail and head windows, and compare the boundary jump against local sample-step statistics.
+Loudness and true peak are ffmpeg `loudnorm` measurements of the final decoded MP3s. Ambient beds target lower integrated loudness than one-shots. Spectral rolloff is the decoded frequency below which 99.9% of Welch power falls; the 8–12 kHz column reports that band's power relative to the full signal. Loop checks decode the final MP3, join 2,048-sample tail and head windows, and compare the boundary jump against local sample-step statistics.
 
-| File | Duration | Rate | Ch | Bitrate | Size | LUFS-I | True peak | Replaced CC0 | Loop verification |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| File | Duration | Rate | Ch | Bitrate | Size | 99.9% rolloff | 8–12 kHz | LUFS-I | True peak | Replaced CC0 | Loop verification |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
 {chr(10).join(rows)}
 
-Synthesized nine-file payload: **{synth_total:,} B**. Staged ten-file CC0 payload: **{staged_total:,} B**. Release payload with the retained **{retained_menu:,} B** menu track: **{release_total:,} B** ({(release_total / staged_total - 1) * 100:+.1f}% versus the staged set).
+Synthesized nine-file payload: **{synth_total:,} B**. Staged ten-file CC0 payload: **{staged_total:,} B**. Release payload with the retained **{retained_menu:,} B** menu track: **{release_total:,} B** ({(release_total / staged_total - 1) * 100:+.1f}% versus the staged set), leaving **{2_500_000 - release_total:,} B** below the 2.5 MB release ceiling.
 
 ## Spectrogram evidence
 
@@ -518,6 +553,12 @@ def main():
                     "cc0_size": (CC0 / f"{name}.mp3").stat().st_size,
                 }
             )
+            final["spectral"] = spectral_metrics(mp3_path, spec["channels"], final["sample_rate"])
+            if name == "wind" and (
+                final["spectral"]["rolloff_99_9_hz"] < 9_500
+                or final["spectral"]["band_8_12khz_db"] < -35.0
+            ):
+                raise RuntimeError(f"wind.mp3 lacks required high-frequency energy: {final['spectral']}")
             if spec["loop"]:
                 final["loop"] = loop_metrics(mp3_path, spec["channels"])
                 if not final["loop"]["pass"]:

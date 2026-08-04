@@ -32,21 +32,21 @@ All nine MP3 files in this directory are original procedural works created from 
 
 ## Measured output
 
-Loudness and true peak are ffmpeg `loudnorm` measurements of the final decoded MP3s. Ambient beds target lower integrated loudness than one-shots. Loop checks decode the final MP3, join 2,048-sample tail and head windows, and compare the boundary jump against local sample-step statistics.
+Loudness and true peak are ffmpeg `loudnorm` measurements of the final decoded MP3s. Ambient beds target lower integrated loudness than one-shots. Spectral rolloff is the decoded frequency below which 99.9% of Welch power falls; the 8–12 kHz column reports that band's power relative to the full signal. Loop checks decode the final MP3, join 2,048-sample tail and head windows, and compare the boundary jump against local sample-step statistics.
 
-| File | Duration | Rate | Ch | Bitrate | Size | LUFS-I | True peak | Replaced CC0 | Loop verification |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| `wind.mp3` | 4.200 s | 32000 Hz | 2 | 32 kb/s | 17,253 B | -27.35 | -14.07 dBTP | 15,235 B | PASS; jump 0.013072, 1.21× local p95 |
-| `amb_sea.mp3` | 5.200 s | 32000 Hz | 2 | 32 kb/s | 21,285 B | -28.33 | -13.66 dBTP | 15,939 B | PASS; jump 0.005234, 1.13× local p95 |
-| `thunder.mp3` | 3.800 s | 32000 Hz | 2 | 32 kb/s | 15,669 B | -22.01 | -2.46 dBTP | 4,078 B | n/a |
-| `flap.mp3` | 0.680 s | 24000 Hz | 1 | 24 kb/s | 2,469 B | -20.08 | -7.52 dBTP | 13,389 B | n/a |
-| `crash.mp3` | 1.100 s | 24000 Hz | 1 | 24 kb/s | 3,693 B | -19.05 | -2.73 dBTP | 3,537 B | n/a |
-| `zap.mp3` | 0.780 s | 24000 Hz | 1 | 24 kb/s | 2,757 B | -19.04 | -3.53 dBTP | 9,998 B | n/a |
-| `ring.mp3` | 1.450 s | 24000 Hz | 1 | 24 kb/s | 4,773 B | -19.42 | -2.42 dBTP | 7,302 B | n/a |
-| `detected.mp3` | 0.720 s | 24000 Hz | 1 | 24 kb/s | 2,541 B | -17.36 | -10.36 dBTP | 6,301 B | n/a |
-| `music_tension.mp3` | 6.500 s | 24000 Hz | 1 | 24 kb/s | 19,893 B | -24.44 | -9.50 dBTP | 16,205 B | PASS; jump 0.002071, 0.28× local p95 |
+| File | Duration | Rate | Ch | Bitrate | Size | 99.9% rolloff | 8–12 kHz | LUFS-I | True peak | Replaced CC0 | Loop verification |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| `wind.mp3` | 16.000 s | 44100 Hz | 2 | 128 kb/s | 257,088 B | 13.81 kHz | -6.4 dB | -27.09 | -14.74 dBTP | 15,235 B | PASS; jump 0.037085, 0.64× local p95 |
+| `amb_sea.mp3` | 16.000 s | 44100 Hz | 2 | 128 kb/s | 257,088 B | 13.83 kHz | -16.8 dB | -28.31 | -13.59 dBTP | 15,939 B | PASS; jump 0.001573, 0.35× local p95 |
+| `thunder.mp3` | 3.800 s | 44100 Hz | 2 | 128 kb/s | 61,902 B | 15.31 kHz | -16.2 dB | -21.29 | -3.54 dBTP | 4,078 B | n/a |
+| `flap.mp3` | 0.680 s | 44100 Hz | 1 | 96 kb/s | 9,135 B | 14.43 kHz | -12.8 dB | -20.47 | -9.89 dBTP | 13,389 B | n/a |
+| `crash.mp3` | 1.100 s | 44100 Hz | 1 | 96 kb/s | 14,151 B | 18.09 kHz | -11.6 dB | -18.25 | -1.71 dBTP | 3,537 B | n/a |
+| `zap.mp3` | 0.780 s | 44100 Hz | 1 | 96 kb/s | 10,076 B | 18.69 kHz | -12.4 dB | -18.29 | -2.58 dBTP | 9,998 B | n/a |
+| `ring.mp3` | 1.450 s | 44100 Hz | 1 | 96 kb/s | 18,226 B | 10.35 kHz | -28.4 dB | -19.47 | -2.81 dBTP | 7,302 B | n/a |
+| `detected.mp3` | 0.720 s | 44100 Hz | 1 | 96 kb/s | 9,449 B | 1.18 kHz | -42.4 dB | -17.43 | -10.68 dBTP | 6,301 B | n/a |
+| `music_tension.mp3` | 20.000 s | 44100 Hz | 1 | 96 kb/s | 240,789 B | 3.93 kHz | -47.3 dB | -24.45 | -9.58 dBTP | 16,205 B | PASS; jump 0.001273, 0.29× local p95 |
 
-Synthesized nine-file payload: **90,333 B**. Staged ten-file CC0 payload: **1,018,725 B**. Release payload with the retained **926,741 B** menu track: **1,017,074 B** (-0.2% versus the staged set).
+Synthesized nine-file payload: **877,904 B**. Staged ten-file CC0 payload: **1,018,725 B**. Release payload with the retained **926,741 B** menu track: **1,804,645 B** (+77.1% versus the staged set), leaving **695,355 B** below the 2.5 MB release ceiling.
 
 ## Spectrogram evidence
 

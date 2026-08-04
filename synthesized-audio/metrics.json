@@ -1,113 +1,158 @@
 {
   "amb_sea": {
-    "bitrate": 32000,
+    "bitrate": 128000,
     "cc0_size": 15939,
     "channels": 2,
-    "duration": 5.2,
+    "duration": 16.0,
     "loop": {
-      "boundary_jump": 0.005233733914792538,
-      "boundary_to_p95_step": 1.1270884275436401,
-      "head_tail_rms": 0.03741210326552391,
+      "boundary_jump": 0.0015727825229987502,
+      "boundary_to_p95_step": 0.34655052423477173,
+      "head_tail_rms": 0.01549129094928503,
       "pass": true,
       "window_samples": 2048
     },
-    "lufs": -28.33,
-    "sample_rate": 32000,
-    "size": 21285,
-    "true_peak": -13.66
+    "lufs": -28.31,
+    "sample_rate": 44100,
+    "size": 257088,
+    "spectral": {
+      "band_8_12khz_db": -16.83724969445403,
+      "rolloff_99_9_hz": 13829.69970703125,
+      "upper_active_60db_hz": 16026.08642578125
+    },
+    "true_peak": -13.59
   },
   "crash": {
-    "bitrate": 24000,
+    "bitrate": 96000,
     "cc0_size": 3537,
     "channels": 1,
     "duration": 1.1,
-    "lufs": -19.05,
-    "sample_rate": 24000,
-    "size": 3693,
-    "true_peak": -2.73
+    "lufs": -18.25,
+    "sample_rate": 44100,
+    "size": 14151,
+    "spectral": {
+      "band_8_12khz_db": -11.625319769538983,
+      "rolloff_99_9_hz": 18087.890625,
+      "upper_active_60db_hz": 19649.0478515625
+    },
+    "true_peak": -1.71
   },
   "detected": {
-    "bitrate": 24000,
+    "bitrate": 96000,
     "cc0_size": 6301,
     "channels": 1,
     "duration": 0.72,
-    "lufs": -17.36,
-    "sample_rate": 24000,
-    "size": 2541,
-    "true_peak": -10.36
+    "lufs": -17.43,
+    "sample_rate": 44100,
+    "size": 9449,
+    "spectral": {
+      "band_8_12khz_db": -42.44535923301206,
+      "rolloff_99_9_hz": 1178.94287109375,
+      "upper_active_60db_hz": 12526.94091796875
+    },
+    "true_peak": -10.68
   },
   "flap": {
-    "bitrate": 24000,
+    "bitrate": 96000,
     "cc0_size": 13389,
     "channels": 1,
-    "duration": 0.68,
-    "lufs": -20.08,
-    "sample_rate": 24000,
-    "size": 2469,
-    "true_peak": -7.52
+    "duration": 0.680249,
+    "lufs": -20.47,
+    "sample_rate": 44100,
+    "size": 9135,
+    "spectral": {
+      "band_8_12khz_db": -12.787965586910271,
+      "rolloff_99_9_hz": 14427.24609375,
+      "upper_active_60db_hz": 16209.11865234375
+    },
+    "true_peak": -9.89
   },
   "music_tension": {
-    "bitrate": 24000,
+    "bitrate": 96000,
     "cc0_size": 16205,
     "channels": 1,
-    "duration": 6.5,
+    "duration": 20.0,
     "loop": {
-      "boundary_jump": 0.002071116119623184,
-      "boundary_to_p95_step": 0.28353285789489746,
-      "head_tail_rms": 0.12344066053628922,
+      "boundary_jump": 0.001272683497518301,
+      "boundary_to_p95_step": 0.28632205724716187,
+      "head_tail_rms": 0.1764664202928543,
       "pass": true,
       "window_samples": 2048
     },
-    "lufs": -24.44,
-    "sample_rate": 24000,
-    "size": 19893,
-    "true_peak": -9.5
+    "lufs": -24.45,
+    "sample_rate": 44100,
+    "size": 240789,
+    "spectral": {
+      "band_8_12khz_db": -47.3237228059038,
+      "rolloff_99_9_hz": 3929.8095703125,
+      "upper_active_60db_hz": 6389.97802734375
+    },
+    "true_peak": -9.58
   },
   "ring": {
-    "bitrate": 24000,
+    "bitrate": 96000,
     "cc0_size": 7302,
     "channels": 1,
     "duration": 1.45,
-    "lufs": -19.42,
-    "sample_rate": 24000,
-    "size": 4773,
-    "true_peak": -2.42
+    "lufs": -19.47,
+    "sample_rate": 44100,
+    "size": 18226,
+    "spectral": {
+      "band_8_12khz_db": -28.43176538360079,
+      "rolloff_99_9_hz": 10346.7041015625,
+      "upper_active_60db_hz": 13119.10400390625
+    },
+    "true_peak": -2.81
   },
   "thunder": {
-    "bitrate": 32000,
+    "bitrate": 128000,
     "cc0_size": 4078,
     "channels": 2,
     "duration": 3.8,
-    "lufs": -22.01,
-    "sample_rate": 32000,
-    "size": 15669,
-    "true_peak": -2.46
+    "lufs": -21.29,
+    "sample_rate": 44100,
+    "size": 61902,
+    "spectral": {
+      "band_8_12khz_db": -16.202217279452796,
+      "rolloff_99_9_hz": 15310.107421875,
+      "upper_active_60db_hz": 16537.5
+    },
+    "true_peak": -3.54
   },
   "wind": {
-    "bitrate": 32000,
+    "bitrate": 128000,
     "cc0_size": 15235,
     "channels": 2,
-    "duration": 4.2,
+    "duration": 16.0,
     "loop": {
-      "boundary_jump": 0.013071851804852486,
-      "boundary_to_p95_step": 1.2094502449035645,
-      "head_tail_rms": 0.058213286101818085,
+      "boundary_jump": 0.03708531707525253,
+      "boundary_to_p95_step": 0.6365118026733398,
+      "head_tail_rms": 0.04447799548506737,
       "pass": true,
       "window_samples": 2048
     },
-    "lufs": -27.35,
-    "sample_rate": 32000,
-    "size": 17253,
-    "true_peak": -14.07
+    "lufs": -27.09,
+    "sample_rate": 44100,
+    "size": 257088,
+    "spectral": {
+      "band_8_12khz_db": -6.381638222997697,
+      "rolloff_99_9_hz": 13808.16650390625,
+      "upper_active_60db_hz": 15983.02001953125
+    },
+    "true_peak": -14.74
   },
   "zap": {
-    "bitrate": 24000,
+    "bitrate": 96000,
     "cc0_size": 9998,
     "channels": 1,
     "duration": 0.78,
-    "lufs": -19.04,
-    "sample_rate": 24000,
-    "size": 2757,
-    "true_peak": -3.53
+    "lufs": -18.29,
+    "sample_rate": 44100,
+    "size": 10076,
+    "spectral": {
+      "band_8_12khz_db": -12.361912746724462,
+      "rolloff_99_9_hz": 18685.43701171875,
+      "upper_active_60db_hz": 19982.8125
+    },
+    "true_peak": -2.58
   }
 }
