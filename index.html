@@ -1070,42 +1070,20 @@ const D={ group:new THREE.Group(), model:null, mixer:null, flap:null, glide:null
 D.group.position.copy(START); scene.add(D.group);
 const draco=new DRACOLoader().setDecoderPath('./vendor/draco/');
 const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
-const landmarkPath=new LandmarkPath(scene,loader,{assetBase:'./licensed-assets/models/'});
-const landmarkMaterials=[];
-const landmarkLooks={
-  'wake-arch':{stone:0x46666c,glow:0x65e6db},
-  'storm-spire':{stone:0x343b62,glow:0x8c7cff},
-  'drowned-gate':{stone:0x3b5260,glow:0x6bd5ed},
-  'cinder-harbor':{stone:0x563a35,glow:0xff784d},
-  'bone-sentinel':{stone:0x777178,glow:0xd8b8ff},
-  'aurora-crown':{stone:0x3e6262,glow:0x6fffc5}
-};
-function styleLandmarks(){
-  for(let index=0;index<landmarkPath.route.length;index++){
-    const entry=landmarkPath.route[index],look=landmarkLooks[entry.id]; let part=0;
-    entry.object?.traverse(o=>{
-      if(o.isPointLight){ o.color.setHex(look.glow); o.distance=220+index*12; return; }
-      if(!o.isMesh||!o.material)return;
-      const sources=Array.isArray(o.material)?o.material:[o.material];
-      const styled=sources.map((source,slot)=>{
-        const m=source.clone(),shade=.26+((part+slot)%4)*.11;
-        if(m.color)m.color.setHex(look.stone).multiplyScalar(shade);
-        if(m.emissive){ m.emissive.setHex(look.glow); m.emissiveIntensity=.06+((part+slot)%3)*.035; }
-        if('roughness' in m)m.roughness=.64+((part+slot)%3)*.09;
-        if('metalness' in m)m.metalness=entry.template==='harbor'?.28:.08;
-        m.flatShading=true; m.needsUpdate=true;
-        landmarkMaterials.push({material:m,base:m.emissiveIntensity||0,phase:index*.9+part*.17});
-        return m;
-      });
-      o.material=Array.isArray(o.material)?styled:styled[0]; part++;
-    });
-  }
-}
-const landmarkReady=landmarkPath.loadTemplates();
+// Landmarks are generated in code (see proceduralLandmarks.js). Palettes are baked into
+// vertex colours, so the whole feature runs on two materials and nightfall is two
+// uniform writes per frame instead of a loop over sixteen cloned materials.
+const landmarkPath=new LandmarkPath(scene,{flightRoute:route});
+const landmarkReady=landmarkPath.build();
 landmarkReady.then(()=>{
-  styleLandmarks();
   for(const c of landmarkPath.getCollisionProxies()) colliders.push({x:c.x,z:c.z,r:c.radius,top:c.top,landmark:c.id});
   landmarkPath.setCollisionAuthority(true);
+}).catch(err=>{
+  // Loud on purpose: a landmark build failure must never look like an art problem.
+  console.error('LANDMARK GEOMETRY BUILD FAILED',err);
+  $('objText').textContent='LANDMARK GEOMETRY FAILED TO BUILD — '+(err&&err.message||err);
+  $('wakehint').textContent='LANDMARK BUILD FAILED';
+  $('startBtn').disabled=true;
 });
 const rigChoice=new URLSearchParams(location.search).get('rig');
 const dragonAsset=({original:'dragon_rigged.glb',membrane:'dragon_rigged_membrane.glb',stormcrest:'dragon_galevein_stormcrest_corrected.glb','stormcrest-membrane':'dragon_galevein_stormcrest_membrane.glb',voltspine:'dragon_galevein_voltspine_corrected.glb','voltspine-membrane':'dragon_galevein_voltspine_membrane.glb',thunderhook:'dragon_galevein_thunderhook_corrected.glb','thunderhook-membrane':'dragon_galevein_thunderhook_membrane.glb'})[rigChoice]||'dragon_rigged_corrected.glb';
@@ -1933,7 +1911,7 @@ function driveTimeOfDay(dt){
   scene.fog.density=horizonDirector.fogDensity;
   renderer.toneMappingExposure=1.62-.12*d + dayW*.14;
   for(const r of rings)if(!r.userData.hit)r.material.emissiveIntensity=3.15+d*1.75;
-  for(const item of landmarkMaterials)item.material.emissiveIntensity=item.base+.18*d+.035*Math.sin(S.t*.9+item.phase);
+  landmarkPath.setNightfall(d,S.t);
   horizonDirector.masses.material.emissiveIntensity=.08+.16*d;
   // music: warm menu bed at dusk -> dark tension at night
   if(AU.on&&!S.muted){ if(AU.el.menu){ AU.el.menu.volume=(1-d)*0.34; if(AU.el.menu.paused&&d<0.95)AU.el.menu.play().catch(()=>{});}
@@ -1974,7 +1952,7 @@ function tick(dt){
   S.t+=dt; seaUniforms.uT.value=S.t; sky.material.uniforms.uT.value=S.t;
   if(S.started&&!S.done) S.flightT+=dt;
   updateTempestGate(dt); driveTimeOfDay(dt); driveRogue(dt);
-  landmarkPath.update(D.group.position,S.t);
+  landmarkPath.update(D.group.position);
   // escalation: more keepers wake as night falls (extend beam reach + speed)
   for(let i=0;i<searchlights.length;i++){ const sl=searchlights[i], d=routeDifficulty();
     sl.pivot.rotation.y=sl.yaw0 + S.t*sl.rate*(.72+d*.78+TOD.day*.35);
@@ -2647,7 +2625,17 @@ window.SIM={
   expansion:()=>({dof:cinematicDof.enabled,horizon:horizonDirector.getSnapshot(),landmarks:landmarkPath.getSnapshot(),
     seaFog:sea.material.uniforms.fogDensity.value,sceneFog:scene.fog.density,cameraFar:camera.far,
     worldArt:{seaVertices:sea.geometry.attributes.position.count,horizonTriangles:(horizonDirector.masses.geometry.index?.count||horizonDirector.masses.geometry.attributes.position.count)/3,
-      landmarkMaterials:landmarkMaterials.length,objectiveRingsFogFree:rings.every(r=>r.material.fog===false)}}),
+      landmarkMaterials:2,objectiveRingsFogFree:rings.every(r=>r.material.fog===false)}}),
+  // Renderer counters for the landmark budget; info.render is reset each frame by three.
+  renderInfo:()=>({calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,
+    programs:renderer.info.programs.length,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,
+    // THREE.LOD picks its level from the CAMERA, so report that distance too: the
+    // dragon distance alone will not explain which level is on screen.
+    landmarkLod:landmarkPath.route.map(e=>({id:e.id,fromDragon:Math.round(e.distance),
+      fromCamera:e.object?Math.round(camera.position.distanceTo(e.object.position)):-1,
+      visible:!!e.object?.visible,
+      lod:e.object&&e.object.visible?e.object.levels.findIndex(l=>l.object.visible):-1}))}),
+  landmarkMetrics:()=>landmarkPath.getSnapshot(),
   objectiveVisibility:()=>{ const a=$('arrow'),r=a.getBoundingClientRect(); return {arrowOpacity:+getComputedStyle(a).opacity,
     arrowOnScreen:r.right>0&&r.left<innerWidth&&r.bottom>0&&r.top<innerHeight,
     nextRingVisible:!!rings.find(r=>!r.userData.hit)?.visible,nextRingFogFree:rings.find(r=>!r.userData.hit)?.material.fog===false}; },

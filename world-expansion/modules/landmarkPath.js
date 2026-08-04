@@ -1,156 +1,157 @@
-// Integration: import after the configured DRACO GLTFLoader exists; create LandmarkPath(scene, loader), await loadTemplates(), then call update(D.group.position, S.t) in tick; add getCollisionProxies() to the existing collider pass only after route-flight testing.
+// Integration: create LandmarkPath(scene, { route }), await build(), call
+// update(D.group.position, S.t) in tick and setNightfall(TOD.day, S.t) alongside the
+// other time-of-day writes. Add getCollisionProxies() to the collider pass.
+//
+// This used to load three landmark GLBs and, on any parse failure, silently substitute
+// cones and tori. That fallback produced a false diagnosis once already: the world
+// looked wrong, the models "loaded fine", and nobody could tell which geometry they
+// were actually looking at. There is no fallback here any more. If the build fails the
+// promise rejects, the caller is expected to surface it, and the sky stays empty so the
+// failure is impossible to mistake for an art problem.
 import * as THREE from 'three';
+import {
+  LANDMARK_BUDGET,
+  LANDMARK_SITES,
+  buildLandmarkSite,
+  createLandmarkMaterials,
+  validateRouteClearance
+} from './proceduralLandmarks.js';
 
-const TEMPLATE_SIZE = {
-  arch: new THREE.Vector3(32, 22, 10),
-  spire: new THREE.Vector3(18, 54, 18),
-  harbor: new THREE.Vector3(44, 40, 44)
-};
+const CULL_DISTANCE = 2300;
+const ACTIVE_DISTANCE = 620;
 
-export const DRAGON_STORM_LANDMARK_ROUTE = Object.freeze([
-  { id: 'wake-arch', position: [100, 48, 180], yaw: .2, scale: 1.35, template: 'arch' },
-  { id: 'storm-spire', position: [170, 54, 40], yaw: -.55, scale: 1.6, template: 'spire' },
-  { id: 'drowned-gate', position: [270, 60, -150], yaw: -.8, scale: 1.85, template: 'arch' },
-  { id: 'cinder-harbor', position: [410, 46, -355], yaw: .55, scale: 1.45, template: 'harbor' },
-  { id: 'bone-sentinel', position: [105, 75, -545], yaw: 1.2, scale: 2.25, template: 'spire' },
-  { id: 'aurora-crown', position: [-150, 100, 620], yaw: .1, scale: 2.5, template: 'arch' }
-]);
-
-function fallback(type) {
-  const root = new THREE.Group();
-  const stone = new THREE.MeshStandardMaterial({ color: 0x353042, roughness: .82, metalness: .08, flatShading: true });
-  const glow = new THREE.MeshStandardMaterial({ color: 0x2d174f, emissive: 0x8c50ff, emissiveIntensity: 1.4, roughness: .3 });
-  if (type === 'arch') {
-    const arch = new THREE.Mesh(new THREE.TorusGeometry(15, 2.1, 7, 22, Math.PI), stone);
-    arch.rotation.z = Math.PI; arch.position.y = 15; root.add(arch);
-    for (const side of [-1, 1]) { const pillar = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 3.3, 17, 7), stone); pillar.position.set(side * 15, 8, 0); root.add(pillar); }
-  } else if (type === 'spire') {
-    const body = new THREE.Mesh(new THREE.ConeGeometry(9, 54, 7, 2), stone); body.position.y = 27; root.add(body);
-    const beacon = new THREE.Mesh(new THREE.OctahedronGeometry(3.3), glow); beacon.position.y = 55; root.add(beacon);
-  } else {
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(17, 21, 10, 8), stone); base.position.y = 5; root.add(base);
-    for (let i = 0; i < 3; i += 1) { const mast = new THREE.Mesh(new THREE.ConeGeometry(2.2, 30, 6), glow); mast.position.set((i - 1) * 9, 25, i % 2 ? -5 : 4); root.add(mast); }
-  }
-  root.traverse((object) => { if (object.isMesh) { object.castShadow = true; object.receiveShadow = true; } });
-  return root;
-}
-
-function normalizeTemplate(root, type) {
-  root.updateMatrixWorld(true);
-  const box = new THREE.Box3().setFromObject(root);
-  const size = box.getSize(new THREE.Vector3());
-  const target = TEMPLATE_SIZE[type];
-  if (!target || size.x < 1e-4 || size.y < 1e-4 || size.z < 1e-4) return root;
-  root.scale.multiply(new THREE.Vector3(target.x / size.x, target.y / size.y, target.z / size.z));
-  root.updateMatrixWorld(true);
-  box.setFromObject(root);
-  const center = box.getCenter(new THREE.Vector3());
-  root.position.x -= center.x;
-  root.position.y -= box.min.y;
-  root.position.z -= center.z;
-  const wrapper = new THREE.Group();
-  wrapper.add(root);
-  return wrapper;
-}
+export const DRAGON_STORM_LANDMARK_ROUTE = LANDMARK_SITES;
 
 export class LandmarkPath {
-  constructor(scene, loader, options = {}) {
-    if (!scene?.add || !loader?.loadAsync) throw new TypeError('LandmarkPath requires a Three.js scene and GLTFLoader.');
+  constructor(scene, options = {}) {
+    if (!scene?.add) throw new TypeError('LandmarkPath requires a Three.js scene.');
     this.scene = scene;
-    this.loader = loader;
-    this.assetBase = options.assetBase ?? './world-expansion/assets/';
+    this.flightRoute = options.flightRoute || null;
+    this.sites = options.sites || LANDMARK_SITES;
     this.root = new THREE.Group();
     this.root.name = 'DragonStorm_LandmarkPath';
     this.root.userData.visualOnly = true;
     this.scene.add(this.root);
-    this.route = DRAGON_STORM_LANDMARK_ROUTE.map((entry) => ({ ...entry, object: null, active: false }));
-    this.templates = new Map();
-    this._pulse = [];
+    this.materials = createLandmarkMaterials();
+    this.route = this.sites.map((site) => ({ ...site, object: null, active: false, distance: Infinity }));
+    this.metrics = null;
+    this.clearance = null;
     this.collisionAuthority = false;
+    this.buildError = null;
+
+    // A small fixed pool of point lights, moved to the nearest sites each frame. The
+    // previous build gave every landmark its own light, which charges every lit
+    // fragment in the scene for landmarks the player cannot even see.
+    this._lights = Array.from({ length: LANDMARK_BUDGET.pointLights }, () => {
+      const light = new THREE.PointLight(0xffffff, 0, 260, 2);
+      light.visible = false;
+      this.root.add(light);
+      return light;
+    });
+    this._nearest = [];
   }
 
-  async loadTemplates(manifest = { arch: 'portal_arch_draco.glb', spire: 'scene_landmarks_draco.glb', harbor: 'airfield_props_draco.glb' }) {
-    for (const [name, filename] of Object.entries(manifest)) {
-      try {
-        const gltf = await this.loader.loadAsync(`${this.assetBase}${filename}`);
-        this.templates.set(name, normalizeTemplate(gltf.scene, name));
-      } catch {
-        this.templates.set(name, fallback(name));
+  // Synchronous underneath; the promise shape is kept so callers can await it and so a
+  // build failure surfaces as a rejection rather than a half-populated scene.
+  build() {
+    return new Promise((resolve) => {
+      const started = (typeof performance !== 'undefined' ? performance : Date).now();
+      const proxies = [];
+      const perSite = [];
+      for (const entry of this.route) {
+        const built = buildLandmarkSite(entry, this.materials);
+        entry.object = built.lod;
+        entry.proxies = built.proxies;
+        this.root.add(built.lod);
+        proxies.push(...built.proxies);
+        perSite.push(built.metrics);
       }
-    }
-    for (const entry of this.route) this.place(entry);
-    return this.getSnapshot();
-  }
-
-  place(entry) {
-    const source = this.templates.get(entry.template) || fallback(entry.template);
-    const object = source.clone(true);
-    object.name = `DragonStorm_Landmark_${entry.id}`;
-    object.position.fromArray(entry.position);
-    object.rotation.y = entry.yaw;
-    object.scale.setScalar(entry.scale);
-    object.userData.landmarkId = entry.id;
-    object.userData.visualOnly = true;
-    this.root.add(object);
-    entry.object = object;
-    const beacon = new THREE.PointLight(0x8b5cff, 0, 175, 2);
-    beacon.position.y = 25;
-    object.add(beacon);
-    this._pulse.push(beacon);
-  }
-
-  update(playerPosition, time = 0) {
-    if (!playerPosition?.isVector3) return;
-    for (let index = 0; index < this.route.length; index += 1) {
-      const entry = this.route[index];
-      const distance = playerPosition.distanceTo(entry.object?.position || playerPosition);
-      entry.active = distance < 600;
-      if (entry.object) entry.object.visible = distance < 2200;
-      const beacon = this._pulse[index];
-      if (beacon) beacon.intensity = entry.active ? 18 + Math.sin(time * 3 + index) * 5 : 3;
-    }
-  }
-
-  getCollisionProxies() {
-    return this.route.flatMap((entry) => {
-      const [x, y, z] = entry.position;
-      if (entry.template === 'arch') {
-        return [-1, 1].map((side) => {
-          const offset = side * 12.5 * entry.scale;
-          return {
-            id: `${entry.id}-${side < 0 ? 'left' : 'right'}`,
-            x: x + Math.cos(entry.yaw) * offset,
-            z: z - Math.sin(entry.yaw) * offset,
-            radius: 3.3 * entry.scale,
-            top: y + 22 * entry.scale
-          };
-        });
+      this._proxies = proxies;
+      if (this.flightRoute) this.clearance = validateRouteClearance(proxies, this.flightRoute);
+      const totals = perSite.reduce((sum, site) => {
+        for (let level = 0; level < 3; level += 1) sum[level] += site.triangles[level];
+        return sum;
+      }, [0, 0, 0]);
+      if (totals[0] > LANDMARK_BUDGET.totalTriangles) {
+        throw new Error(`Landmark geometry totals ${totals[0]} triangles at LOD0, over the ${LANDMARK_BUDGET.totalTriangles} budget.`);
       }
-      return [{
-        id: entry.id,
-        x,
-        z,
-        radius: (entry.template === 'harbor' ? 12 : 7) * entry.scale,
-        top: y + (entry.template === 'harbor' ? 40 : 54) * entry.scale
-      }];
+      this.metrics = {
+        sites: perSite.length,
+        materials: 2,
+        buildMs: +((typeof performance !== 'undefined' ? performance : Date).now() - started).toFixed(1),
+        trianglesByLevel: totals,
+        shortest: Math.min(...perSite.map((site) => site.height)),
+        tallest: Math.max(...perSite.map((site) => site.height)),
+        perSite
+      };
+      resolve(this.getSnapshot());
+    }).catch((error) => {
+      this.buildError = error;
+      throw error;
     });
   }
 
-  setCollisionAuthority(enabled = true) {
-    this.collisionAuthority = !!enabled;
+  // Retained for callers that still say loadTemplates(); the GLB manifest is gone.
+  loadTemplates() { return this.build(); }
+
+  update(playerPosition) {
+    if (!playerPosition?.isVector3) return;
+    const nearest = this._nearest;
+    nearest.length = 0;
+    for (const entry of this.route) {
+      if (!entry.object) continue;
+      const distance = playerPosition.distanceTo(entry.object.position);
+      entry.distance = distance;
+      entry.active = distance < ACTIVE_DISTANCE;
+      entry.object.visible = distance < CULL_DISTANCE;
+      if (entry.active) nearest.push(entry);
+    }
+    nearest.sort((a, b) => a.distance - b.distance);
+    for (let i = 0; i < this._lights.length; i += 1) {
+      const light = this._lights[i];
+      const entry = nearest[i];
+      if (!entry) { light.visible = false; light.intensity = 0; continue; }
+      light.visible = true;
+      light.color.copy(entry.palette.signal);
+      light.position.set(entry.position[0], entry.position[1] + 46, entry.position[2]);
+      // Fade in with proximity so the pool swapping between sites is not visible.
+      light.intensity = 26 * (1 - entry.distance / ACTIVE_DISTANCE);
+      light.distance = 300;
+    }
   }
 
+  // Two uniform writes per frame for the whole feature, because palette variety is
+  // baked into vertex colours rather than spread across per-landmark materials.
+  setNightfall(day = 0, time = 0) {
+    this.materials.stone.emissiveIntensity = .05 + .17 * day;
+    const pulse = 1 + .05 * Math.sin(time * .9);
+    this.materials.signal.color.setScalar((.82 + .34 * day) * pulse);
+  }
+
+  getCollisionProxies() { return this._proxies ? this._proxies.slice() : []; }
+
+  setCollisionAuthority(enabled = true) { this.collisionAuthority = !!enabled; }
+
   getSnapshot() {
-    return { landmarks: this.route.length, loadedTemplates: [...this.templates.keys()], active: this.route.filter((entry) => entry.active).map((entry) => entry.id), collisionWiringRequired: !this.collisionAuthority };
+    return {
+      landmarks: this.route.length,
+      procedural: true,
+      generatedInCode: true,
+      externalAssets: 0,
+      buildError: this.buildError ? String(this.buildError.message || this.buildError) : null,
+      metrics: this.metrics,
+      clearance: this.clearance,
+      loadedTemplates: [...new Set(this.route.map((entry) => entry.archetype))],
+      active: this.route.filter((entry) => entry.active).map((entry) => entry.id),
+      collisionWiringRequired: !this.collisionAuthority
+    };
   }
 
   dispose() {
     this.scene.remove(this.root);
-    this.root.traverse((object) => {
-      if (object.geometry) object.geometry.dispose();
-      const materials = Array.isArray(object.material) ? object.material : [object.material];
-      materials.forEach((material) => material?.dispose?.());
-    });
+    this.root.traverse((object) => { if (object.geometry) object.geometry.dispose(); });
+    this.materials.stone.dispose();
+    this.materials.signal.dispose();
     this.root.clear();
   }
 }
