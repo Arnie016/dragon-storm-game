@@ -1,0 +1,1533 @@
+{
+  "pass": true,
+  "startedAt": "2026-08-05T03:26:59.241Z",
+  "result": {
+    "ts": "2026-08-05T03:27:05.701Z",
+    "uptimeSec": 35.52,
+    "loopLagMs": 4719.2,
+    "bootErrors": [],
+    "frameStats": {
+      "samples": 150,
+      "p50": 8.3,
+      "p95": 10.3,
+      "p99": 50
+    },
+    "state": {
+      "t": 35.5,
+      "flightT": 34.1,
+      "started": true,
+      "done": false,
+      "det": 0,
+      "score": 3,
+      "spd": 26.1,
+      "pos": [
+        -80.5,
+        71.7,
+        -139.9
+      ],
+      "fpv": false,
+      "chapter": 1,
+      "tutorial": 3,
+      "routeVisible": 12,
+      "cause": "",
+      "scales": 13,
+      "hp": 56.5,
+      "hpMax": 100,
+      "day": 0.371,
+      "finishing": false,
+      "charges": 3,
+      "chargeT": -1,
+      "bolts": 0,
+      "disabled": 0
+    },
+    "motion": {
+      "accel": 0.96,
+      "yawRate": -0.73,
+      "pitchRate": 0,
+      "gLoad": 1.37,
+      "camera": {
+        "pull": 0.59,
+        "drop": -0.01,
+        "fov": 1.07,
+        "jerk": 0.123,
+        "shakeIntensity": 0.35
+      }
+    },
+    "expansion": {
+      "dof": false,
+      "horizon": {
+        "cameraFar": 9000,
+        "fogDensity": 0.0006985789094300836,
+        "instances": 30,
+        "islandInstances": 10,
+        "drawCalls": 2,
+        "visualOnly": true,
+        "skyPreset": "shallows_dusk"
+      },
+      "landmarks": {
+        "landmarks": 12,
+        "procedural": true,
+        "generatedInCode": true,
+        "externalAssets": 0,
+        "buildError": null,
+        "metrics": {
+          "sites": 12,
+          "materials": 2,
+          "buildMs": 50.5,
+          "trianglesByLevel": [
+            57540,
+            27820,
+            10980
+          ],
+          "shortest": 108,
+          "tallest": 247,
+          "perSite": [
+            {
+              "id": "wake-arch",
+              "archetype": "seagate",
+              "triangles": [
+                6984,
+                3024,
+                960
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                166.6,
+                179.1,
+                53.1
+              ],
+              "height": 179.1
+            },
+            {
+              "id": "tide-viaduct",
+              "archetype": "viaduct",
+              "triangles": [
+                5360,
+                2556,
+                1020
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                325.2,
+                157,
+                37.9
+              ],
+              "height": 157
+            },
+            {
+              "id": "storm-spire",
+              "archetype": "beacon",
+              "triangles": [
+                2712,
+                1624,
+                580
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                83.6,
+                244.5,
+                86.8
+              ],
+              "height": 244.5
+            },
+            {
+              "id": "keeper-arcade",
+              "archetype": "viaduct",
+              "triangles": [
+                6000,
+                2832,
+                1104
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                223.6,
+                108,
+                21.8
+              ],
+              "height": 108
+            },
+            {
+              "id": "drowned-gate",
+              "archetype": "seagate",
+              "triangles": [
+                9080,
+                3776,
+                1200
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                192,
+                237.8,
+                59.5
+              ],
+              "height": 237.8
+            },
+            {
+              "id": "cinder-harbor",
+              "archetype": "harbor",
+              "triangles": [
+                4084,
+                2128,
+                1028
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                174.2,
+                150.1,
+                159
+              ],
+              "height": 150.1
+            },
+            {
+              "id": "salt-arcade",
+              "archetype": "viaduct",
+              "triangles": [
+                4540,
+                2160,
+                852
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                375.4,
+                172,
+                41.9
+              ],
+              "height": 172
+            },
+            {
+              "id": "bone-sentinel",
+              "archetype": "ribhall",
+              "triangles": [
+                2392,
+                1364,
+                852
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                208.1,
+                189.1,
+                303.7
+              ],
+              "height": 189.1
+            },
+            {
+              "id": "gale-spire",
+              "archetype": "beacon",
+              "triangles": [
+                2712,
+                1624,
+                580
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                74.1,
+                247,
+                77
+              ],
+              "height": 247
+            },
+            {
+              "id": "keeper-works",
+              "archetype": "harbor",
+              "triangles": [
+                4072,
+                2164,
+                992
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                176.1,
+                146.4,
+                165.5
+              ],
+              "height": 146.4
+            },
+            {
+              "id": "rib-vault",
+              "archetype": "ribhall",
+              "triangles": [
+                2620,
+                1544,
+                852
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                178.8,
+                162.2,
+                265.2
+              ],
+              "height": 162.2
+            },
+            {
+              "id": "aurora-crown",
+              "archetype": "seagate",
+              "triangles": [
+                6984,
+                3024,
+                960
+              ],
+              "drawCalls": [
+                2,
+                2,
+                2
+              ],
+              "size": [
+                208,
+                207.4,
+                62.7
+              ],
+              "height": 207.4
+            }
+          ]
+        },
+        "clearance": {
+          "proxies": 42,
+          "tightest": [
+            {
+              "id": "keeper-arcade-0",
+              "clearance": 47.8
+            },
+            {
+              "id": "tide-viaduct-7",
+              "clearance": 48.7
+            },
+            {
+              "id": "wake-arch-0",
+              "clearance": 59.3
+            },
+            {
+              "id": "keeper-arcade-1",
+              "clearance": 66.1
+            }
+          ],
+          "warnings": [],
+          "all": [
+            {
+              "id": "wake-arch-0",
+              "clearance": 59.3
+            },
+            {
+              "id": "wake-arch-1",
+              "clearance": 151.7
+            },
+            {
+              "id": "tide-viaduct-0",
+              "clearance": 153.5
+            },
+            {
+              "id": "tide-viaduct-1",
+              "clearance": 138.3
+            },
+            {
+              "id": "tide-viaduct-2",
+              "clearance": 134.7
+            },
+            {
+              "id": "tide-viaduct-3",
+              "clearance": 143.6
+            },
+            {
+              "id": "tide-viaduct-4",
+              "clearance": 161.6
+            },
+            {
+              "id": "tide-viaduct-5",
+              "clearance": 121.9
+            },
+            {
+              "id": "tide-viaduct-6",
+              "clearance": 84.9
+            },
+            {
+              "id": "tide-viaduct-7",
+              "clearance": 48.7
+            },
+            {
+              "id": "storm-spire-0",
+              "clearance": 82
+            },
+            {
+              "id": "keeper-arcade-0",
+              "clearance": 47.8
+            },
+            {
+              "id": "keeper-arcade-1",
+              "clearance": 66.1
+            },
+            {
+              "id": "keeper-arcade-2",
+              "clearance": 88.2
+            },
+            {
+              "id": "keeper-arcade-3",
+              "clearance": 111.9
+            },
+            {
+              "id": "keeper-arcade-4",
+              "clearance": 136.5
+            },
+            {
+              "id": "keeper-arcade-5",
+              "clearance": 160.8
+            },
+            {
+              "id": "keeper-arcade-6",
+              "clearance": 139.9
+            },
+            {
+              "id": "keeper-arcade-7",
+              "clearance": 119
+            },
+            {
+              "id": "keeper-arcade-8",
+              "clearance": 98.1
+            },
+            {
+              "id": "drowned-gate-0",
+              "clearance": 147.5
+            },
+            {
+              "id": "drowned-gate-1",
+              "clearance": 233.7
+            },
+            {
+              "id": "cinder-harbor-0",
+              "clearance": 90.3
+            },
+            {
+              "id": "cinder-harbor-1",
+              "clearance": 143.2
+            },
+            {
+              "id": "cinder-harbor-2",
+              "clearance": 96.4
+            },
+            {
+              "id": "salt-arcade-0",
+              "clearance": 104.2
+            },
+            {
+              "id": "salt-arcade-1",
+              "clearance": 99.5
+            },
+            {
+              "id": "salt-arcade-2",
+              "clearance": 95.4
+            },
+            {
+              "id": "salt-arcade-3",
+              "clearance": 110.7
+            },
+            {
+              "id": "salt-arcade-4",
+              "clearance": 146.3
+            },
+            {
+              "id": "salt-arcade-5",
+              "clearance": 192
+            },
+            {
+              "id": "salt-arcade-6",
+              "clearance": 242.3
+            },
+            {
+              "id": "bone-sentinel-0",
+              "clearance": 94.4
+            },
+            {
+              "id": "bone-sentinel-1",
+              "clearance": 147
+            },
+            {
+              "id": "gale-spire-0",
+              "clearance": 93
+            },
+            {
+              "id": "keeper-works-0",
+              "clearance": 74.1
+            },
+            {
+              "id": "keeper-works-1",
+              "clearance": 69.7
+            },
+            {
+              "id": "keeper-works-2",
+              "clearance": 137.1
+            },
+            {
+              "id": "rib-vault-0",
+              "clearance": 111.4
+            },
+            {
+              "id": "rib-vault-1",
+              "clearance": 106.1
+            },
+            {
+              "id": "aurora-crown-0",
+              "clearance": 163.8
+            },
+            {
+              "id": "aurora-crown-1",
+              "clearance": 163.4
+            }
+          ]
+        },
+        "loadedTemplates": [
+          "seagate",
+          "viaduct",
+          "beacon",
+          "harbor",
+          "ribhall"
+        ],
+        "active": [
+          "wake-arch",
+          "tide-viaduct",
+          "storm-spire",
+          "keeper-arcade",
+          "drowned-gate",
+          "gale-spire"
+        ],
+        "regionFilter": "keeper_shallows",
+        "activeRegionArchetypes": [
+          "beacon",
+          "viaduct",
+          "seagate"
+        ],
+        "regionProfiles": [
+          {
+            "regionId": "wake_cove",
+            "name": "Wake Cove",
+            "allowedLandmarkIds": [
+              "wake-arch",
+              "tide-viaduct"
+            ],
+            "allowedLandmarkArchetypes": [
+              "viaduct"
+            ],
+            "sites": [
+              {
+                "id": "tide-viaduct",
+                "archetype": "viaduct"
+              }
+            ]
+          },
+          {
+            "regionId": "keeper_shallows",
+            "name": "Keeper Shallows",
+            "allowedLandmarkIds": [
+              "storm-spire",
+              "keeper-arcade",
+              "drowned-gate"
+            ],
+            "allowedLandmarkArchetypes": [
+              "viaduct",
+              "beacon",
+              "seagate"
+            ],
+            "sites": [
+              {
+                "id": "storm-spire",
+                "archetype": "beacon"
+              },
+              {
+                "id": "keeper-arcade",
+                "archetype": "viaduct"
+              },
+              {
+                "id": "drowned-gate",
+                "archetype": "seagate"
+              }
+            ]
+          },
+          {
+            "regionId": "serpent_reach",
+            "name": "Serpent Reach",
+            "allowedLandmarkIds": [
+              "cinder-harbor",
+              "salt-arcade"
+            ],
+            "allowedLandmarkArchetypes": [
+              "harbor",
+              "viaduct",
+              "seagate"
+            ],
+            "sites": [
+              {
+                "id": "cinder-harbor",
+                "archetype": "harbor"
+              },
+              {
+                "id": "salt-arcade",
+                "archetype": "viaduct"
+              }
+            ]
+          },
+          {
+            "regionId": "rib_wastes",
+            "name": "Rib Wastes",
+            "allowedLandmarkIds": [
+              "bone-sentinel",
+              "gale-spire",
+              "keeper-works"
+            ],
+            "allowedLandmarkArchetypes": [
+              "ribhall",
+              "beacon",
+              "harbor"
+            ],
+            "sites": [
+              {
+                "id": "bone-sentinel",
+                "archetype": "ribhall"
+              },
+              {
+                "id": "gale-spire",
+                "archetype": "beacon"
+              },
+              {
+                "id": "keeper-works",
+                "archetype": "harbor"
+              }
+            ]
+          },
+          {
+            "regionId": "aurora_gate",
+            "name": "Aurora Gate",
+            "allowedLandmarkIds": [
+              "rib-vault",
+              "aurora-crown"
+            ],
+            "allowedLandmarkArchetypes": [
+              "seagate",
+              "ribhall"
+            ],
+            "sites": [
+              {
+                "id": "rib-vault",
+                "archetype": "ribhall"
+              },
+              {
+                "id": "aurora-crown",
+                "archetype": "seagate"
+              }
+            ]
+          }
+        ],
+        "collisionWiringRequired": false
+      },
+      "seaFog": 0.0006985789094300836,
+      "sceneFog": 0.0006985789094300836,
+      "cameraFar": 9000,
+      "worldArt": {
+        "seaVertices": 48841,
+        "horizonTriangles": 180,
+        "islandDrawCalls": 2,
+        "landmarkMaterials": 2,
+        "objectiveRingsFogFree": true
+      }
+    },
+    "renderInfo": {
+      "calls": 65,
+      "triangles": 588270,
+      "programs": 84,
+      "geometries": 361,
+      "textures": 3,
+      "landmarkLod": [
+        {
+          "id": "wake-arch",
+          "fromDragon": 458,
+          "fromCamera": 434,
+          "visible": true,
+          "lod": 0
+        },
+        {
+          "id": "tide-viaduct",
+          "fromDragon": 317,
+          "fromCamera": 312,
+          "visible": true,
+          "lod": 0
+        },
+        {
+          "id": "storm-spire",
+          "fromDragon": 365,
+          "fromCamera": 340,
+          "visible": true,
+          "lod": 0
+        },
+        {
+          "id": "keeper-arcade",
+          "fromDragon": 167,
+          "fromCamera": 190,
+          "visible": true,
+          "lod": 0
+        },
+        {
+          "id": "drowned-gate",
+          "fromDragon": 447,
+          "fromCamera": 426,
+          "visible": true,
+          "lod": 0
+        },
+        {
+          "id": "cinder-harbor",
+          "fromDragon": 650,
+          "fromCamera": 635,
+          "visible": false,
+          "lod": -1
+        },
+        {
+          "id": "salt-arcade",
+          "fromDragon": 808,
+          "fromCamera": 800,
+          "visible": true,
+          "lod": 1
+        },
+        {
+          "id": "bone-sentinel",
+          "fromDragon": 557,
+          "fromCamera": 571,
+          "visible": false,
+          "lod": -1
+        },
+        {
+          "id": "gale-spire",
+          "fromDragon": 458,
+          "fromCamera": 482,
+          "visible": true,
+          "lod": 1
+        },
+        {
+          "id": "keeper-works",
+          "fromDragon": 457,
+          "fromCamera": 485,
+          "visible": false,
+          "lod": -1
+        },
+        {
+          "id": "rib-vault",
+          "fromDragon": 786,
+          "fromCamera": 786,
+          "visible": false,
+          "lod": -1
+        },
+        {
+          "id": "aurora-crown",
+          "fromDragon": 973,
+          "fromCamera": 960,
+          "visible": true,
+          "lod": 1
+        }
+      ]
+    },
+    "cameraShake": {
+      "intensity": 0.35,
+      "jerk": 0.1233
+    },
+    "scenario": "runUntil",
+    "verdict": "beacon3",
+    "steps": 2049,
+    "elapsedMs": 4711,
+    "samples": [
+      {
+        "step": 0,
+        "t": 1.4,
+        "flightT": 0,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 27.9,
+        "pos": [
+          55.6,
+          36.1,
+          31.4
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 14.51,
+          "yawRate": -2.87,
+          "pitchRate": 1.818,
+          "gLoad": 1.33,
+          "camera": {
+            "pull": 0.06,
+            "drop": 0.01,
+            "fov": 0.1,
+            "jerk": 0.049,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 120,
+        "t": 3.4,
+        "flightT": 2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 39.7,
+        "pos": [
+          59.1,
+          37.3,
+          113.5
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": -1.71,
+          "yawRate": 0,
+          "pitchRate": 0,
+          "gLoad": 1,
+          "camera": {
+            "pull": 2.83,
+            "drop": 0.29,
+            "fov": 3.54,
+            "jerk": 0.113,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 240,
+        "t": 5.4,
+        "flightT": 4,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 40,
+        "pos": [
+          70.1,
+          37.3,
+          190.4
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 0.61,
+          "yawRate": 0,
+          "pitchRate": 0,
+          "gLoad": 1,
+          "camera": {
+            "pull": 2.84,
+            "drop": 0.29,
+            "fov": 3.55,
+            "jerk": 0.165,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 360,
+        "t": 7.4,
+        "flightT": 6,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 27.2,
+        "pos": [
+          62.6,
+          143.9,
+          211.9
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 58.3,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 0.94,
+          "yawRate": 0.346,
+          "pitchRate": -0.002,
+          "gLoad": 1.16,
+          "camera": {
+            "pull": 1.08,
+            "drop": 1.36,
+            "fov": 3.22,
+            "jerk": 0.41,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 480,
+        "t": 9.4,
+        "flightT": 8,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 40.3,
+        "pos": [
+          56.2,
+          119.6,
+          229.9
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 39.2,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 3.61,
+          "yawRate": 0.143,
+          "pitchRate": 0,
+          "gLoad": 1.28,
+          "camera": {
+            "pull": 4.62,
+            "drop": 2.03,
+            "fov": 6.4,
+            "jerk": -0.136,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 600,
+        "t": 11.4,
+        "flightT": 10,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 31.8,
+        "pos": [
+          69.7,
+          53,
+          254.4
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 42.2,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": -9.98,
+          "yawRate": 0.876,
+          "pitchRate": 0,
+          "gLoad": 1.75,
+          "camera": {
+            "pull": 1.33,
+            "drop": 1.36,
+            "fov": 3.96,
+            "jerk": 0.01,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 720,
+        "t": 13.4,
+        "flightT": 12,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 39.6,
+        "pos": [
+          70.1,
+          51.7,
+          297.6
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 1,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 1,
+        "hp": 45.2,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": -2.08,
+          "yawRate": -0.479,
+          "pitchRate": 0,
+          "gLoad": 2.21,
+          "camera": {
+            "pull": 2.85,
+            "drop": 0.29,
+            "fov": 3.55,
+            "jerk": 0.115,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 840,
+        "t": 15.4,
+        "flightT": 14,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 35.7,
+        "pos": [
+          8.1,
+          51.9,
+          294.5
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 2,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 2,
+        "hp": 48.2,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 16.58,
+          "yawRate": -0.124,
+          "pitchRate": 0,
+          "gLoad": 1.49,
+          "camera": {
+            "pull": 4.38,
+            "drop": 0.71,
+            "fov": 4.75,
+            "jerk": -0.013,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 960,
+        "t": 17.4,
+        "flightT": 16,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 25.7,
+        "pos": [
+          -53.2,
+          52.1,
+          260.5
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 2,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 2,
+        "hp": 51.2,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": -16.28,
+          "yawRate": 0,
+          "pitchRate": 0,
+          "gLoad": 1,
+          "camera": {
+            "pull": 0.23,
+            "drop": -0.29,
+            "fov": 1.55,
+            "jerk": 0.054,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 1080,
+        "t": 19.4,
+        "flightT": 18,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 35.8,
+        "pos": [
+          -54.9,
+          50.2,
+          238.3
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 3,
+        "hp": 32.3,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 17.27,
+          "yawRate": -0.004,
+          "pitchRate": 0.314,
+          "gLoad": 1.78,
+          "camera": {
+            "pull": 4.59,
+            "drop": 0.83,
+            "fov": 5.02,
+            "jerk": -0.034,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 1200,
+        "t": 21.4,
+        "flightT": 20,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 1,
+        "spd": 34.5,
+        "pos": [
+          -1.7,
+          68.9,
+          197.1
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 6,
+        "hp": 35.3,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 7.14,
+          "yawRate": 0.011,
+          "pitchRate": -2.753,
+          "gLoad": 1.69,
+          "camera": {
+            "pull": 3.41,
+            "drop": 0.49,
+            "fov": 3.64,
+            "jerk": 0.019,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 1320,
+        "t": 23.4,
+        "flightT": 22,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 1,
+        "spd": 39.6,
+        "pos": [
+          41.8,
+          71.9,
+          129.8
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 6,
+        "hp": 38.3,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": -2.07,
+          "yawRate": 0,
+          "pitchRate": 0,
+          "gLoad": 1,
+          "camera": {
+            "pull": 2.84,
+            "drop": 0.29,
+            "fov": 3.55,
+            "jerk": 0.115,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 1440,
+        "t": 25.4,
+        "flightT": 24,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 1,
+        "spd": 40,
+        "pos": [
+          84.8,
+          71.9,
+          61.6
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 6,
+        "hp": 41.3,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 0.48,
+          "yawRate": 0,
+          "pitchRate": 0,
+          "gLoad": 1,
+          "camera": {
+            "pull": 2.83,
+            "drop": 0.28,
+            "fov": 3.54,
+            "jerk": 0.151,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 1560,
+        "t": 27.4,
+        "flightT": 26,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 1,
+        "spd": 39.6,
+        "pos": [
+          127.7,
+          71.9,
+          -5.5
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 6,
+        "hp": 44.3,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": -2.12,
+          "yawRate": 0,
+          "pitchRate": 0,
+          "gLoad": 1,
+          "camera": {
+            "pull": 2.82,
+            "drop": 0.28,
+            "fov": 3.53,
+            "jerk": 0.116,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 1680,
+        "t": 29.4,
+        "flightT": 28,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 2,
+        "spd": 39.9,
+        "pos": [
+          122.3,
+          71.5,
+          -56.3
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 9,
+        "hp": 47.3,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 0.54,
+          "yawRate": 0.097,
+          "pitchRate": 0,
+          "gLoad": 1.66,
+          "camera": {
+            "pull": 4.73,
+            "drop": 0.48,
+            "fov": 4.99,
+            "jerk": 0.102,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 1800,
+        "t": 31.4,
+        "flightT": 30,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 2,
+        "spd": 40.2,
+        "pos": [
+          49.9,
+          71.5,
+          -88.4
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 9,
+        "hp": 50.3,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 2.18,
+          "yawRate": 0,
+          "pitchRate": 0,
+          "gLoad": 1,
+          "camera": {
+            "pull": 2.82,
+            "drop": 0.28,
+            "fov": 3.54,
+            "jerk": 0.182,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 1920,
+        "t": 33.4,
+        "flightT": 32,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 2,
+        "spd": 39.8,
+        "pos": [
+          -21.5,
+          71.5,
+          -119.2
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 9,
+        "hp": 53.3,
+        "hpMax": 100,
+        "day": 0.36,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": -0.51,
+          "yawRate": 0,
+          "pitchRate": 0,
+          "gLoad": 1,
+          "camera": {
+            "pull": 2.83,
+            "drop": 0.29,
+            "fov": 3.55,
+            "jerk": 0.123,
+            "shakeIntensity": 0.35
+          }
+        }
+      },
+      {
+        "step": 2040,
+        "t": 35.4,
+        "flightT": 34,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 2,
+        "spd": 26.1,
+        "pos": [
+          -77.5,
+          71.7,
+          -139.3
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 9,
+        "hp": 56.3,
+        "hpMax": 100,
+        "day": 0.37,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0,
+        "motion": {
+          "accel": 0.18,
+          "yawRate": -0.33,
+          "pitchRate": 0,
+          "gLoad": 1.19,
+          "camera": {
+            "pull": 0.39,
+            "drop": -0.09,
+            "fov": 1.09,
+            "jerk": 0.039,
+            "shakeIntensity": 0.35
+          }
+        }
+      }
+    ]
+  }
+}

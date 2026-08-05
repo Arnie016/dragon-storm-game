@@ -2771,14 +2771,26 @@ const SIM_KEYS={climb:'ArrowUp',dive:'ArrowDown',bankL:'KeyA',bankR:'KeyD',turnL
 function simClearControls(){ for(const c of Object.values(SIM_KEYS)) key[c]=false; input.flap=false; }
 function simSteerObjective(){
   const nb=S.chapter===0?tutRings.find(r=>!r.userData.hit):rings.find(r=>!r.userData.hit);
-  if(!nb){ simSetControls({accel:true,climb:false,bankLeft:false,bankRight:false}); return null; }
+  if(!nb){ simSetControls({accel:true,climb:false,dive:false,bankLeft:false,bankRight:false,turnLeft:false,turnRight:false,brake:false,flap:false}); return null; }
   const p=D.group.position,t=nb.position;
+  const dist=p.distanceTo(t), dy=t.y-p.y;
   let diff=Math.atan2(-(t.x-p.x),-(t.z-p.z))-D.yaw;
   while(diff>Math.PI)diff-=Math.PI*2;
   while(diff<-Math.PI)diff+=Math.PI*2;
-  simSetControls({accel:true,climb:p.y<t.y-6,dive:p.y>t.y+10,bankLeft:diff>0.12,bankRight:diff<-0.12,
-    flap:p.y<t.y-18&&((S.t*10)%9<1.5)});
-  return {x:+t.x.toFixed(1),y:+t.y.toFixed(1),z:+t.z.toFixed(1),dist:+p.distanceTo(t).toFixed(1)};
+  const wantBrake=D.speed>40||(dist<40&&D.speed>26);
+  const bankTh=dist>80?0.16:0.09;
+  simSetControls({
+    accel:!wantBrake,
+    brake:wantBrake,
+    climb:dy>4,
+    dive:dy<-9,
+    bankLeft:diff>bankTh,
+    bankRight:diff<-bankTh,
+    turnLeft:diff>0.05&&Math.abs(diff)<0.7,
+    turnRight:diff<-0.05&&Math.abs(diff)<0.7,
+    flap:dy>12&&((S.t*10)%9<2)
+  });
+  return {x:+t.x.toFixed(1),y:+t.y.toFixed(1),z:+t.z.toFixed(1),dist:+dist.toFixed(1),dy:+dy.toFixed(1),yawDiff:+diff.toFixed(3)};
 }
 function simSetControls(spec={}){
   if(spec.allOff) simClearControls();
@@ -2828,7 +2840,8 @@ function simJumpChapter(n){
     S.chapter=0; S.tutDone=false; S.score=0;
     for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; r.visible=true; }
     for(const r of rings){ r.visible=false; r.userData.hit=false; }
-    D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=2.83;
+    D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=28;
+    S.gustNext=999; S.gustPow=0; input.flap=false;
   } else {
     S.chapter=chapter; S.tutDone=true;
     for(const r of tutRings) r.userData.hit=true;
