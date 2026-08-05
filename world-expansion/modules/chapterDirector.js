@@ -195,6 +195,25 @@ export class ChapterDirector {
     return null;
   }
 
+  buildMissionBeat(chapter, state, vars) {
+    const beat = chapter.storyBeat;
+    if (beat === 'thread_canyon') {
+      const target = 80;
+      const peak = state.altitudePeak ?? 0;
+      if (state.altitudeCollected) return '✓ Altitude collected — harbor stacks mapped from above';
+      return `▲ Collect altitude — climb ${target}m AGL · peak ${Math.max(0, Math.round(peak))}m`;
+    }
+    if (beat === 'destroy_tower') {
+      const td = vars.towersDestroyed ?? 0;
+      const need = Math.min(3, state.towerTarget ?? 3);
+      if (td >= need) return `✓ ${need} towers shattered — the wastes open ahead`;
+      return `⚔ Destroy towers — ${td}/${need} searchlights down · hold X to charge plasma`;
+    }
+    const meta = this.metaObjectives[beat];
+    if (meta && chapter.index > 0 && chapter.index < 4) return meta;
+    return '';
+  }
+
   buildHud(state) {
     const chapter = this.chapter;
     const region = this.region;
@@ -211,6 +230,7 @@ export class ChapterDirector {
 
     const objectiveText = fillTemplate(hud.objectiveTemplate ?? '', vars);
     const distance = this.computeDistance(state.position, state.target);
+    const missionBeatText = this.buildMissionBeat(chapter, state, vars);
 
     return {
       chapterIndex: chapter.index,
@@ -220,6 +240,7 @@ export class ChapterDirector {
       regionId: region?.id ?? chapter.regionId,
       regionName: region?.name ?? '',
       objectiveText,
+      missionBeatText,
       goalText: hud.goalText ?? '',
       distanceM: distance,
       distanceLabel: hud.distanceLabel ?? 'Next objective',

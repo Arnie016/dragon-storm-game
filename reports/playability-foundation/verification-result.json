@@ -1,33 +1,33 @@
 {
-  "startedAt": "2026-08-05T06:13:09.124Z",
+  "startedAt": "2026-08-05T06:21:16.921Z",
   "loadBefore": {
-    "uptime": "14:13  up 1 day, 17:42, 1 user, load averages: 24.10 21.94 15.67",
+    "uptime": "14:21  up 1 day, 17:50, 1 user, load averages: 10.72 21.78 18.98",
     "loadAverage": [
-      24.1,
-      21.94,
-      15.67
+      10.72,
+      21.78,
+      18.98
     ]
   },
   "scenarios": {
     "idle65s": {
       "pass": true,
       "uptime": {
-        "loopLagMs": 11.9,
+        "loopLagMs": 2.1,
         "bootErrors": [],
         "alive": true
       },
       "state": {
-        "t": 6.3,
-        "flightT": 5.4,
+        "t": 62.6,
+        "flightT": 61.6,
         "started": true,
         "done": false,
         "det": 0,
         "score": 2,
-        "spd": 62,
+        "spd": 26,
         "pos": [
-          -229.2,
-          105.3,
-          110.5
+          -108.8,
+          166.1,
+          -64.8
         ],
         "fpv": false,
         "chapter": 1,
@@ -37,7 +37,7 @@
         "scales": 0,
         "hp": 100,
         "hpMax": 100,
-        "day": 0.347,
+        "day": 0.498,
         "finishing": false,
         "charges": 3,
         "chargeT": -1,
@@ -46,10 +46,10 @@
       },
       "bootErrors": [],
       "frameStats": {
-        "samples": 721,
+        "samples": 900,
         "p50": 8.3,
-        "p95": 9.8,
-        "p99": 17
+        "p95": 9.3,
+        "p99": 9.4
       },
       "cameraShake": 0.35
     },
@@ -65,12 +65,13 @@
         "regionId": "keeper_shallows",
         "regionName": "Keeper Shallows",
         "objectiveText": "III · Serpent Run — beacons 6/8 · dive and flock",
+        "missionBeatText": "▲ Collect altitude — climb 80m AGL · peak 0m",
         "goalText": "Thread three canyon gates and reach beacon eight",
-        "distanceM": 993.838643805493,
+        "distanceM": 754.9682290469638,
         "distanceLabel": "Next beacon",
-        "distanceText": "994 m",
-        "heightAboveWater": 105.07490622775869,
-        "heightText": "105 m AGL",
+        "distanceText": "755 m",
+        "heightAboveWater": 164.24733899160643,
+        "heightText": "164 m AGL",
         "subHints": [
           "Thread canyon gates for cover",
           "Climb over harbor works — collect altitude"
@@ -90,6 +91,7 @@
         "seenRegions": [
           "keeper_shallows",
           "wake_cove",
+          "aurora_gate",
           "serpent_reach"
         ],
         "completed": false,
@@ -103,12 +105,13 @@
           "regionId": "keeper_shallows",
           "regionName": "Keeper Shallows",
           "objectiveText": "III · Serpent Run — beacons 6/8 · dive and flock",
+          "missionBeatText": "▲ Collect altitude — climb 80m AGL · peak 0m",
           "goalText": "Thread three canyon gates and reach beacon eight",
-          "distanceM": 993.838643805493,
+          "distanceM": 754.9682290469638,
           "distanceLabel": "Next beacon",
-          "distanceText": "994 m",
-          "heightAboveWater": 105.07490622775869,
-          "heightText": "105 m AGL",
+          "distanceText": "755 m",
+          "heightAboveWater": 164.24733899160643,
+          "heightText": "164 m AGL",
           "subHints": [
             "Thread canyon gates for cover",
             "Climb over harbor works — collect altitude"
@@ -121,8 +124,8 @@
         }
       },
       "state": {
-        "t": 7.1,
-        "flightT": 6.2,
+        "t": 62.6,
+        "flightT": 61.6,
         "started": true,
         "done": false,
         "det": 0,
@@ -141,7 +144,7 @@
         "scales": 0,
         "hp": 100,
         "hpMax": 100,
-        "day": 0.347,
+        "day": 0.498,
         "finishing": false,
         "charges": 3,
         "chargeT": -1,
@@ -153,15 +156,15 @@
       "pass": true,
       "hp": 100,
       "pos": [
-        -152.5,
-        170.7,
-        -32
+        -137.2,
+        171.9,
+        -33.5
       ],
       "frameStats": {
-        "samples": 794,
+        "samples": 900,
         "p50": 8.3,
-        "p95": 15.4,
-        "p99": 33.3
+        "p95": 9.3,
+        "p99": 9.4
       }
     },
     "winRoute": {
@@ -230,7 +233,12 @@
       "lobby": {
         "mode": null,
         "chapterPick": 0,
-        "visible": true
+        "visible": true,
+        "markers": {
+          "visible": true,
+          "drawCalls": 2,
+          "instances": 3
+        }
       },
       "hubVisible": true
     },
@@ -239,7 +247,7 @@
       "filter": "wake_cove",
       "active": [
         "wake-arch",
-        "aurora-crown"
+        "drowned-gate"
       ],
       "profiles": [
         {
@@ -371,15 +379,15 @@
   "landmark": {
     "ok": true,
     "sites": 12,
-    "buildMs": 55.3,
+    "buildMs": 60.3,
     "bootErrors": []
   },
   "loadAfter": {
-    "uptime": "14:15  up 1 day, 17:44, 1 user, load averages: 23.61 21.87 15.68",
+    "uptime": "14:22  up 1 day, 17:52, 1 user, load averages: 8.35 18.86 18.08",
     "loadAverage": [
-      23.61,
-      21.87,
-      15.68
+      8.35,
+      18.86,
+      18.08
     ]
   },
   "consoleProblems": []

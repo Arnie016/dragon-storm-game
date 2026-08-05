@@ -133,6 +133,7 @@ function createRuntime(S, D, landmarkPath, options) {
       const chapterEl = dom.chapterLabel ?? (typeof document !== 'undefined' ? document.getElementById('chapterLabel') : null);
       const distEl = dom.distanceV ?? (typeof document !== 'undefined' ? document.getElementById('distanceV') : null);
       const heightEl = dom.heightV ?? (typeof document !== 'undefined' ? document.getElementById('heightV') : null);
+      const beatEl = dom.missionBeat ?? (typeof document !== 'undefined' ? document.getElementById('missionBeat') : null);
 
       if (objText) objText.textContent = hud.objectiveText;
       if (beaconV) beaconV.textContent = `${S.score ?? 0}/${totalBeacons}`;
@@ -141,6 +142,10 @@ function createRuntime(S, D, landmarkPath, options) {
       if (heightEl) {
         heightEl.textContent = hud.heightText ?? '';
         heightEl.style.display = hud.heightText ? '' : 'none';
+      }
+      if (beatEl) {
+        beatEl.textContent = hud.missionBeatText ?? '';
+        beatEl.classList.toggle('on', !!hud.missionBeatText);
       }
     },
 

@@ -82,8 +82,13 @@
   #hudTR .mini b{ color:#dbe7fb; margin-left:7px; font-weight:600; }
 
   #objTag{ top:16px; left:50%; transform:translateX(-50%); text-align:center; font-size:12px;
-    letter-spacing:1.5px; color:#b9c8e6; padding:6px 16px; }
+    letter-spacing:1.5px; color:#b9c8e6; padding:6px 16px; min-width:min(92vw,520px); }
   #objTag b{ color:var(--teal); }
+  #chapterLabel{ display:block; font-family:var(--display); font-size:10px; letter-spacing:.22em;
+    color:var(--purple); margin-bottom:4px; text-transform:uppercase; }
+  #missionBeat{ display:none; margin-top:5px; font-size:11px; letter-spacing:.8px; color:#ffbe6a;
+    font-family:var(--mono); }
+  #missionBeat.on{ display:block; }
   #warn{ position:absolute; top:46%; left:50%; transform:translate(-50%,-50%); text-align:center;
     font-size:26px; font-weight:800; letter-spacing:3px; color:var(--warn); opacity:0;
     text-shadow:0 0 22px rgba(255,90,122,.8); }
@@ -356,6 +361,9 @@
   #lobbyHub{ position:absolute; inset:0; z-index:4; display:flex; align-items:center; justify-content:center;
     pointer-events:none; opacity:0; transition:opacity .5s; }
   #lobbyHub.on{ opacity:1; pointer-events:auto; }
+  #lobbyHub .lobby-hub-kicker{ position:absolute; top:18%; left:50%; transform:translateX(-50%);
+    font-family:var(--display); font-size:11px; letter-spacing:.28em; color:rgba(56,230,208,.75);
+    text-transform:uppercase; pointer-events:none; }
   #lobbyHub .lobby-nodes{ display:flex; gap:14px; flex-wrap:wrap; justify-content:center; max-width:720px; padding:0 16px; }
   #lobbyHub .lobby-node{ cursor:pointer; min-width:148px; padding:16px 18px; border-radius:12px;
     border:1px solid rgba(120,90,200,.45); background:linear-gradient(180deg,rgba(14,18,34,.88),rgba(8,10,22,.72));
@@ -451,8 +459,11 @@
     <div class="mini">FPS<b id="fpsV">–</b></div>
     <div class="mini">SCALES<b id="scalesV">0</b></div>
   </div>
-  <div class="panel" id="objTag"><span id="objText">reach the Tempest Gate — <b>12 beacons before nightfall</b></span>
-    <span class="objmeta"><b id="beaconV">0/12</b> beacons · <b id="duskV">dusk</b></span></div>
+  <div class="panel" id="objTag">
+    <div id="chapterLabel">Galevein · Stormflight</div>
+    <span id="objText">reach the Tempest Gate — <b>12 beacons before nightfall</b></span>
+    <div id="missionBeat"></div>
+    <span class="objmeta"><b id="beaconV">0/12</b> beacons · <b id="duskV">dusk</b><span id="distanceV"></span></span></div>
   <div class="panel" id="abil">
     <span class="ab" id="abEcho"><b>C</b>ECHO</span>
     <span class="ab" id="abFlock"><b>F</b>FLOCK</span>
@@ -519,6 +530,7 @@
       <div class="playlabel">ENTER HUB</div>
     </div>
     <div id="lobbyHub" class="hide">
+      <div class="lobby-hub-kicker">Choose your flight path</div>
       <div class="lobby-nodes">
         <div class="lobby-node" data-lobby-mode="story"><b>STORY</b><i>Full beacon road · chapters · nightfall</i></div>
         <div class="lobby-node" data-lobby-mode="practice"><b>PRACTICE</b><i>Wake Cove rings · no keeper hunt</i></div>
@@ -593,7 +605,7 @@ import { HorizonDirector } from './world-expansion/modules/horizonDirector.js';
 import { LandmarkPath } from './world-expansion/modules/landmarkPath.js';
 import { gameStructure } from './world-expansion/modules/gameStructure.js';
 import { DRAGON_RIGS, resolveRigFromQuery, rigCatalog } from './world-expansion/modules/dragonRigs.js';
-import { LobbyHub } from './world-expansion/modules/lobbyHub.js';
+import { LobbyHub, LobbyMarkers } from './world-expansion/modules/lobbyHub.js';
 
 const $ = id => document.getElementById(id);
 const bootErrors=[];
@@ -1044,6 +1056,7 @@ beacon(-140,60,30,4.0,0.29,true);
 
 /* ---- menu patrol skiff: a searchlight on the water that finds the resting dragon ---- */
 const REST=new THREE.Vector3(56,30,31);
+const lobbyMarkers=new LobbyMarkers(scene, REST);
 const patrol=new THREE.Group(); patrol.position.set(150,7,95); scene.add(patrol);
 const pSpot=new THREE.SpotLight(0xffe3b0,2600,420,0.13,0.5,1.1);
 patrol.add(pSpot,pSpot.target); pSpot.target.position.set(300,26,0);
@@ -2112,6 +2125,9 @@ function tick(dt){
       D.model.scale.setScalar(9*b);
       D.model.rotation.x += (-0.12 - D.model.rotation.x)*fdamp(3,dt);
     }
+    lobbyMarkers.syncAnchor(REST);
+    if($('lobbyHub').classList.contains('on')) lobbyMarkers.update(S.t);
+    else lobbyMarkers.setVisible(false);
     // the skiff light hunts across the water; at t≈3.8s it lands on him
     patrol.rotation.y = PATROL_AIM + 0.55*Math.sin(0.5*(S.t-3.8));
     const off=Math.abs(patrol.rotation.y-PATROL_AIM);
@@ -2341,8 +2357,21 @@ function tick(dt){
       S.scales+=gateCount===3?2:1;
       S.detection=Math.max(0,S.detection-0.15); } }                       // the canyon hides you
   driveTutorial(dt);
+  if(S.started && !S.done && S.tutDone && structure?.director?.chapter?.storyBeat==='thread_canyon'){
+    const haw=D.group.position.y-waveH(D.group.position.x,D.group.position.z,S.t);
+    S.altitudePeak=Math.max(S.altitudePeak||0,haw);
+    if(haw>=80 && !S.altitudeCollected){
+      S.altitudeCollected=true; AU.play('ring',0.55); popup('ALTITUDE COLLECTED');
+      storyPop('Harbor stacks mapped from above — the serpent run reads clear.',4.5);
+    }
+  }
   if(structure){
-    const hud=structure.tick({tutorialDone:tutRings.filter(r=>r.userData.hit).length});
+    const hud=structure.tick({
+      tutorialDone:tutRings.filter(r=>r.userData.hit).length,
+      altitudePeak:S.altitudePeak||0,
+      altitudeCollected:!!S.altitudeCollected,
+      towerTarget:3
+    });
     structure.applyHud(hud);
   } else driveMissionsFallback();
   checkSkillUnlocks();
@@ -2531,7 +2560,7 @@ function begin(opts={}){
   $('shutter').classList.add('closed');
   setTimeout(()=>{
     S.started=true; S.flightT=0; S.grace=3; TOD.day=0.0; S.keepersWoke=false; S.hp=S.hpMax; S.hurt=0;
-    S.chapter=0; S.tutDone=false;
+    S.chapter=0; S.tutDone=false; S.altitudePeak=0; S.altitudeCollected=false;
     for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; }
     for(const r of rings) r.visible=false;
     if(S.practiceMode){
@@ -2579,7 +2608,7 @@ function reset(){
   S.spiral=0; S.spiralFired=false; S.spiralMax=false; S.lift=0; S.beatCd=0; S.poison=0;
   S.bookLost=false; S.violence=0; S.violenceWarned=false; S.bookOpen=false; $('book').classList.remove('on');
   S.shopOpen=false; $('shop').classList.remove('on'); S.scales=0;
-  S.chapter=0; S.tutDone=false;
+  S.chapter=0; S.tutDone=false; S.altitudePeak=0; S.altitudeCollected=false;
   for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; r.visible=true; }
   for(const r of rings) r.visible=false;
   for(const u of UPGRADES){ UP[u.id]=0; } S.hpMax=100; S.hp=100; for(const sk of SKILLS) sk._had=false;
@@ -2598,7 +2627,7 @@ function reset(){
 }
 /* ---- landing interactions ---- */
 const menuEl=$('menu');
-const lobby=new LobbyHub({ rootEl:$('lobbyHub'),
+const lobby=new LobbyHub({ rootEl:$('lobbyHub'), markers:lobbyMarkers,
   onSelect:(mode, extra)=>{
     S.lobbyMode=mode;
     if(mode==='story') begin({mode:'story'});
@@ -2610,7 +2639,7 @@ const lobby=new LobbyHub({ rootEl:$('lobbyHub'),
 lobby.mount();
 function openLobby(){
   if(!menuEl.classList.contains('live')) spotMoment();
-  else { $('lobbyHub').classList.add('on'); $('lobbyHub').classList.remove('hide'); }
+  else { $('lobbyHub').classList.add('on'); $('lobbyHub').classList.remove('hide'); lobbyMarkers.setVisible(true); }
 }
 $('startBtn').addEventListener('click',e=>{ e.stopPropagation(); openLobby(); });
 menuEl.addEventListener('click',()=>{ if(!menuEl.classList.contains('live')) spotMoment(); });
@@ -2837,7 +2866,7 @@ function simJumpChapter(n){
   S.started=true; S.done=false; S.launching=false; S.grace=3;
   menuEl.classList.add('hide','live'); $('hud').classList.add('on'); $('over').classList.add('hide');
   if(chapter===0){
-    S.chapter=0; S.tutDone=false; S.score=0;
+    S.chapter=0; S.tutDone=false; S.altitudePeak=0; S.altitudeCollected=false; S.score=0;
     for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; r.visible=true; }
     for(const r of rings){ r.visible=false; r.userData.hit=false; }
     D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=28;
