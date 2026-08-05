@@ -1,0 +1,160 @@
+{
+  "distinct": true,
+  "proof": {
+    "wake_cove": {
+      "regionFilter": "wake_cove",
+      "expectedArchetypes": [
+        "viaduct"
+      ],
+      "expectedIds": [
+        "wake-arch",
+        "tide-viaduct"
+      ],
+      "profileSites": [
+        {
+          "id": "tide-viaduct",
+          "archetype": "viaduct"
+        }
+      ],
+      "visible": [
+        {
+          "id": "wake-arch",
+          "archetype": "seagate"
+        },
+        {
+          "id": "tide-viaduct",
+          "archetype": "viaduct"
+        },
+        {
+          "id": "keeper-arcade",
+          "archetype": "viaduct"
+        },
+        {
+          "id": "salt-arcade",
+          "archetype": "viaduct"
+        }
+      ],
+      "activeArchetypes": [
+        "viaduct"
+      ]
+    },
+    "serpent_reach": {
+      "regionFilter": "serpent_reach",
+      "expectedArchetypes": [
+        "harbor",
+        "viaduct",
+        "seagate"
+      ],
+      "expectedIds": [
+        "cinder-harbor",
+        "salt-arcade"
+      ],
+      "profileSites": [
+        {
+          "id": "cinder-harbor",
+          "archetype": "harbor"
+        },
+        {
+          "id": "salt-arcade",
+          "archetype": "viaduct"
+        }
+      ],
+      "visible": [
+        {
+          "id": "wake-arch",
+          "archetype": "seagate"
+        },
+        {
+          "id": "tide-viaduct",
+          "archetype": "viaduct"
+        },
+        {
+          "id": "keeper-arcade",
+          "archetype": "viaduct"
+        },
+        {
+          "id": "drowned-gate",
+          "archetype": "seagate"
+        },
+        {
+          "id": "cinder-harbor",
+          "archetype": "harbor"
+        },
+        {
+          "id": "salt-arcade",
+          "archetype": "viaduct"
+        },
+        {
+          "id": "keeper-works",
+          "archetype": "harbor"
+        },
+        {
+          "id": "aurora-crown",
+          "archetype": "seagate"
+        }
+      ],
+      "activeArchetypes": [
+        "harbor",
+        "viaduct"
+      ]
+    },
+    "rib_wastes": {
+      "regionFilter": "rib_wastes",
+      "expectedArchetypes": [
+        "ribhall",
+        "beacon",
+        "harbor"
+      ],
+      "expectedIds": [
+        "bone-sentinel",
+        "gale-spire",
+        "keeper-works"
+      ],
+      "profileSites": [
+        {
+          "id": "bone-sentinel",
+          "archetype": "ribhall"
+        },
+        {
+          "id": "gale-spire",
+          "archetype": "beacon"
+        },
+        {
+          "id": "keeper-works",
+          "archetype": "harbor"
+        }
+      ],
+      "visible": [
+        {
+          "id": "storm-spire",
+          "archetype": "beacon"
+        },
+        {
+          "id": "cinder-harbor",
+          "archetype": "harbor"
+        },
+        {
+          "id": "bone-sentinel",
+          "archetype": "ribhall"
+        },
+        {
+          "id": "gale-spire",
+          "archetype": "beacon"
+        },
+        {
+          "id": "keeper-works",
+          "archetype": "harbor"
+        },
+        {
+          "id": "rib-vault",
+          "archetype": "ribhall"
+        }
+      ],
+      "activeArchetypes": [
+        "ribhall",
+        "beacon",
+        "harbor"
+      ]
+    }
+  }
+}

@@ -32,6 +32,14 @@ try {
 
   const shake = result.motion?.camera?.shakeIntensity ?? result.samples?.slice(-1)[0]?.motion?.camera?.shakeIntensity;
   const pass = result.verdict === 'beacon3' && !result.state?.done;
+  const hudTrail = [];
+  for (const s of result.samples || []) {
+    const obj = s.objective || '';
+    if (obj && (!hudTrail.length || hudTrail[hudTrail.length - 1].objective !== obj)) {
+      hudTrail.push({ step: s.step, t: s.t, objective: obj });
+    }
+  }
+  const finalObjective = result.samples?.slice(-1)[0]?.objective ?? '';
 
   const md = [
     '# Human-playable smoke — Galevein ambition audit',
@@ -42,7 +50,7 @@ try {
     '',
     '## Method',
     '- `SIM.jumpChapter(0)` — tutorial start at REST (no jumpBeacon score skip)',
-    '- `SIM.controls` steering toward next ring each frame (accel + bank + climb)',
+    '- `SIM.steerObjective()` each frame (SIM.controls accel + bank + climb toward next ring)',
     '- Camera shake locked to **0.35** via `SIM.setCameraShake(0.35)`',
     '',
     '## Outcome',
@@ -51,7 +59,13 @@ try {
     `- Steps: ${result.steps ?? '?'}`,
     `- HP: ${result.state?.hp ?? '?'}`,
     `- Camera shake intensity: ${shake ?? '?'}`,
-    `- Frame p95 (last sample): ${result.frameStats?.p95 ?? 'n/a'} ms`,
+    `- Frame stats: p50 ${result.frameStats?.p50 ?? 'n/a'} ms · p95 ${result.frameStats?.p95 ?? 'n/a'} ms · p99 ${result.frameStats?.p99 ?? 'n/a'} ms (${result.frameStats?.samples ?? '?'} samples)`,
+    `- Final objective HUD: \`${finalObjective}\``,
+    '',
+    '## Objective HUD trail',
+    ...(hudTrail.length
+      ? hudTrail.map((h) => `- step ${h.step} (t=${h.t}s): \`${h.objective}\``)
+      : ['- (none captured)']),
     '',
     '## Samples (last 3)',
     '```json',

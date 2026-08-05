@@ -1,35 +1,35 @@
 {
-  "startedAt": "2026-08-04T19:32:55.265Z",
+  "startedAt": "2026-08-05T06:13:09.124Z",
   "loadBefore": {
-    "uptime": "3:32  up 1 day,  7:02, 1 user, load averages: 8.51 16.00 16.05",
+    "uptime": "14:13  up 1 day, 17:42, 1 user, load averages: 24.10 21.94 15.67",
     "loadAverage": [
-      8.51,
-      16,
-      16.05
+      24.1,
+      21.94,
+      15.67
     ]
   },
   "scenarios": {
     "idle65s": {
       "pass": true,
       "uptime": {
-        "loopLagMs": 8,
+        "loopLagMs": 11.9,
         "bootErrors": [],
         "alive": true
       },
       "state": {
-        "t": 64.3,
-        "flightT": 63.2,
+        "t": 6.3,
+        "flightT": 5.4,
         "started": true,
         "done": false,
         "det": 0,
         "score": 2,
-        "spd": 52.4,
+        "spd": 62,
         "pos": [
-          -1693.6,
-          109,
-          2768.4
+          -229.2,
+          105.3,
+          110.5
         ],
-        "fpv": true,
+        "fpv": false,
         "chapter": 1,
         "tutorial": 3,
         "routeVisible": 12,
@@ -37,7 +37,7 @@
         "scales": 0,
         "hp": 100,
         "hpMax": 100,
-        "day": 0.507,
+        "day": 0.347,
         "finishing": false,
         "charges": 3,
         "chargeT": -1,
@@ -46,10 +46,10 @@
       },
       "bootErrors": [],
       "frameStats": {
-        "samples": 900,
+        "samples": 721,
         "p50": 8.3,
-        "p95": 9.3,
-        "p99": 12.6
+        "p95": 9.8,
+        "p99": 17
       },
       "cameraShake": 0.35
     },
@@ -62,15 +62,15 @@
         "chapterRoman": "III",
         "chapterTitle": "SERPENT RUN",
         "chapterLabel": "Chapter III · Serpent Run",
-        "regionId": "serpent_reach",
-        "regionName": "Serpent Reach",
+        "regionId": "keeper_shallows",
+        "regionName": "Keeper Shallows",
         "objectiveText": "III · Serpent Run — beacons 6/8 · dive and flock",
         "goalText": "Thread three canyon gates and reach beacon eight",
-        "distanceM": 3922.4858515841834,
+        "distanceM": 993.838643805493,
         "distanceLabel": "Next beacon",
-        "distanceText": "3922 m",
-        "heightAboveWater": 98.28779291948453,
-        "heightText": "98 m AGL",
+        "distanceText": "994 m",
+        "heightAboveWater": 105.07490622775869,
+        "heightText": "105 m AGL",
         "subHints": [
           "Thread canyon gates for cover",
           "Climb over harbor works — collect altitude"
@@ -78,15 +78,15 @@
         "storyLine": "The canyon tightens. Dive, pull out, and break their lock.",
         "popupOnEnter": "CHAPTER III · SERPENT RUN",
         "metaObjective": "",
-        "skyPresetId": "serpent_storm",
-        "ambientLine": "Char on the water. Four hearths — and only one was spared."
+        "skyPresetId": "shallows_dusk",
+        "ambientLine": "Echo through the rain. The first lights are still slow — use that."
       },
       "structure": {
         "chapterIndex": 2,
         "chapterId": "serpent_run",
         "chapterTitle": "SERPENT RUN",
-        "regionId": "serpent_reach",
-        "regionName": "Serpent Reach",
+        "regionId": "keeper_shallows",
+        "regionName": "Keeper Shallows",
         "seenRegions": [
           "keeper_shallows",
           "wake_cove",
@@ -100,15 +100,15 @@
           "chapterRoman": "III",
           "chapterTitle": "SERPENT RUN",
           "chapterLabel": "Chapter III · Serpent Run",
-          "regionId": "serpent_reach",
-          "regionName": "Serpent Reach",
+          "regionId": "keeper_shallows",
+          "regionName": "Keeper Shallows",
           "objectiveText": "III · Serpent Run — beacons 6/8 · dive and flock",
           "goalText": "Thread three canyon gates and reach beacon eight",
-          "distanceM": 3922.4858515841834,
+          "distanceM": 993.838643805493,
           "distanceLabel": "Next beacon",
-          "distanceText": "3922 m",
-          "heightAboveWater": 98.28779291948453,
-          "heightText": "98 m AGL",
+          "distanceText": "994 m",
+          "heightAboveWater": 105.07490622775869,
+          "heightText": "105 m AGL",
           "subHints": [
             "Thread canyon gates for cover",
             "Climb over harbor works — collect altitude"
@@ -116,13 +116,13 @@
           "storyLine": "The canyon tightens. Dive, pull out, and break their lock.",
           "popupOnEnter": "CHAPTER III · SERPENT RUN",
           "metaObjective": "",
-          "skyPresetId": "serpent_storm",
-          "ambientLine": "Char on the water. Four hearths — and only one was spared."
+          "skyPresetId": "shallows_dusk",
+          "ambientLine": "Echo through the rain. The first lights are still slow — use that."
         }
       },
       "state": {
-        "t": 64.3,
-        "flightT": 63.2,
+        "t": 7.1,
+        "flightT": 6.2,
         "started": true,
         "done": false,
         "det": 0,
@@ -133,7 +133,7 @@
           104,
           -470
         ],
-        "fpv": true,
+        "fpv": false,
         "chapter": 2,
         "tutorial": 3,
         "routeVisible": 12,
@@ -141,7 +141,7 @@
         "scales": 0,
         "hp": 100,
         "hpMax": 100,
-        "day": 0.507,
+        "day": 0.347,
         "finishing": false,
         "charges": 3,
         "chargeT": -1,
@@ -153,15 +153,15 @@
       "pass": true,
       "hp": 100,
       "pos": [
-        -152,
-        139.3,
-        -24
+        -152.5,
+        170.7,
+        -32
       ],
       "frameStats": {
-        "samples": 900,
+        "samples": 794,
         "p50": 8.3,
-        "p95": 9.3,
-        "p99": 12.6
+        "p95": 15.4,
+        "p99": 33.3
       }
     },
     "winRoute": {
@@ -239,7 +239,7 @@
       "filter": "wake_cove",
       "active": [
         "wake-arch",
-        "drowned-gate"
+        "aurora-crown"
       ],
       "profiles": [
         {
@@ -371,15 +371,15 @@
   "landmark": {
     "ok": true,
     "sites": 12,
-    "buildMs": 142.6,
+    "buildMs": 55.3,
     "bootErrors": []
   },
   "loadAfter": {
-    "uptime": "3:34  up 1 day,  7:03, 1 user, load averages: 22.30 18.13 16.81",
+    "uptime": "14:15  up 1 day, 17:44, 1 user, load averages: 23.61 21.87 15.68",
     "loadAverage": [
-      22.3,
-      18.13,
-      16.81
+      23.61,
+      21.87,
+      15.68
     ]
   },
   "consoleProblems": []

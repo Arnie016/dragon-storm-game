@@ -2885,7 +2885,7 @@ async function simRunUntil(checkFn, {dt=1/60, maxSteps=7200, controls=null, rese
   for(let step=0; step<maxSteps; step++){
     if(reseat && step>0 && step%180===0) reseat();
     tick(dt); render(dt);
-    if(step%sampleEvery===0) samples.push({step, ...SIM.state(), motion:SIM.motion()});
+    if(step%sampleEvery===0) samples.push({step, ...SIM.state(), objective:$('objText')?.textContent||'', motion:SIM.motion()});
     const verdict=checkFn(SIM.state(), step);
     if(verdict) return SIM.snapshot({scenario:'runUntil', verdict, steps:step+1, elapsedMs:Math.round(performance.now()-started), samples});
   }
