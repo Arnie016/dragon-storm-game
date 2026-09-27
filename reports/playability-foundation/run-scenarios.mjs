@@ -44,9 +44,10 @@ try {
       state: SIM.state()
     };
   `);
-  const expected = 'III · Serpent Run — beacons 6/8 · dive and flock';
+  // 2026-09-28: the objective is now one action line plus distance ('Fly to beacon 6 of 8 · 312 m').
+  const expected = 'Fly to beacon 6 of 8';
   results.scenarios.jumpBeacon6 = {
-    pass: beacon6.objective === expected,
+    pass: (beacon6.objective || '').startsWith(expected),
     expected,
     ...beacon6
   };

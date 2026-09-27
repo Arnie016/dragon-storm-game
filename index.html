@@ -719,6 +719,14 @@
     color:var(--bone-dim); background:none; border:none; border-top:1px solid rgba(201,168,106,.3); border-bottom:1px solid rgba(201,168,106,.3);
     padding:9px 22px; }
   #dockToggle:hover{ color:var(--ochre); }
+  /* objective: one line you can read at a glance */
+  #objTag{ min-width:340px; padding:12px 26px 12px !important; }
+  #chapterLabel{ font-size:11px !important; letter-spacing:.3em !important; opacity:.75; margin-bottom:6px; }
+  #objText{ display:block; font-family:var(--num); font-weight:700; font-size:clamp(20px,1.9vw,26px); letter-spacing:.02em; color:#f4ead4; }
+  #objText .dist{ font-weight:500; color:var(--ochre); }
+  #missionBeat{ font-family:var(--body); font-style:italic; font-size:14px; color:var(--bone-dim); margin-top:5px; }
+  #missionBeat:not(.on){ display:none; }
+  #objTag .objmeta{ display:none !important; }
   /* hub open: the shield steps aside so the three doors own the centre */
   #menu .card:has(#lobbyHub.on) .playwrap{ opacity:0 !important; pointer-events:none !important; transform:scale(.8) !important; }
   #lobbyHub{ flex-direction:column; gap:20px; }
@@ -810,6 +818,7 @@
     <div class="mini">VIEW<b id="viewTag">CHASE</b></div>
     <div class="mini">FPS<b id="fpsV">–</b></div>
     <div class="mini">SCALES<b id="scalesV">0</b></div>
+    <div class="mini">SKY<b id="duskV2">dusk</b></div>
   </div>
   <div class="panel" id="objTag">
     <div id="chapterLabel">Galevein · Stormflight</div>
@@ -1119,6 +1128,19 @@ renderer.domElement.addEventListener('webglcontextlost', e => {
 renderer.domElement.addEventListener('webglcontextrestored', () => location.reload());
 
 const scene = new THREE.Scene();
+/* FX LIGHT POOL — effects borrow one of a fixed set of lights. Adding or removing a light at runtime
+   changes the light count, and three.js then recompiles every material: a full-charge blast used to
+   recompile 68 shaders and freeze for 0.6 s. The pool keeps the count constant. */
+const FXL=(()=>{ const slots=[];
+  for(let i=0;i<6;i++){ const lt=new THREE.PointLight(0xffffff,0,1,2); scene.add(lt); slots.push({lt,owner:null}); }
+  return {
+    take(owner,color,intensity,distance,pos){
+      let sl=slots.find(x=>!x.owner);
+      if(!sl){ sl=slots.reduce((a,b)=>a.lt.intensity<b.lt.intensity?a:b); if(sl.lt.intensity>intensity) return null; }
+      sl.owner=owner; sl.lt.color.set(color); sl.lt.intensity=intensity; sl.lt.distance=distance; if(pos) sl.lt.position.copy(pos); return sl; },
+    give(sl,owner){ if(sl && sl.owner===owner){ sl.owner=null; sl.lt.intensity=0; } },
+    clear(){ for(const sl of slots){ sl.owner=null; sl.lt.intensity=0; } }
+  }; })();
 scene.fog = new THREE.FogExp2(0x0a0a1a, 0.00068);
 const camera = new THREE.PerspectiveCamera(64, innerWidth/innerHeight, 0.5, 6000);
 const cinematicDof = new CinematicDofPipeline(renderer, scene, camera, { enabled:false, focusRange:42, maxBlur:1.35 });
@@ -1756,7 +1778,7 @@ function driveVillage(){
   const grew=VILLAGE.tier>=0 && want>VILLAGE.tier;
   VILLAGE.tier=want; VILLAGE.groups.forEach((g,i)=>g.visible=i<=want);
   if(want>VILLAGE.stored){ VILLAGE.stored=want; try{ localStorage.setItem('galevein_hearthholm',String(want)); }catch(e){} }
-  if(grew && S.started) achievement('Hearthholm grows', VILLAGE_LINES[want], 'VILLAGE · '+want+' / 5');
+  if(grew && S.started) achievement('Hearthholm grows', VILLAGE_LINES[want], 'VILLAGE · '+want+' / 5', 'HOME');
 }
 setTimeout(driveVillage,0);   // S is declared further down the module
 
@@ -1871,6 +1893,16 @@ function nextObjectiveTarget(){
 const landmarkPath=new LandmarkPath(scene,{flightRoute:route,
   sites:LANDMARK_SITES.map(site=>MAP.LANDMARK_POSITIONS[site.id]?{...site,position:MAP.LANDMARK_POSITIONS[site.id]}:site)});
 const landmarkReady=landmarkPath.build();
+/* Pre-compile every material once the world and dragon are in, so nothing compiles mid-flight the first
+   time it comes into view (that was a multi-second hitch when entering a new region). Debounced: both
+   the landmark build and the dragon load call it. */
+let _precompileT=0;
+function precompileWorld(){ clearTimeout(_precompileT); _precompileT=setTimeout(()=>{
+  const vis=[]; scene.traverse(o=>{ if(!o.visible){ vis.push(o); o.visible=true; } });   // hidden tiers/sprites too
+  try{ renderer.compile(scene,camera); }catch(e){}                           // synchronous: no frame sees the toggled objects
+  for(const o of vis) o.visible=false;
+},400); }
+landmarkReady.then(()=>precompileWorld());
 landmarkReady.then(async ()=>{
   for(const c of landmarkPath.getCollisionProxies()) colliders.push({x:c.x,z:c.z,r:c.radius,top:c.top,landmark:c.id});
   landmarkPath.setCollisionAuthority(true);
@@ -1947,6 +1979,7 @@ function setupDragonClips(g, rig){
 function onDragonLoaded(g, rig){
   if(D.model){ D.group.remove(D.model); D.model.traverse(o=>{ if(o.geometry)o.geometry.dispose?.(); }); }
   const model=g.scene; D.model=model; model.scale.setScalar(rig.scale||9); model.rotation.y=Math.PI;
+  precompileWorld();
   applyDragonMaterials(model, rig);
   D.group.add(model);
   attachDragonAccessories(model);
@@ -2294,7 +2327,7 @@ function shoot(power=0.35){
   m.scale.setScalar(R);
   const halo=new THREE.Mesh(FX.haloGeo, FX.haloMat.clone());
   halo.scale.setScalar(R); m.add(halo); m.position.copy(head).addScaledVector(dir,3);
-  const lt=new THREE.PointLight(0xc07bff,300+power*760,160+power*180,2); m.add(lt);
+  const lt=null;
   const N=BOLT_SEG, lgeo=new THREE.BufferGeometry();
   lgeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N*3), 3));
   const line=new THREE.Line(lgeo, new THREE.LineBasicMaterial({color:0xe0ccff, transparent:true,
@@ -2302,6 +2335,7 @@ function shoot(power=0.35){
   line.frustumCulled=false; scene.add(m); scene.add(line);
   bolts.push({ m, lt, line, lgeo, origin:head.clone(), vel:dir.clone().multiplyScalar(220+power*150),
     life:2.4, power, jag:6+power*10 });
+  { const bb=bolts[bolts.length-1]; bb.slot=FXL.take(bb,0xc07bff,300+power*760,160+power*180,m.position); }
   if(D.glow) D.glow.intensity=70+power*90;
   if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; }
   const mz=m.position;
@@ -2396,11 +2430,8 @@ function plasmaImpact(pos,power){
   const big=0.6+power*1.6;
   const wh=waveH(pos.x,pos.z,S.t);
   if(pos.y < wh+4){                       // water strike: geyser column + spreading wave ring
-    for(let i=0;i<Math.round(10+power*14);i++){
-      const a=Math.random()*6.283, r=Math.random()*7*big;
-      smallBurst(pos.x+Math.cos(a)*r, wh+1+Math.random()*16*big, pos.z+Math.sin(a)*r, 0xdcecf6);
-    }
-    for(const rr of [1,2]){
+    for(let i=0;i<5;i++) smallBurst(pos.x+(Math.random()-.5)*3, wh+2+i*3.4*big, pos.z+(Math.random()-.5)*3, 0xdcecf6);   // spray column
+    for(const rr of [1]){
       const ring=new THREE.Mesh(new THREE.TorusGeometry(4*big*rr,0.5,8,26),
         new THREE.MeshBasicMaterial({color:0xcfe4f0,transparent:true,opacity:.75,
           blending:THREE.AdditiveBlending,depthWrite:false}));
@@ -2411,23 +2442,24 @@ function plasmaImpact(pos,power){
   }
   // ARC BURST leaves a crater ring of fire and a lingering scorch flash
   if(power>0.85){
-    for(let i=0;i<14;i++){ const a=i/14*6.283;
+    for(let i=0;i<6;i++){ const a=i/6*6.283;
       smallBurst(pos.x+Math.cos(a)*13, pos.y+1, pos.z+Math.sin(a)*13, 0xff9a3c); }
-    S.flash=Math.max(S.flash,0.9); S.shake=Math.max(S.shake,1.1);
+    S.flash=Math.max(S.flash,0.45); S.shake=Math.max(S.shake,1.0);
   }
   bigExplosion(pos.clone(), power>0.55?0xffd08a:0xc98bff);
-  for(let i=0;i<Math.round(5+power*10);i++){ const a=Math.random()*6.283, r=Math.random()*10*big;
+  for(let i=0;i<Math.round(3+power*3);i++){ const a=Math.random()*6.283, r=Math.random()*10*big;
     smallBurst(pos.x+Math.cos(a)*r, pos.y+Math.random()*6, pos.z+Math.sin(a)*r, 0xffc98a); }
   const rr=new THREE.Mesh(new THREE.TorusGeometry(3*big,0.6,8,24),
     new THREE.MeshBasicMaterial({color:0xffd8a0,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));
   rr.position.copy(pos); rr.rotation.x=-Math.PI/2; scene.add(rr); shocks.push({m:rr,life:0.5,dur:0.5,flat:true});
-  S.flash=Math.max(S.flash,0.35+power*0.35); S.shake=Math.max(S.shake,0.4+power*0.5);
+  S.flash=Math.max(S.flash,0.2+power*0.2); S.shake=Math.max(S.shake,0.4+power*0.5);
   AU.play('crash',0.55+power*0.4);
   const th=AU.el.thunder; if(th){ try{ th.currentTime=0; th.playbackRate=0.85; th.volume=0.35+power*0.4; th.play().catch(()=>{});}catch(e){} }
 }
 function updateBolts(dt){
   for(let i=bolts.length-1;i>=0;i--){ const b=bolts[i];
-    b.m.position.addScaledVector(b.vel,dt); b.life-=dt; b.lt.intensity*=0.95;
+    b.m.position.addScaledVector(b.vel,dt); b.life-=dt;
+    if(b.slot&&b.slot.owner===b){ b.slot.lt.intensity*=0.95; b.slot.lt.position.copy(b.m.position); }
     b.m.material.opacity=Math.min(1,b.life*2); b.line.material.opacity=0.5+0.5*Math.random();
     fillBolt(b);
     let hit=false;
@@ -2449,7 +2481,7 @@ function updateBolts(dt){
       if(land){ plasmaImpact(bp,b.power||0.35); hit=true; }
     }
     if(hit) b.life=0;
-    if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.line); b.lgeo.dispose();
+    if(b.life<=0){ FXL.give(b.slot,b); b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.line); b.lgeo.dispose();
       if(b.arc){ scene.remove(b.arc); b.arc.geometry.dispose(); b.arc.material.dispose(); }
       bolts.splice(i,1); }
   }
@@ -2517,7 +2549,8 @@ function renderShop(){
 }
 function toggleShop(){ S.shopOpen=!S.shopOpen; $('shop').classList.toggle('on',S.shopOpen);
   if(S.shopOpen) renderShop(); AU.play('flap',0.25); }
-function achievement(name,desc,key){
+function achievement(name,desc,key,kicker='SKILL LEARNED'){
+  const k=document.querySelector('#ach .ach-k'); if(k) k.textContent=kicker;
   $('achName').textContent=name; $('achDesc').textContent=desc; $('achKey').textContent=key;
   const el=$('ach'); el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
   AU.play('ring',0.75); S.flash=Math.max(S.flash,0.3);
@@ -2607,6 +2640,7 @@ function driveTutorial(dt){
   }
 }
 function driveMissionsFallback(){
+  if(structure) return;                         // the chapter director owns the objective line
   if(S.chapter===0){ $('objText').textContent=`I · learn to fly — rings ${tutRings.filter(r=>r.userData.hit).length}/3`; return; }
   if(S.score<4) $('objText').textContent=`II · home waters — beacons ${S.score}/4 · echo at 1`;
   else if(S.score<8) $('objText').textContent=`III · Serpent Run — beacons ${S.score}/8 · dive and flock`;
@@ -2616,19 +2650,28 @@ function driveMissionsFallback(){
 
 /* ---- explosion burst (expanding fireball + flash light) ---- */
 const bursts=[];
+const GLOW_TEX=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d');
+  const g=x.createRadialGradient(32,32,0,32,32,32); g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(.25,'rgba(255,255,255,.55)');
+  g.addColorStop(.6,'rgba(255,255,255,.12)'); g.addColorStop(1,'rgba(255,255,255,0)'); x.fillStyle=g; x.fillRect(0,0,64,64);
+  return new THREE.CanvasTexture(c); })();
+const BURST_POOL=Array.from({length:48},()=>{ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:GLOW_TEX,transparent:true,
+  blending:THREE.AdditiveBlending,depthWrite:false,fog:false})); sp.visible=false; scene.add(sp); return {sp,alive:false,life:0}; });
 function burstAt(pos,color,sc,dur,light){
-  const m=new THREE.Mesh(new THREE.SphereGeometry(2,14,14),
-    new THREE.MeshBasicMaterial({color, transparent:true, opacity:1, blending:THREE.AdditiveBlending, depthWrite:false}));
-  m.position.copy(pos); scene.add(m);
-  const lt=new THREE.PointLight(color, light, 260, 2); lt.position.copy(pos); scene.add(lt);
-  bursts.push({m,lt,life:dur,dur,sc,l0:light});
+  let b=BURST_POOL.find(x=>!x.alive); if(!b) b=BURST_POOL.reduce((a,c)=>a.life<c.life?a:c);   // recycle the nearest-finished
+  FXL.give(b.slot,b);
+  b.alive=true; b.sp.visible=true; b.sp.position.copy(pos); b.sp.material.color.set(color);
+  b.life=dur; b.dur=dur; b.sc=Math.min(sc,6); b.base=light>=1000?7:3.2; b.l0=light;
+  b.slot=light>=400?FXL.take(b,color,light,240,pos):null;
 }
 function bigExplosion(pos,color){ burstAt(pos,color,10,0.7,1600); shockwave(pos,color); }
 function smallBurst(x,y,z,color){ burstAt(new THREE.Vector3(x,y,z),color,2.2,0.3,180); }
 function updateBursts(dt){
-  for(let i=bursts.length-1;i>=0;i--){ const b=bursts[i]; b.life-=dt; const k=1-b.life/b.dur;
-    b.m.scale.setScalar(1+k*b.sc); b.m.material.opacity=(1-k); b.lt.intensity=b.l0*(1-k)*(1-k);
-    if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.lt); bursts.splice(i,1); }
+  for(const b of BURST_POOL){ if(!b.alive) continue; b.life-=dt; const k=1-Math.max(0,b.life)/b.dur;
+    const size=Math.min(34, b.base*(1+k*b.sc));                       // never a screen-filling wall
+    const near=THREE.MathUtils.clamp((camera.position.distanceTo(b.sp.position)-6)/22,0,1);   // fade what's in your face
+    b.sp.scale.setScalar(size); b.sp.material.opacity=(1-k)*(1-k*0.4)*near*0.85;
+    if(b.slot && b.slot.owner===b) b.slot.lt.intensity=b.l0*(1-k)*(1-k);
+    if(b.life<=0){ b.alive=false; b.sp.visible=false; FXL.give(b.slot,b); b.slot=null; }
   }
 }
 /* ---- enemy fire: an alerted watchtower shoots glowing bolts to bring you down ---- */
@@ -2642,7 +2685,6 @@ function towerFire(sl){
   m.add(new THREE.Mesh(new THREE.SphereGeometry(2.4,10,10),
     new THREE.MeshBasicMaterial({color:0xffb060,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.4})));
   m.position.copy(sl.lampPos);
-  const lt=new THREE.PointLight(0xff8030,220,120,2); m.add(lt);
   scene.add(m); foeBolts.push({m,vel:_fdir.clone().multiplyScalar(76+routeDifficulty()*28),life:5});
   smallBurst(sl.lampPos.x,sl.lampPos.y,sl.lampPos.z,0xff8030); AU.play('zap',0.3);
 }
@@ -2939,7 +2981,7 @@ function makeFlockDragon(){
   const wm=new THREE.MeshStandardMaterial({color:0x191622,roughness:.95,side:THREE.DoubleSide,flatShading:true});
   for(const s of [1,-1]){ const w=new THREE.Mesh(new THREE.PlaneGeometry(5.2,2.6),wm);
     w.position.set(s*3.0,0,0); w.rotation.x=-Math.PI/2; g.add(w); w.userData.side=s; }   // spread flat like wings
-  const eye=new THREE.PointLight(0x7fe0b0,6,26,2); eye.position.set(0,0,-2.2); g.add(eye);
+  const eye=new THREE.Mesh(new THREE.SphereGeometry(0.25,6,4),new THREE.MeshBasicMaterial({color:0x7fe0b0})); eye.position.set(0,0.3,-2.2); g.add(eye);
   return g;
 }
 function callFlock(){
@@ -3447,6 +3489,7 @@ function hud(litNow){
   $('detPct').textContent = dp>=70?dp+'% SEEN' : dp>=35?dp+'% HUNTED' : dp+'%';
   $('detPct').style.color = dp>=70?'#ff5a7a' : dp>=35?'#ffbe6a' : '#dbe7fb';
   if(S.bookOpen && (S.bookT=(S.bookT||0)-1)<=0){ S.bookT=20; renderBook(); }
+  $('duskV2').textContent = $('duskV').textContent;
   $('duskV').textContent = TOD.day<0.35?'dusk' : TOD.day<0.7?'twilight' : TOD.day<0.99?'nightfall' : 'night';
   // next-beacon arrow projected to screen
   const nb=S.chapter===0?tutRings.find(r=>!r.userData.hit):rings.find(r=>!r.userData.hit);
@@ -3577,7 +3620,7 @@ function reset(){
   for(const b of bolts){ scene.remove(b.m); scene.remove(b.line); } bolts.length=0;
   for(const s of shocks){ scene.remove(s.m); } shocks.length=0;
   for(const d of debris){ scene.remove(d.m); } debris.length=0;
-  for(const b of bursts){ scene.remove(b.m); scene.remove(b.lt); } bursts.length=0;
+  for(const b of BURST_POOL){ b.alive=false; b.sp.visible=false; b.slot=null; } FXL.clear();
   if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; } S._chargeReady=false;
   for(const gm of gates){ gm.userData.hit=false; gm.material.emissiveIntensity=2.2; }
   S.grazeT=0; S.splashT=0; S.hp=S.hpMax; S.hurt=0;

@@ -200,14 +200,14 @@ export class ChapterDirector {
     if (beat === 'thread_canyon') {
       const target = 80;
       const peak = state.altitudePeak ?? 0;
-      if (state.altitudeCollected) return '✓ Altitude collected — harbor stacks mapped from above';
-      return `▲ Collect altitude — climb ${target}m AGL · peak ${Math.max(0, Math.round(peak))}m`;
+      if (state.altitudeCollected) return '✓ Coast mapped from above';
+      return `Optional · climb above ${target} m to map the coast`;
     }
     if (beat === 'destroy_tower') {
       const td = vars.towersDestroyed ?? 0;
       const need = Math.min(3, state.towerTarget ?? 3);
       if (td >= need) return `✓ ${need} lights shattered — the shallows go dark`;
-      return `⚔ Destroy towers — ${td}/${need} searchlights down · hold X to charge plasma`;
+      return `Optional · shatter the keeper lights ${td}/${need} · hold X`;
     }
     const meta = this.metaObjectives[beat];
     if (meta && chapter.index > 0 && chapter.index < 4) return meta;

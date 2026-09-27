@@ -54,7 +54,8 @@ export class LandmarkPath {
     // fragment in the scene for landmarks the player cannot even see.
     this._lights = Array.from({ length: LANDMARK_BUDGET.pointLights }, () => {
       const light = new THREE.PointLight(0xffffff, 0, 260, 2);
-      light.visible = false;
+      // Stays visible at intensity 0: toggling visibility changes the scene's light count,
+      // which makes three.js recompile every material (a region-entry hitch).
       this.root.add(light);
       return light;
     });
@@ -156,8 +157,7 @@ export class LandmarkPath {
     for (let i = 0; i < this._lights.length; i += 1) {
       const light = this._lights[i];
       const entry = nearest[i];
-      if (!entry) { light.visible = false; light.intensity = 0; continue; }
-      light.visible = true;
+      if (!entry) { light.intensity = 0; continue; }
       light.color.copy(entry.palette.signal);
       light.position.set(entry.position[0], entry.position[1] + 46, entry.position[2]);
       // Fade in with proximity so the pool swapping between sites is not visible.

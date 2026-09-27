@@ -99,7 +99,7 @@ function createRuntime(S, D, landmarkPath, options) {
   function buildState(extra = {}) {
     return {
       tutDone: !!S.tutDone,
-      tutorialDone: extra.tutorialDone ?? S.tutorialDone ?? 0,
+      tutorialDone: (S._tutSeen = extra.tutorialDone ?? S.tutorialDone ?? 0),
       score: S.score ?? 0,
       dayAmount: getDay(),
       finishing: !!S.finishing,
@@ -135,7 +135,15 @@ function createRuntime(S, D, landmarkPath, options) {
       const heightEl = dom.heightV ?? (typeof document !== 'undefined' ? document.getElementById('heightV') : null);
       const beatEl = dom.missionBeat ?? (typeof document !== 'undefined' ? document.getElementById('missionBeat') : null);
 
-      if (objText) objText.textContent = hud.objectiveText;
+      if (objText) {
+        // One plain instruction: what to do next and how far it is. Chapter context lives in the label above.
+        const score = S.score ?? 0, ch = S.chapter ?? 0;
+        const need = [3, 4, 8, 11, 12][Math.min(4, ch)];
+        const action = ch === 0 ? `Fly through ring ${Math.min(3, (S._tutSeen ?? 0) + 1)} of 3`
+          : score >= 11 ? 'Reach the Tempest Gate'
+          : `Fly to beacon ${score + 1} of ${need}`;
+        objText.innerHTML = `${action}<span class="dist">${hud.distanceText && hud.distanceText !== '—' ? ' · ' + hud.distanceText : ''}</span>`;
+      }
       if (beaconV) beaconV.textContent = `${S.score ?? 0}/${totalBeacons}`;
       if (chapterEl) chapterEl.textContent = hud.chapterLabel;
       if (distEl) distEl.textContent = hud.distanceText;
