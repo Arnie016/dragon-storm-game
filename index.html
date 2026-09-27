@@ -583,6 +583,142 @@
   .lobby-node i{ font-family:var(--body) !important; color:var(--bone-dim) !important; }
   .lobby-node:hover{ border-color:var(--ochre) !important; }
 
+  /* ================= STORYBOOK REEL: a bestiary with one page torn out → paper-cut flight → title =================
+     Everything is layered cut paper: flat fills, soft drop shadows between layers, no gradients on the cut shapes. */
+  #trailer{ position:fixed; inset:0; z-index:12; overflow:hidden; cursor:pointer; background:#0d0b0a;
+    transition:opacity 1s ease; font-family:var(--body); }
+  #trailer.gone{ opacity:0; pointer-events:none; }
+  #trailer .skip{ position:absolute; right:22px; bottom:18px; z-index:20; font-family:var(--num); font-size:12px;
+    letter-spacing:.35em; color:rgba(233,223,196,.45); }
+  #trailer .loading{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); font-style:italic; font-size:18px;
+    color:rgba(233,223,196,.55); transition:opacity .6s; }
+  #trailer.rolling .loading{ opacity:0; }
+  .paper{ filter:drop-shadow(0 6px 10px rgba(0,0,0,.45)) drop-shadow(0 1px 1px rgba(0,0,0,.35)); }
+
+  /* --- act I: the bestiary --- */
+  #trailer .book{ position:absolute; left:50%; top:50%; width:min(84vw,980px); aspect-ratio:1.55; transform:translate(-50%,-50%) scale(.96);
+    opacity:0; perspective:2200px; transition:opacity .8s, transform 1.4s cubic-bezier(.6,0,.3,1); }
+  #trailer.a1 .book{ opacity:1; transform:translate(-50%,-50%) scale(1); }
+  #trailer.a2 .book{ transform:translate(-18%,-50%) scale(3.6); opacity:0; transition:opacity .9s .5s, transform 1.4s cubic-bezier(.7,0,.3,1); }
+  .spread{ position:absolute; inset:0; display:flex; }
+  .pg{ flex:1; position:relative; padding:5% 6%; box-sizing:border-box; color:#3b2c1a;
+    background:
+      radial-gradient(circle at 18% 78%, rgba(120,80,30,.16), transparent 26%),
+      radial-gradient(circle at 82% 14%, rgba(120,80,30,.12), transparent 22%),
+      repeating-linear-gradient(0deg, rgba(90,60,25,.035) 0 1px, transparent 1px 4px),
+      linear-gradient(170deg,#efe3c4,#e0cfa6 60%,#d1bb8c); }
+  .pg.l{ border-radius:6px 0 0 6px; box-shadow:inset -26px 0 30px -18px rgba(60,40,15,.45); }
+  .pg.r{ border-radius:0 6px 6px 0; box-shadow:inset 26px 0 30px -18px rgba(60,40,15,.45); }
+  .book::after{ content:''; position:absolute; inset:-10px; z-index:-1; border-radius:10px; background:#3a2415;
+    box-shadow:0 40px 80px rgba(0,0,0,.6); }
+  .entry{ position:absolute; inset:0; display:flex; opacity:0; }
+  .entry .pg{ transform-origin:0 50%; }
+  .entry.on{ opacity:1; }
+  .entry.on .pg.r{ animation:leaf .7s cubic-bezier(.3,.7,.2,1) both; }
+  @keyframes leaf{ from{ transform:rotateY(-78deg); filter:brightness(.7);} to{ transform:none; filter:none;} }
+  .entry h3{ margin:0 0 4%; font-family:var(--display); font-weight:400; font-size:clamp(20px,2.6vw,36px); letter-spacing:.04em; }
+  .entry .field{ font-size:clamp(13px,1.35vw,19px); line-height:1.75; border-bottom:1px dashed rgba(90,60,25,.35); }
+  .entry .field b{ font-family:var(--num); font-weight:700; letter-spacing:.12em; font-size:.8em; margin-right:.6em; color:#6a4b25; }
+  .entry .note{ margin-top:6%; font-style:italic; font-size:clamp(13px,1.3vw,18px); color:#5b4426; }
+  .entry svg.sk{ position:absolute; left:8%; top:14%; width:84%; height:72%; }
+  .entry svg.sk path{ fill:#2b2118; }
+  .entry .pg.l::before{ content:attr(data-no); position:absolute; left:8%; bottom:7%; font-family:var(--num); letter-spacing:.3em;
+    font-size:12px; color:rgba(90,60,25,.6); }
+  /* the torn page: a ragged stub where the leaf was ripped away */
+  .entry.torn .pg.r{ background:transparent; box-shadow:none; }
+  .entry.torn .stub{ position:absolute; left:0; top:0; bottom:0; width:16%;
+    background:linear-gradient(170deg,#efe3c4,#d1bb8c); box-shadow:inset 20px 0 26px -16px rgba(60,40,15,.45);
+    clip-path:polygon(0 0,100% 0,62% 6%,94% 13%,55% 21%,88% 30%,50% 38%,80% 47%,46% 55%,86% 64%,52% 72%,90% 81%,58% 90%,84% 100%,0 100%); }
+  .entry.torn .pg.l{ display:flex; flex-direction:column; justify-content:center; }
+  .entry.torn .scrawl{ font-family:var(--body); font-style:italic; font-size:clamp(15px,1.6vw,22px); line-height:1.6; color:#4a2d18; }
+  .entry.torn .scrawl s{ text-decoration-thickness:2px; text-decoration-color:rgba(120,30,20,.75); }
+  .entry.torn .ghost{ position:absolute; right:-40%; top:50%; transform:translateY(-50%); width:36%; opacity:.0;
+    animation:ghost 2.4s 1s ease forwards; }
+  @keyframes ghost{ to{ opacity:.18; } }
+
+  /* --- act II: paper-cut sea, high speed --- */
+  #trailer .sea{ position:absolute; inset:0; opacity:0; transition:opacity .9s;
+    background:linear-gradient(180deg,#161a33 0%,#27294a 46%,#3d3552 64%,#57405a 78%); }
+  #trailer.a2 .sea{ opacity:1; }
+  .moon{ position:absolute; right:16%; top:12%; width:15vmin; aspect-ratio:1; border-radius:50%; background:#f0e6c8;
+    box-shadow:0 0 0 2vmin rgba(240,230,200,.06), 0 0 0 5vmin rgba(240,230,200,.035); }
+  .cloud{ position:absolute; height:7vh; border-radius:40vh; background:#2f3056; }
+  .cloud.c1{ left:-10%; top:20%; width:48%; animation:drift 22s linear infinite; }
+  .cloud.c2{ left:40%; top:9%; width:38%; background:#373760; animation:drift 30s linear infinite; }
+  @keyframes drift{ to{ transform:translateX(-60vw); } }
+  .wave{ position:absolute; left:0; right:0; bottom:0; background-repeat:repeat-x; background-position:0 0;
+    animation:roll linear infinite; }
+  .wave.w1{ height:36%; background-size:520px 100%; animation-duration:6s; }
+  .wave.w2{ height:28%; background-size:420px 100%; animation-duration:3.4s; }
+  .wave.w3{ height:20%; background-size:360px 100%; animation-duration:1.7s; }
+  .wave.w4{ height:11%; background-size:300px 100%; animation-duration:.8s; }
+  #trailer.fast .wave.w1{ animation-duration:2.2s; } #trailer.fast .wave.w2{ animation-duration:1.1s; }
+  #trailer.fast .wave.w3{ animation-duration:.55s; } #trailer.fast .wave.w4{ animation-duration:.28s; }
+  @keyframes roll{ to{ background-position:-1560px 0; } }
+  .rider{ position:absolute; left:26%; top:57%; width:min(30vw,380px); transform:translateY(-50%);
+    animation:bob 1.1s ease-in-out infinite alternate; z-index:3; }
+  @keyframes bob{ to{ transform:translateY(-58%) rotate(-2deg); } }
+  #trailer.away .rider{ animation:away 1.6s cubic-bezier(.55,0,.8,.5) forwards; }
+  @keyframes away{ 0%{ left:26%; top:57%; transform:translateY(-50%) scale(1);} 100%{ left:108%; top:14%; transform:translateY(-50%) scale(.28) rotate(-18deg);} }
+  .rider .wing{ transform-origin:50% 58%; animation:beat .36s ease-in-out infinite alternate; }
+  #trailer.fast .rider .wing{ animation-duration:.2s; }
+  @keyframes beat{ from{ transform:scaleY(1);} to{ transform:scaleY(-.5);} }
+  /* the wake: two cut-paper foam strips opening out behind him, over and over */
+  .wake{ position:absolute; left:6%; top:66%; width:30%; height:14%; z-index:2; pointer-events:none; }
+  .wake i{ position:absolute; right:0; top:50%; height:5px; width:100%; background:#e8e4d6; border-radius:4px; transform-origin:100% 50%;
+    opacity:0; animation:wake 1.3s linear infinite; }
+  .wake i:nth-child(1){ --a:-7deg; } .wake i:nth-child(2){ --a:7deg; }
+  .wake i:nth-child(3){ --a:-12deg; animation-delay:.65s; } .wake i:nth-child(4){ --a:12deg; animation-delay:.65s; }
+  @keyframes wake{ 0%{ opacity:.9; transform:rotate(var(--a)) scaleX(.05);} 100%{ opacity:0; transform:rotate(calc(var(--a)*2.2)) scaleX(1) translateY(calc(var(--a)*1.2px));} }
+  #trailer.away .wake{ opacity:0; transition:opacity .5s; }
+  .spray{ position:absolute; left:24%; top:62%; z-index:3; }
+  .spray i{ position:absolute; width:7px; height:7px; border-radius:50%; background:#efeadb; opacity:0; animation:spray .9s ease-out infinite; }
+  @keyframes spray{ 0%{ opacity:.95; transform:translate(0,0) scale(1);} 100%{ opacity:0; transform:translate(var(--dx),var(--dy)) scale(.3);} }
+  #trailer .line{ position:absolute; left:50%; bottom:16%; transform:translateX(-50%); z-index:6; opacity:0; white-space:nowrap;
+    font-family:var(--display); font-size:clamp(26px,4.2vw,58px); color:#f3ead2; text-shadow:0 3px 18px rgba(0,0,0,.6); }
+  #trailer .line.on{ animation:linein 2.6s ease forwards; }
+  @keyframes linein{ 0%{opacity:0; letter-spacing:.3em;} 30%{opacity:1; letter-spacing:.06em;} 80%{opacity:1;} 100%{opacity:0;} }
+  #trailer .whiteout{ position:absolute; inset:0; background:#f3ead2; opacity:0; z-index:15; pointer-events:none; }
+  #trailer.out .whiteout{ animation:wo 1s ease forwards; }
+  @keyframes wo{ 0%{opacity:0;} 40%{opacity:1;} 100%{opacity:1;} }
+
+  /* ================= a calmer front door: fewer ornaments, one clear action ================= */
+  :root{ --knot:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10'%3E%3Cpath d='M0 5H40' stroke='%23c9a86a' stroke-opacity='.55' stroke-width='1'/%3E%3C/svg%3E");
+    --rivets:linear-gradient(transparent,transparent); }
+  .runering{ display:none !important; }
+  .playwrap{ margin-top:10px !important; }
+  .play{ width:auto !important; height:auto !important; border-radius:2px !important; padding:15px 64px !important;
+    background:rgba(12,10,8,.35) !important; border:1px solid rgba(233,223,196,.55) !important; color:#f1e7cf !important;
+    font-family:var(--num) !important; font-weight:700 !important; font-size:17px !important; letter-spacing:.5em !important; text-indent:.5em;
+    box-shadow:0 10px 40px rgba(0,0,0,.45) !important; backdrop-filter:blur(2px); transition:background .25s, border-color .25s, transform .25s !important; }
+  .play:hover,.play:focus-visible{ transform:translateY(-2px) !important; background:rgba(233,223,196,.12) !important;
+    border-color:#f1e7cf !important; box-shadow:0 14px 50px rgba(0,0,0,.5), 0 0 40px rgba(233,200,140,.18) !important; }
+  .play .tri{ display:none !important; }
+  .playlabel{ display:none; }
+  .panel{ background:linear-gradient(180deg,rgba(16,13,11,.80),rgba(10,9,8,.62)) !important; border:1px solid rgba(233,223,196,.16) !important;
+    border-radius:3px !important; box-shadow:0 8px 26px rgba(0,0,0,.45) !important; }
+  .panel::before{ opacity:.5; }
+  #objTag::after{ display:none; }
+  #hudBR .iv{ text-shadow:0 2px 0 #000 !important; }
+  .lobby-node{ background:linear-gradient(180deg,rgba(24,19,15,.9),rgba(14,11,9,.86)) !important; border:1px solid rgba(233,223,196,.22) !important; }
+  .lobby-node:hover{ border-color:rgba(233,223,196,.7) !important; }
+  .chip{ background:rgba(20,16,13,.72) !important; border:1px solid rgba(233,223,196,.12) !important; }
+  #rigPicker .rig{ background:rgba(20,16,13,.72) !important; border:1px solid rgba(233,223,196,.14) !important; }
+  #rigPicker .rig.on{ background:rgba(233,223,196,.12) !important; border-color:rgba(233,223,196,.7) !important; box-shadow:none !important; }
+  .dock.open{ background:rgba(14,11,9,.9) !important; border:1px solid rgba(233,223,196,.16) !important; }
+  #over .card{ background:rgba(14,11,9,.9) !important; border:1px solid rgba(233,223,196,.16) !important; }
+  .ach-in{ background:linear-gradient(170deg,#efe3c4,#d6c296) !important; }
+  .ach-n{ color:#3b2c1a !important; text-shadow:none !important; } .ach-d{ color:#5b4426 !important; } .ach-k{ color:#8a5a22 !important; }
+  #shutter .sh{ background:#0d0b0a !important; -webkit-mask-image:none !important; mask-image:none !important; }
+  /* menu decluttered: controls, mounts and settings live in a drawer */
+  .dock > #rigPicker, .dock > .chips, .dock > .gfxrow{ display:none !important; }
+  .dock.open > #rigPicker, .dock.open > .chips, .dock.open > .gfxrow{ display:flex !important; }
+  .dock.open{ background:var(--rivets), var(--grain), linear-gradient(180deg,rgba(40,28,19,.95),rgba(18,12,8,.95));
+    border:2px solid #0b0806; box-shadow:0 0 0 1px rgba(160,168,170,.28), 0 -10px 50px rgba(0,0,0,.6); padding:18px 22px 14px; border-radius:3px; }
+  #dockToggle{ font-family:var(--num); font-weight:700; font-size:13px; letter-spacing:.4em; text-indent:.4em; cursor:pointer;
+    color:var(--bone-dim); background:none; border:none; border-top:1px solid rgba(201,168,106,.3); border-bottom:1px solid rgba(201,168,106,.3);
+    padding:9px 22px; }
+  #dockToggle:hover{ color:var(--ochre); }
   /* hub open: the shield steps aside so the three doors own the centre */
   #menu .card:has(#lobbyHub.on) .playwrap{ opacity:0 !important; pointer-events:none !important; transform:scale(.8) !important; }
   #lobbyHub{ flex-direction:column; gap:20px; }
@@ -727,6 +863,48 @@
   <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> stormbreak dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> codex · <b>B</b> forge · <b>M</b> mute</div>
 </div>
 
+<div id="trailer" aria-label="Opening — click to skip">
+  <div class="loading">the pages are being turned…</div>
+  <div class="book paper">
+    <div class="entry" id="e1"><div class="spread">
+      <div class="pg l" data-no="FOLIO XII"><svg class="sk" viewBox="0 0 200 110"><path d="M20 70 C60 60 120 58 160 64 L192 56 L176 68 L194 76 L156 74 C120 80 70 82 20 78 Z M92 64 C84 30 64 10 36 4 C46 22 48 36 44 48 C62 46 76 54 82 64 Z M112 62 C118 34 138 16 166 10 C154 26 152 38 156 50 C140 48 124 54 118 64 Z M20 74 C10 76 4 84 0 94 C8 86 14 82 22 80 Z"/></svg></div>
+      <div class="pg r"><h3>Stormcrest</h3><div class="field"><b>HAUNT</b>sea-cliffs, where the swell breaks</div>
+        <div class="field"><b>TEMPER</b>proud, easily insulted</div><div class="field"><b>FIRE</b>short, hot, close</div>
+        <div class="note">Seen often. Keep a lamp lit and it keeps its distance.</div></div></div></div>
+    <div class="entry" id="e2"><div class="spread">
+      <div class="pg l" data-no="FOLIO XIII"><svg class="sk" viewBox="0 0 200 110"><path d="M14 62 C50 48 110 44 150 54 L188 40 L180 58 L196 64 L150 66 C110 76 60 78 14 70 Z M60 54 L70 30 L78 52 Z M84 50 L96 22 L102 50 Z M108 50 L120 26 L124 52 Z M132 54 L142 34 L146 56 Z M96 58 C104 80 90 98 70 108 C80 92 82 80 80 66 Z"/></svg></div>
+      <div class="pg r"><h3>Voltspine</h3><div class="field"><b>HAUNT</b>the high ridges in a storm</div>
+        <div class="field"><b>TEMPER</b>skittish; charges the air</div><div class="field"><b>FIRE</b>none — it throws lightning</div>
+        <div class="note">Its back glows before it strikes. Watch the back.</div></div></div></div>
+    <div class="entry" id="e3"><div class="spread">
+      <div class="pg l" data-no="FOLIO XIV"><svg class="sk" viewBox="0 0 200 110"><path d="M30 66 C70 54 120 54 150 62 C166 48 184 50 192 60 C180 62 172 68 170 74 L150 72 C120 80 70 82 30 76 Z M170 58 L184 44 L178 58 Z M30 72 C16 72 6 62 4 48 C12 60 20 64 32 66 Z M78 60 C66 30 44 16 18 12 C32 26 36 38 34 52 C52 50 66 54 72 62 Z M120 58 C132 32 154 20 180 18 C166 30 162 42 164 54 C148 52 134 56 126 62 Z"/></svg></div>
+      <div class="pg r"><h3>Thunderhook</h3><div class="field"><b>HAUNT</b>wrecks, and the fog around them</div>
+        <div class="field"><b>TEMPER</b>patient. very patient.</div><div class="field"><b>FIRE</b>a hooked tail, not a flame</div>
+        <div class="note">It waits under the water for the lamp to go out.</div></div></div></div>
+    <div class="entry torn" id="e4"><div class="spread">
+      <div class="pg l" data-no="FOLIO XV"><div class="scrawl"><s>Galevein</s><br><br>
+        Wingspan — never measured.<br>Speed — never matched.<br>Where it goes — <s>no map</s> no one who followed came back.<br><br>
+        <span style="font-size:.85em;opacity:.8">someone tore this page out.</span></div></div>
+      <div class="pg r"><div class="stub"></div></div></div></div>
+  </div>
+  <div class="sea">
+    <div class="moon"></div><div class="cloud c1"></div><div class="cloud c2"></div>
+    <div class="wave w1 paper" style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 100' preserveAspectRatio='none'%3E%3Cpath d='M0 40 C80 10 180 10 260 40 S440 70 520 40 V100 H0Z' fill='%23302f55'/%3E%3C/svg%3E&quot;)"></div>
+    <div class="wave w2 paper" style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 420 100' preserveAspectRatio='none'%3E%3Cpath d='M0 45 C70 15 140 15 210 45 S350 75 420 45 V100 H0Z' fill='%2324274a'/%3E%3C/svg%3E&quot;)"></div>
+    <div class="wake"><i></i><i></i><i></i><i></i></div>
+    <svg class="rider paper" viewBox="0 0 200 90" aria-hidden="true"><g fill="#0c0a0c">
+      <path d="M36 52 C70 44 120 42 150 46 L186 40 L170 50 L188 56 L150 56 C120 60 80 62 36 58 Z"/>
+      <path d="M150 46 L176 34 L170 45 Z"/><path d="M36 55 C22 56 10 62 0 70 C12 64 24 62 38 60 Z"/>
+      <g class="wing"><path d="M95 48 C88 26 72 8 52 2 C58 14 60 22 58 30 C70 30 80 38 84 48 Z"/>
+        <path d="M112 47 C114 24 128 8 148 2 C140 14 140 24 142 32 C130 32 120 40 118 48 Z"/></g></g></svg>
+    <div class="spray"><i style="--dx:-40px;--dy:-26px"></i><i style="--dx:-70px;--dy:-10px;animation-delay:.2s"></i><i style="--dx:-30px;--dy:-44px;animation-delay:.45s"></i><i style="--dx:-90px;--dy:-30px;animation-delay:.6s"></i></div>
+    <div class="wave w3 paper" style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 100' preserveAspectRatio='none'%3E%3Cpath d='M0 50 C60 20 120 20 180 50 S300 80 360 50 V100 H0Z' fill='%23191c38'/%3E%3C/svg%3E&quot;)"></div>
+    <div class="wave w4 paper" style="background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 100' preserveAspectRatio='none'%3E%3Cpath d='M0 50 C50 25 100 25 150 50 S250 75 300 50 V100 H0Z' fill='%23100f24'/%3E%3C/svg%3E&quot;)"></div>
+  </div>
+  <div class="line" id="tl1">Go where no map goes.</div>
+  <div class="whiteout"></div>
+  <div class="skip">CLICK TO SKIP</div>
+</div>
 <div class="screen" id="menu">
   <div id="sheen"></div>
   <div class="ripple" id="rippleLoop"></div>
@@ -743,8 +921,7 @@
         Guide Rook through the storm-lashed reach to the Tempest Gate — <b>never be seen.</b></div>
     </div>
     <div class="playwrap">
-      <svg class="runering" viewBox="0 0 236 236" aria-hidden="true"><defs><path id="rrp" d="M118,118 m-104,0 a104,104 0 1,1 208,0 a104,104 0 1,1 -208,0"/></defs><circle cx="118" cy="118" r="113"/><circle cx="118" cy="118" r="95"/><text><textPath href="#rrp">ᚠᛚᛃ ᛫ ᚢᚾᛊᛖᛖᚾ ᛫ ᚦᚱᛟᚢᚷᚺ ᛫ ᚦᛖ ᛫ ᛊᛏᛟᚱᛗ ᛫ ᚱᛁᛞᛖ ᛫ ᛏᚺᛖ ᛫ ᚹᛁᚾᛞ ᛫</textPath></text></svg>
-      <button class="play" id="startBtn" aria-label="Take flight"><span class="tri"></span></button>
+      <button class="play" id="startBtn" aria-label="Start"><span class="tri"></span>START</button>
       <div class="playlabel">ENTER HUB</div>
     </div>
     <div id="lobbyHub" class="hide">
@@ -771,6 +948,7 @@
       </div>
     </div>
     <div class="dock">
+      <button id="dockToggle" type="button">SADDLE · CONTROLS · SETTINGS ▾</button>
       <div id="rigPicker" aria-label="Dragon mount"></div>
       <div class="chips">
         <span class="chip"><b>W/S</b>speed</span>
@@ -2780,8 +2958,8 @@ function tick(dt){
     // the skiff light hunts across the water; at t≈3.8s it lands on him
     patrol.rotation.y = PATROL_AIM + 0.55*Math.sin(0.5*(S.t-3.8));
     const off=Math.abs(patrol.rotation.y-PATROL_AIM);
-    if(off<0.045 && S.t>1.5 && S.t-(S.lastSpot||0)>4){ S.lastSpot=S.t; spotMoment(); }
-    if(S.t>7 && !menuEl.classList.contains('live')) spotMoment();  // safety reveal
+    if(!TRAILER.on && off<0.045 && S.t>1.5 && S.t-(S.lastSpot||0)>4){ S.lastSpot=S.t; spotMoment(); }
+    if(!TRAILER.on && S.t>7 && !menuEl.classList.contains('live')) spotMoment();  // safety reveal
     // Hub / resting cinematic still gets sky lightning (weather is visible before you launch).
     if(S.t>(S.nextThunder||2)){
       S.nextThunder=S.t+3.5+Math.random()*5;
@@ -3320,6 +3498,47 @@ function openLobby(){
   else { $('lobbyHub').classList.add('on'); $('lobbyHub').classList.remove('hide'); lobbyMarkers.setVisible(true); }
 }
 $('startBtn').addEventListener('click',e=>{ e.stopPropagation(); openLobby(); });
+/* ---- storybook reel (once per session; skippable). Waits until the dragon has loaded:
+   the GLB decode blocks the main thread, and timers queued during it would all fire at once. ---- */
+const TRAILER={ on:false };
+(function runTrailer(){
+  const el=$('trailer'); let seen=false;
+  try{ seen=sessionStorage.getItem('gv_trailer')==='1'; }catch(e){}
+  if(seen || /notrailer/.test(location.search)){ el.classList.add('gone'); return; }
+  TRAILER.on=true;
+  const T=[]; const at=(ms,f)=>T.push(setTimeout(f,ms));
+  let iv=0, wait=0;
+  const end=(quiet)=>{ if(!TRAILER.on) return; TRAILER.on=false; T.forEach(clearTimeout); clearInterval(iv); clearInterval(wait);
+    try{ sessionStorage.setItem('gv_trailer','1'); }catch(e){}
+    el.classList.add('gone'); if(quiet===true) return;
+    flashDom(0.5); setTimeout(()=>spotMoment(),300); };
+  const on=(id)=>$(id).classList.add('on');
+  const go=()=>{
+    el.classList.add('rolling');
+    at(200, ()=>el.classList.add('a1'));
+    at(700, ()=>on('e1'));  at(2200,()=>{ $('e1').classList.remove('on'); on('e2'); AU.play('flap',0.25); });
+    at(3600,()=>{ $('e2').classList.remove('on'); on('e3'); AU.play('flap',0.25); });
+    at(5000,()=>{ $('e3').classList.remove('on'); on('e4'); AU.play('flap',0.3); });
+    at(8600,()=>{ el.classList.add('a2'); AU.play('thunder',0.3); });     // push through the torn gap into the night
+    at(9800,()=>{ AU.play('wind',0.5); });
+    at(11000,()=>{ el.classList.add('fast'); AU.play('flap',0.6); });
+    at(11600,()=>on('tl1'));
+    at(14000,()=>{ el.classList.add('away'); AU.play('zap',0.35); });
+    at(15200,()=>el.classList.add('out'));
+    at(16000,()=>end());
+  };
+  iv=setInterval(()=>{ if(S.started) end(true); },150);
+  const t0=performance.now(); let seenModel=-1;
+  wait=setInterval(()=>{
+    if(D.model && seenModel<0) seenModel=S.t;
+    if((seenModel>=0 && S.t-seenModel>0.8) || performance.now()-t0>25000){ clearInterval(wait); if(TRAILER.on) go(); }
+  },100);
+  el.addEventListener('click',e=>{ e.stopPropagation(); end(); });
+  addEventListener('keydown',e=>{ if(TRAILER.on && (e.code==='Space'||e.code==='Enter'||e.code==='Escape')) end(); });
+})();
+$('dockToggle').addEventListener('click',e=>{ e.stopPropagation(); const d=e.currentTarget.parentElement;
+  d.classList.toggle('open'); e.currentTarget.textContent = d.classList.contains('open') ? 'CLOSE ▴' : 'SADDLE · CONTROLS · SETTINGS ▾'; });
+
 menuEl.addEventListener('click',()=>{ if(!menuEl.classList.contains('live')) spotMoment(); });
 $('againBtn').addEventListener('click',()=>{
   $('over').classList.add('hide');
