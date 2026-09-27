@@ -55,7 +55,7 @@ export function homeHeight(x, z) {
 export function denPoint() { homeHeight(DEN.x, DEN.z); return [DEN.x, denLedgeY + 2, DEN.z]; }
 
 // Chapter I: tour the island — over the village, round the west cliffs, out past the north-east point.
-export const TUTORIAL = [[60, 46, 175], [-240, 58, 20], [170, 70, -250]];
+export const TUTORIAL = [[-30, 58, -380], [-290, 52, -60], [60, 46, 185]];   // burst out over the north cliff, round the west, home over Hearthholm
 
 // The beacon road, in story order. Heights stay low enough to thread the rib arches.
 export const ROUTE = [

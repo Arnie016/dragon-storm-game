@@ -20,7 +20,10 @@
         "narrative": "Galevein trusts the saddle. The cove is behind you."
       },
       "loss": {
-        "conditions": ["crash", "dragon_down"],
+        "conditions": [
+          "crash",
+          "dragon_down"
+        ],
         "narrative": "The stacks reclaim another attempt."
       },
       "hud": {
@@ -29,7 +32,9 @@
         "goalText": "Clear three practice rings in the cove",
         "distanceLabel": "Next ring",
         "showHeightAboveWater": false,
-        "subHints": ["Feel beat and brake before open water"]
+        "subHints": [
+          "Feel beat and brake before open water"
+        ]
       },
       "storyLine": "Three rings. Learn her weight before the open water.",
       "popupOnEnter": "CHAPTER I · FIRST FLIGHT"
@@ -40,8 +45,11 @@
       "roman": "II",
       "title": "HOME WATERS",
       "regionId": "keeper_shallows",
-      "storyBeat": "rebuild_trust",
-      "beaconRange": [1, 4],
+      "storyBeat": "destroy_tower",
+      "beaconRange": [
+        1,
+        4
+      ],
       "requiresTutorialRings": false,
       "unlockAtScore": 0,
       "win": {
@@ -50,7 +58,10 @@
         "narrative": "The inner road opens. Echo carries farther than fear."
       },
       "loss": {
-        "conditions": ["shot_down", "nightfall_before_beacon_4"],
+        "conditions": [
+          "shot_down",
+          "nightfall_before_beacon_4"
+        ],
         "narrative": "The keepers hold the shallows."
       },
       "hud": {
@@ -59,7 +70,9 @@
         "goalText": "Reach four beacons through the keeper shallows",
         "distanceLabel": "Next beacon",
         "showHeightAboveWater": true,
-        "subHints": ["Press C to echo — lights reveal the road"]
+        "subHints": [
+          "Press C to echo — lights reveal the road"
+        ]
       },
       "storyLine": "Echo through the rain. The first lights are still slow.",
       "popupOnEnter": "CHAPTER II · HOME WATERS"
@@ -71,7 +84,10 @@
       "title": "SERPENT RUN",
       "regionId": "serpent_reach",
       "storyBeat": "thread_canyon",
-      "beaconRange": [5, 8],
+      "beaconRange": [
+        5,
+        8
+      ],
       "requiresTutorialRings": false,
       "unlockAtScore": 4,
       "win": {
@@ -80,7 +96,10 @@
         "narrative": "The canyon spits you onto the cinder coast alive."
       },
       "loss": {
-        "conditions": ["shot_down", "nightfall_before_beacon_8"],
+        "conditions": [
+          "shot_down",
+          "nightfall_before_beacon_8"
+        ],
         "narrative": "The serpent closes its jaws."
       },
       "hud": {
@@ -89,7 +108,10 @@
         "goalText": "Thread three canyon gates and reach beacon eight",
         "distanceLabel": "Next beacon",
         "showHeightAboveWater": true,
-        "subHints": ["Thread canyon gates for cover", "Climb over harbor works — collect altitude"]
+        "subHints": [
+          "Thread canyon gates for cover",
+          "Climb over harbor works — collect altitude"
+        ]
       },
       "storyLine": "The canyon tightens. Dive, pull out, and break their lock.",
       "popupOnEnter": "CHAPTER III · SERPENT RUN"
@@ -100,8 +122,11 @@
       "roman": "IV",
       "title": "THE LONG NIGHT",
       "regionId": "rib_wastes",
-      "storyBeat": "destroy_tower",
-      "beaconRange": [9, 11],
+      "storyBeat": "thread_ribs",
+      "beaconRange": [
+        9,
+        11
+      ],
       "requiresTutorialRings": false,
       "unlockAtScore": 8,
       "win": {
@@ -110,7 +135,10 @@
         "narrative": "Towers fall. The bone arches fade in the rear mirror of rain."
       },
       "loss": {
-        "conditions": ["shot_down", "nightfall_before_beacon_11"],
+        "conditions": [
+          "shot_down",
+          "nightfall_before_beacon_11"
+        ],
         "narrative": "Night takes the wastes before the gate."
       },
       "hud": {
@@ -119,7 +147,10 @@
         "goalText": "Cross the rib wastes and destroy keeper towers",
         "distanceLabel": "Next beacon",
         "showHeightAboveWater": false,
-        "subHints": ["Hold X to charge plasma — shatter searchlights", "Press F to hide in the flock"]
+        "subHints": [
+          "Hold X to charge plasma — shatter searchlights",
+          "Press F to hide in the flock"
+        ]
       },
       "storyLine": "No more shelter. The keepers turn faster now.",
       "popupOnEnter": "CHAPTER IV · THE LONG NIGHT"
@@ -131,7 +162,10 @@
       "title": "TEMPEST GATE",
       "regionId": "aurora_gate",
       "storyBeat": "nightfall_escape",
-      "beaconRange": [12, 12],
+      "beaconRange": [
+        12,
+        12
+      ],
       "requiresTutorialRings": false,
       "unlockAtScore": 11,
       "win": {
@@ -140,7 +174,10 @@
         "narrative": "The aurora curtain parts. Galevein carries you through."
       },
       "loss": {
-        "conditions": ["shot_down", "nightfall_before_escape"],
+        "conditions": [
+          "shot_down",
+          "nightfall_before_escape"
+        ],
         "narrative": "The gate is lost to nightfall."
       },
       "hud": {
@@ -149,7 +186,10 @@
         "goalText": "Reach the final beacon before full nightfall",
         "distanceLabel": "Tempest Gate",
         "showHeightAboveWater": true,
-        "subHints": ["Nightfall accelerates after beacon eleven", "The aurora marks home"]
+        "subHints": [
+          "Nightfall accelerates after beacon eleven",
+          "The aurora marks home"
+        ]
       },
       "storyLine": "One beacon remains. Reach the aurora before nightfall.",
       "popupOnEnter": "CHAPTER V · TEMPEST GATE"
@@ -160,6 +200,7 @@
     "rebuild": "Cross home waters without losing the Codex to reckless violence.",
     "rescue": "Find the spared torch in the drowned village — someone still tends a hearth.",
     "collect_at_altitude": "Climb above harbor masts and cinder stacks to read the coast.",
-    "destroy_tower": "Charge plasma (X) and shatter keeper searchlights blocking the road."
+    "destroy_tower": "Charge plasma (X) and shatter keeper searchlights blocking the road.",
+    "thread_ribs": "Fly the ribcage low — thread every arch before the rain closes in."
   }
 }

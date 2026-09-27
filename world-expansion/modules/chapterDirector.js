@@ -206,7 +206,7 @@ export class ChapterDirector {
     if (beat === 'destroy_tower') {
       const td = vars.towersDestroyed ?? 0;
       const need = Math.min(3, state.towerTarget ?? 3);
-      if (td >= need) return `✓ ${need} towers shattered — the wastes open ahead`;
+      if (td >= need) return `✓ ${need} lights shattered — the shallows go dark`;
       return `⚔ Destroy towers — ${td}/${need} searchlights down · hold X to charge plasma`;
     }
     const meta = this.metaObjectives[beat];

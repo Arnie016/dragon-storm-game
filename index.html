@@ -1747,13 +1747,15 @@ const VILLAGE_LINES=['',
   'A watchtower on the headland — Hearthholm keeps its own light now.',
   'Lanterns over the square. They are waiting for you to come home.'];
 function driveVillage(){
-  let stored=0; try{ stored=+localStorage.getItem('galevein_hearthholm')||0; }catch(e){}
-  const earned=Math.max(0,Math.min(5,(S.chapter||0)+(S.cause==='ESCAPED'?1:0)));
-  const want=Math.max(stored,earned);
+  if(VILLAGE.stored==null){ VILLAGE.stored=0; try{ VILLAGE.stored=+localStorage.getItem('galevein_hearthholm')||0; }catch(e){} }
+  // only a real story run builds the village; chapter select and practice just show what you've earned
+  const story=S.started && (S.lobbyMode||'story')==='story';
+  const earned=story ? Math.max(0,Math.min(5,(S.chapter||0)+(S.cause==='ESCAPED'?1:0))) : 0;
+  const want=Math.max(VILLAGE.stored,earned);
   if(want===VILLAGE.tier) return;
   const grew=VILLAGE.tier>=0 && want>VILLAGE.tier;
   VILLAGE.tier=want; VILLAGE.groups.forEach((g,i)=>g.visible=i<=want);
-  try{ localStorage.setItem('galevein_hearthholm',String(want)); }catch(e){}
+  if(want>VILLAGE.stored){ VILLAGE.stored=want; try{ localStorage.setItem('galevein_hearthholm',String(want)); }catch(e){} }
   if(grew && S.started) achievement('Hearthholm grows', VILLAGE_LINES[want], 'VILLAGE · '+want+' / 5');
 }
 setTimeout(driveVillage,0);   // S is declared further down the module
@@ -2005,7 +2007,7 @@ probeOptionalRigs().then(()=>{
 
 /* he sleeps on the sea-rock until the patrol light finds him */
 function stageRest(){
-  D.group.position.copy(REST); D.yaw=2.2; D.pitch=0; D.roll=0;
+  D.group.position.copy(REST); D.yaw=0.35; D.pitch=0; D.roll=0;
   D.group.rotation.set(0,D.yaw,0);
   if(D.model) D.model.rotation.x=-0.12;                 // settled, not prone
   if(D.glide){ D.glide.timeScale=0.12; D.flap.setEffectiveWeight(0); D.glide.setEffectiveWeight(1); }
@@ -3549,7 +3551,7 @@ function begin(opts={}){
     }
     for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.fireCd=2+Math.random(); if(S.practiceMode) sl.alerted=0; }
     D.group.position.set(REST.x, REST.y+6, REST.z);
-    D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=30; S.prevSpeed=30;
+    D.yaw=0; D.pitch=0.22; D.roll=0; D.speed=30; S.prevSpeed=30;
     if(D.model) D.model.scale.setScalar(activeRig.scale||9);
     if(D.glide) D.glide.timeScale=activeRig.id==='quaternius'?0.35:1;
     $('menu').classList.add('hide'); $('hud').classList.add('on');
@@ -3561,7 +3563,7 @@ function begin(opts={}){
   setTimeout(()=>{ S.launching=false; },2900);
 }
 function reset(){
-  startAudio(); D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=30; input.flap=false;
+  startAudio(); D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=0; D.pitch=0.22; D.roll=0; D.speed=30; input.flap=false;
   S.done=false; S.flightT=0; S.detection=0; S.score=0; S.shake=0; S.fpv=false; S.nextThunder=S.t+5; S.shootCd=0;
   S.finishing=false; S.finishToken++; GATE.open=0; S.impactCd=0; S.alertStage=0;
   S.boost=0; S.accel=0; S.prevSpeed=30; S.boomed=false; S.charges=3; S.chargeT=-1; S.grace=3; S.launching=true;
@@ -3748,9 +3750,9 @@ function render(dt=1/60){
   // landing page: cinematic close arc around the resting dragon
   if(!S.started){
     camera.fov += (48-camera.fov)*fdamp(6,dt); camera.updateProjectionMatrix();
-    const a=S.t*0.11+2.1;
-    camera.position.set(REST.x+Math.sin(a)*15, REST.y+5.5+Math.sin(S.t*0.3)*1.3, REST.z+Math.cos(a)*15);
-    camera.lookAt(REST.x, REST.y+2.5, REST.z);
+    const a=Math.PI+Math.sin(S.t*0.09)*1.2;          // sweep the seaward side only: the cave stays behind her
+    camera.position.set(REST.x+Math.sin(a)*17, REST.y+7+Math.sin(S.t*0.3)*1.1, REST.z+Math.cos(a)*17);
+    camera.lookAt(REST.x, REST.y+7.5, REST.z);             // aim above her so she sits between the tagline and START
     renderWorld(); return;
   }
 
@@ -3891,7 +3893,7 @@ function simJumpChapter(n){
     S.chapter=0; S.tutDone=false; S.altitudePeak=0; S.altitudeCollected=false; S.score=0;
     for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; r.visible=true; }
     for(const r of rings){ r.visible=false; r.userData.hit=false; }
-    D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=2.83; D.pitch=0.22; D.roll=0; D.speed=28;
+    D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=0; D.pitch=0.22; D.roll=0; D.speed=28;
     S.gustNext=999; S.gustPow=0; input.flap=false;
   } else {
     S.chapter=chapter; S.tutDone=true;
