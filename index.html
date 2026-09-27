@@ -5,6 +5,7 @@
 <title>Galevein: Stormflight</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="data:,">
+<link rel="stylesheet" href="fonts/fonts.css?v=2">
 <style>
   :root{ --purple:#a463ff; --teal:#38e6d0; --warn:#ff5a7a;
     --sc1:rgba(150,100,255,.13); --sc2:rgba(56,230,208,.05);
@@ -428,6 +429,221 @@
     font-size:12.5px; color:#aab8d6; text-align:left; }
   .grid .key{ color:#fff; background:rgba(120,90,200,.22); border:1px solid rgba(150,120,230,.4);
     border-radius:5px; padding:1px 7px; margin-right:7px; font-size:11px; }
+  /* ==================================================================================
+     NORSE LAYER — carved wood, forged iron, bone, oxblood and firelight.
+     Purple is reserved for plasma/lightning only, so it means something again.
+     Ornament is inline SVG/CSS (Urnes-style interlace, rivet bosses, round shields).
+     ================================================================================== */
+  :root{
+    --display:'Uncial Antiqua','Palatino',serif; --body:'IM Fell English',Georgia,serif;
+    --num:'Grenze','Palatino',serif; --rune:'Noto Sans Runic',serif;
+    --pine:#0b1110; --wood:#241911; --wood2:#150f0a; --iron:#34393b; --iron-hi:#8c9396;
+    --bone:#eadfc4; --bone-dim:#a99c7f; --ochre:#e2a64b; --ember:#ff8a3c;
+    --oxblood:#8e2420; --teal:#5fb8a8; --warn:#e0453a;
+    --sc1:rgba(210,190,150,.07); --sc2:rgba(95,184,168,.04);
+    --knot:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='14' viewBox='0 0 40 14'%3E%3Cdefs%3E%3CclipPath id='c'%3E%3Crect x='24' y='0' width='12' height='14'/%3E%3C/clipPath%3E%3C/defs%3E%3Cg fill='none' stroke-linecap='round'%3E%3Cpath d='M0 3C10 3 10 11 20 11S30 3 40 3' stroke='%23100a06' stroke-width='4.4'/%3E%3Cpath d='M0 3C10 3 10 11 20 11S30 3 40 3' stroke='%23c9a86a' stroke-width='2.2'/%3E%3Cpath d='M0 11C10 11 10 3 20 3S30 11 40 11' stroke='%23100a06' stroke-width='4.4'/%3E%3Cpath d='M0 11C10 11 10 3 20 3S30 11 40 11' stroke='%23c9a86a' stroke-width='2.2'/%3E%3Cg clip-path='url(%23c)'%3E%3Cpath d='M0 3C10 3 10 11 20 11S30 3 40 3' stroke='%23100a06' stroke-width='4.4'/%3E%3Cpath d='M0 3C10 3 10 11 20 11S30 3 40 3' stroke='%23c9a86a' stroke-width='2.2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    --grain:repeating-linear-gradient(91deg, rgba(255,215,160,.035) 0 2px, transparent 2px 6px),
+            repeating-linear-gradient(89deg, rgba(0,0,0,.18) 0 1px, transparent 1px 13px);
+    --rivets:radial-gradient(circle at 9px 9px, #b9bec0 0 1.4px, #4a4f51 2.6px, #15181a 3.6px, transparent 4.2px),
+             radial-gradient(circle at calc(100% - 9px) 9px, #b9bec0 0 1.4px, #4a4f51 2.6px, #15181a 3.6px, transparent 4.2px),
+             radial-gradient(circle at 9px calc(100% - 9px), #b9bec0 0 1.4px, #4a4f51 2.6px, #15181a 3.6px, transparent 4.2px),
+             radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), #b9bec0 0 1.4px, #4a4f51 2.6px, #15181a 3.6px, transparent 4.2px);
+  }
+  html,body{ font-family:var(--num); color:var(--bone); background:#060807; }
+
+  /* ---------- HUD plaques: oak boards bound in iron, riveted at the corners ---------- */
+  .panel{ background:var(--rivets), var(--grain), linear-gradient(180deg, rgba(40,28,19,.92), rgba(20,14,10,.86));
+    border:2px solid #0d0f10; border-radius:4px; backdrop-filter:none;
+    box-shadow:0 0 0 1px rgba(160,168,170,.28), inset 0 0 0 1px rgba(255,220,170,.06),
+      inset 0 -10px 18px rgba(0,0,0,.45), 0 6px 22px rgba(0,0,0,.55);
+    padding:12px 18px 10px; }
+  .panel::before{ height:9px; top:1px; left:14px; right:14px; opacity:.85;
+    background-image:var(--knot); background-size:26px 9px; background-repeat:repeat-x; background-position:center; }
+  #hudTL .row,#hudTR .mini,#hudBR .il,#abil .ab{ font-family:var(--num); }
+  #hudTL .row{ font-size:14px; letter-spacing:.14em; line-height:1.7; }
+  #hudTL .k{ color:var(--bone-dim); } #hudTL .v{ color:var(--bone); font-weight:700; }
+  #hudTL{ min-width:230px; padding-top:16px; }
+  .bar{ height:9px; border-radius:1px; background:#0c0d0e;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.8), 0 0 0 1px #4a5053, 0 0 0 2px #0b0c0d; }
+  .bar > i{ border-radius:0; box-shadow:inset 0 1px 0 rgba(255,255,255,.25); }
+  #hpFill{ background:linear-gradient(90deg,#5e1512,var(--oxblood) 40%,#c9502e 80%,var(--ochre)); }
+  #detFill{ background:linear-gradient(90deg,#6d5a2e,var(--ember) 60%,var(--warn)); }
+  #plasmaFill{ background:linear-gradient(90deg,#3b1f78,#8f5cf0 70%,#dccbff); }   /* plasma keeps its violet */
+  .pips i{ border-radius:1px; transform:rotate(45deg); }
+  #hudTR{ padding:14px 16px 8px; }
+  #hudTR .mini{ font-size:13px; letter-spacing:.14em; color:var(--bone-dim); }
+  #hudTR .mini b{ color:var(--bone); }
+  #hudBR{ padding:16px 22px 10px; gap:26px; }
+  #hudBR .iv{ font-family:var(--num); font-weight:800; font-size:34px; color:var(--bone);
+    text-shadow:0 2px 0 #000, 0 0 18px rgba(226,166,75,.25); }
+  #hudBR .il{ font-size:11px; letter-spacing:.3em; color:var(--bone-dim); }
+
+  /* objective: a carved sign hung from two ropes */
+  @media (max-width:1180px){ #objTag{ top:208px !important; max-width:72vw; font-size:15px !important; } }
+  #objTag{ top:26px; padding:14px 26px 11px; overflow:visible; font-family:var(--body); font-size:17px; color:var(--bone); }
+  #objTag::after{ content:''; position:absolute; left:18%; right:18%; top:-26px; height:26px; pointer-events:none;
+    background:
+      linear-gradient(90deg, transparent calc(0% - 1px), #6b5236 0 3px, transparent 3px) left/3px 100% no-repeat,
+      linear-gradient(90deg, #6b5236 0 3px) right/3px 100% no-repeat;
+    filter:drop-shadow(0 1px 0 #000); }
+  #objTag b{ color:var(--ochre); }
+  #chapterLabel{ font-family:var(--display); font-size:13px; letter-spacing:.16em; color:var(--ochre); }
+  #objTag .objmeta{ font-family:var(--num); font-size:13px; letter-spacing:.12em; color:var(--bone-dim); }
+  #objTag .objmeta b{ color:var(--teal); }
+
+  /* abilities: iron keys on a leather strap */
+  #abil{ gap:14px; padding:14px 16px 10px; }
+  #abil .ab{ font-size:13px; letter-spacing:.16em; color:#6d6556; }
+  #abil .ab b{ font-family:var(--num); font-size:12px; border-radius:2px; padding:3px 8px;
+    background:linear-gradient(180deg,#4b5053,#23272a); border:1px solid #0c0d0e; color:#9da2a3;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18); }
+  #abil .ab.rdy{ color:var(--bone); text-shadow:0 0 12px rgba(226,166,75,.45); }
+  #abil .ab.rdy b{ color:#1a1208; background:linear-gradient(180deg,#f3c77a,#b77b2a); border-color:#3a2408; }
+  #abil .ab.hot{ color:var(--ember); text-shadow:0 0 16px rgba(255,138,60,.8); }
+
+  #popup{ font-family:var(--display); font-weight:400; letter-spacing:.12em; color:var(--bone);
+    text-shadow:0 3px 0 #000, 0 0 30px rgba(255,138,60,.55); }
+  #warn{ font-family:var(--display); color:var(--warn); text-shadow:0 3px 0 #000, 0 0 30px rgba(224,69,58,.7); }
+  #storyline{ font-family:var(--body); font-size:20px; color:var(--bone); text-shadow:0 2px 6px #000; }
+  #ctrlhint{ font-family:var(--num); letter-spacing:.08em; color:var(--bone-dim); }
+  #ctrlhint b{ color:var(--ochre); }
+
+  /* ---------- MENU: firelit hall edge, iron scale-mail, carved title ---------- */
+  #menu{ background:
+      radial-gradient(ellipse 62% 52% at 50% 47%, transparent 40%, rgba(8,6,4,.62) 74%, rgba(4,3,2,.94) 100%),
+      radial-gradient(ellipse 80% 40% at 50% 110%, rgba(255,120,40,.18), transparent 70%); }
+  #menu .card > div:first-child{ padding-top:1vh; }
+  .kicker{ font-family:var(--num); font-weight:700; font-size:14px; letter-spacing:.5em; text-indent:.5em; color:var(--ochre); }
+  .kicker::before,.kicker::after{ width:120px; height:10px; background:var(--knot) center/28px 10px repeat-x; opacity:.9; }
+  h1{ font-family:var(--display); font-weight:400; letter-spacing:.04em; font-size:clamp(58px,10vw,128px); line-height:.95;
+    background:linear-gradient(180deg,#fff6df 6%,#ecd6a3 34%,#c08a3e 62%,#6e4518 96%);
+    -webkit-background-clip:text; background-clip:text; color:transparent; -webkit-text-stroke:1px rgba(40,22,6,.55);
+    filter:drop-shadow(0 3px 0 #1a0f06) drop-shadow(0 6px 22px rgba(255,140,50,.28)); }
+  h1 .galevein{ font-family:var(--num); font-weight:800; font-size:.30em; letter-spacing:.62em; text-indent:.62em; margin-top:.18em;
+    background:linear-gradient(180deg,#e9eef0,#9aa3a7 55%,#4a5256); -webkit-background-clip:text; background-clip:text; }
+  .runes{ font-family:var(--rune); font-size:clamp(15px,1.6vw,20px); letter-spacing:.42em; text-indent:.42em;
+    color:rgba(226,166,75,.62); margin-top:10px; text-shadow:0 0 12px rgba(255,140,50,.35); }
+  .ornament{ color:var(--ochre); }
+  .ornament::before,.ornament::after{ width:140px; height:12px; background:var(--knot) center/32px 12px repeat-x; opacity:.85; }
+  .sub{ font-family:var(--body); color:#d9ccaf; font-size:clamp(17px,1.7vw,21px); text-shadow:0 2px 6px #000; }
+  .sub b{ color:var(--ochre); font-style:italic; }
+
+  /* PLAY = a round shield: painted boards, iron rim, domed boss; a rune ring turns around it */
+  .playwrap{ position:relative; margin-top:48px; }
+  .play{ width:150px; height:150px;
+    background:
+      radial-gradient(circle at 50% 50%, #e9ecee 0 3px, #9aa1a4 9px, #454b4e 22px, #1c1f21 27px, transparent 28px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 1.5px, transparent 1.5px 19px),
+      radial-gradient(circle at 38% 30%, rgba(255,240,210,.18), transparent 55%),
+      conic-gradient(from 45deg, var(--oxblood) 0 25%, #d8c7a0 0 50%, var(--oxblood) 0 75%, #d8c7a0 0);
+    box-shadow:0 0 0 5px #2b2f31, 0 0 0 7px #0e1011, 0 0 0 8px rgba(185,190,192,.35),
+      0 16px 40px rgba(0,0,0,.7), 0 0 60px rgba(255,130,50,.18), inset 0 0 22px rgba(0,0,0,.55); }
+  .play::before{ display:none; }
+  .play .tri{ border-left:20px solid #f4e9cf; border-top:13px solid transparent; border-bottom:13px solid transparent;
+    transform:translateX(3px); filter:drop-shadow(0 1px 0 #000); }
+  .play:hover,.play:focus-visible{ transform:scale(1.05) rotate(-4deg);
+    box-shadow:0 0 0 5px #2b2f31, 0 0 0 7px #0e1011, 0 0 0 8px rgba(226,166,75,.7),
+      0 18px 50px rgba(0,0,0,.75), 0 0 80px rgba(255,140,50,.45), inset 0 0 22px rgba(0,0,0,.5); }
+  .runering{ position:absolute; left:50%; top:75px; width:236px; height:236px; margin:-118px 0 0 -118px; pointer-events:none;
+    animation:runespin 48s linear infinite; }
+  .runering text{ font-family:var(--rune); font-size:13px; letter-spacing:3.1px; fill:rgba(226,166,75,.75); }
+  .runering circle{ fill:none; stroke:rgba(226,166,75,.22); stroke-width:1; }
+  @keyframes runespin{ to{ transform:rotate(360deg); } }
+  .playlabel{ font-family:var(--num); font-weight:700; font-size:15px; letter-spacing:.5em; text-indent:.5em; color:var(--bone);
+    margin-top:26px; text-shadow:0 2px 0 #000; }
+
+  /* chips: rune-stone tags; keys as iron studs */
+  .chip{ font-family:var(--num); font-size:13px; letter-spacing:.06em; color:#cbbd9c; border-radius:2px; padding:6px 12px;
+    background:var(--grain), linear-gradient(180deg,#2a2119,#17110c); border:1px solid #0b0806;
+    box-shadow:inset 0 1px 0 rgba(255,220,170,.08), 0 2px 6px rgba(0,0,0,.5); }
+  .chip b{ color:var(--ochre); }
+  .gfxrow{ font-family:var(--num); font-size:12px; letter-spacing:.3em; color:var(--bone-dim); }
+  .gfxrow b{ border-radius:2px; border-color:#4a3a28; color:#cbbd9c; }
+  .gfxrow b.on{ color:#1a1208; background:linear-gradient(180deg,#f3c77a,#b77b2a); border-color:#3a2408; }
+  .gfxrow input[type=range]{ accent-color:var(--ochre); }
+  .foot{ font-family:var(--body); font-style:italic; font-size:14px; letter-spacing:.06em; color:#8a7c62; }
+  #muteBtn{ font-family:var(--num); letter-spacing:.14em; border-radius:2px; color:var(--bone-dim);
+    background:linear-gradient(180deg,#2a2119,#17110c); border:1px solid #4a3a28; }
+  #wakehint{ font-family:var(--num); letter-spacing:.5em; color:rgba(234,223,196,.6); }
+  #spotted{ font-family:var(--display); color:var(--warn); text-shadow:0 3px 0 #000, 0 0 36px rgba(224,69,58,.8); }
+
+  /* dragon picker: little painted shields on a rack */
+  #rigPicker .rig{ border-radius:3px; border:1px solid #0b0806; padding:7px 14px;
+    background:var(--grain), linear-gradient(180deg,#2e241a,#18120d); box-shadow:inset 0 1px 0 rgba(255,220,170,.08); }
+  #rigPicker .rig b{ font-family:var(--display); font-size:14px; letter-spacing:.06em; color:var(--bone); }
+  #rigPicker .rig i{ font-family:var(--body); font-style:italic; font-size:12px; color:var(--bone-dim); }
+  #rigPicker .rig.on{ background:var(--grain), linear-gradient(180deg,#5a1d17,#2c0e0b);
+    border-color:var(--ochre); box-shadow:0 0 0 1px rgba(226,166,75,.5), 0 0 22px rgba(255,130,50,.35); }
+
+  /* lobby: three carved doors */
+  .lobby-hub-kicker{ font-family:var(--num) !important; letter-spacing:.4em !important; color:var(--ochre) !important; }
+  .lobby-node{ border-radius:3px !important; background:var(--rivets), var(--grain), linear-gradient(180deg,#2e241a,#140f0b) !important;
+    border:2px solid #0b0806 !important; box-shadow:0 0 0 1px rgba(160,168,170,.25), 0 8px 24px rgba(0,0,0,.55) !important; }
+  .lobby-node b{ font-family:var(--display) !important; color:var(--bone) !important; letter-spacing:.08em !important; }
+  .lobby-node i{ font-family:var(--body) !important; color:var(--bone-dim) !important; }
+  .lobby-node:hover{ border-color:var(--ochre) !important; }
+
+  /* hub open: the shield steps aside so the three doors own the centre */
+  #menu .card:has(#lobbyHub.on) .playwrap{ opacity:0 !important; pointer-events:none !important; transform:scale(.8) !important; }
+  #lobbyHub{ flex-direction:column; gap:20px; }
+  #lobbyHub .lobby-hub-kicker{ position:static !important; transform:none !important; font-size:15px !important;
+    display:flex; align-items:center; gap:16px; text-shadow:0 2px 0 #000; }
+  #lobbyHub .lobby-hub-kicker::before,#lobbyHub .lobby-hub-kicker::after{ content:''; width:110px; height:10px;
+    background:var(--knot) center/28px 10px repeat-x; }
+  #lobbyHub .lobby-node{ min-width:170px; padding:20px 22px 18px; }
+  #lobbyHub .lobby-node b{ font-size:20px !important; }
+  #lobbyHub .lobby-node i{ font-size:14px !important; font-style:italic !important; }
+  #lobbyChapterPanel{ border-radius:3px; border:2px solid #0b0806;
+    background:var(--rivets), var(--grain), linear-gradient(180deg,#2e241a,#140f0b);
+    box-shadow:0 0 0 1px rgba(160,168,170,.28), 0 20px 60px rgba(0,0,0,.7); }
+  #lobbyChapterPanel select{ background:#120d09; color:var(--bone); border:1px solid #4a3a28; border-radius:2px;
+    font-family:var(--num); font-size:15px; }
+  #lobbyChapterPanel button{ font-family:var(--num); font-weight:700; letter-spacing:.2em; border-radius:2px;
+    background:linear-gradient(180deg,#f3c77a,#b77b2a); color:#1a1208; border:1px solid #3a2408; padding:7px 16px; cursor:pointer; }
+  /* ---------- transition: a shield-wall closes, then parts ---------- */
+  #shutter .sh{ background-color:#130d08;
+    background-image:
+      radial-gradient(circle at 50% 50%, #9aa1a4 0 5px, #3a3f42 12px, #121416 16px, transparent 17px),
+      conic-gradient(from 45deg, #6e1d18 0 25%, #bfae88 0 50%, #6e1d18 0 75%, #bfae88 0),
+      var(--grain);
+    background-size:120px 120px, 120px 120px, auto; background-position:0 0, 0 0, 0 0;
+    -webkit-mask-image:radial-gradient(circle at 60px 60px, #000 57px, transparent 58px);
+    -webkit-mask-size:120px 120px; mask-image:radial-gradient(circle at 60px 60px, #000 57px, transparent 58px); mask-size:120px 120px; }
+  #shutter .sh.bot{ background-position:60px 0, 60px 0, 0 0; -webkit-mask-position:60px 0; mask-position:60px 0; }
+  #shutter::before{ content:''; position:absolute; inset:0; background:#0a0705; opacity:0; transition:opacity .5s .35s; }
+  #shutter.closed::before{ opacity:1; }
+  #loadline{ z-index:2; }
+  #loadline .t1{ font-family:var(--display); font-size:30px; letter-spacing:.2em; color:var(--bone);
+    text-shadow:0 3px 0 #000, 0 0 30px rgba(255,140,50,.5); }
+  #loadline .t2{ font-family:var(--body); font-style:italic; font-size:16px; letter-spacing:.04em; color:var(--bone-dim); }
+
+  /* ---------- game over: a pyre-lit stone ---------- */
+  #over{ background:radial-gradient(ellipse at 50% 70%, rgba(255,110,40,.20), rgba(8,5,3,.92) 65%); }
+  #over .card{ padding:34px 46px 30px; background:var(--rivets), var(--grain), linear-gradient(180deg,rgba(40,28,19,.94),rgba(18,12,8,.94));
+    border:2px solid #0b0806; box-shadow:0 0 0 1px rgba(160,168,170,.28), 0 24px 70px rgba(0,0,0,.8); position:relative; }
+  #over .card::before{ content:''; position:absolute; left:20px; right:20px; top:8px; height:12px;
+    background:var(--knot) center/32px 12px repeat-x; opacity:.9; }
+  #over .card::after{ content:''; position:absolute; left:20px; right:20px; bottom:8px; height:12px;
+    background:var(--knot) center/32px 12px repeat-x; opacity:.9; }
+  h1.bad,h1.good{ font-family:var(--display); font-weight:400; font-size:clamp(44px,6vw,68px); letter-spacing:.06em; }
+  h1.bad{ background:linear-gradient(180deg,#ffe0cc,#d8563c 55%,#6b1812); -webkit-background-clip:text; background-clip:text; }
+  h1.good{ background:linear-gradient(180deg,#fff6df,#e2a64b 55%,#6e4518); -webkit-background-clip:text; background-clip:text; }
+  #over .kicker{ color:var(--bone-dim); }
+  .stat{ font-family:var(--num); letter-spacing:.2em; color:var(--bone-dim); }
+  .stat b{ font-family:var(--num); font-weight:800; font-size:34px; color:var(--bone); }
+  .btn{ font-family:var(--num); font-weight:800; letter-spacing:.24em; border-radius:2px; color:#1a1208;
+    background:linear-gradient(180deg,#f3c77a,#b77b2a); border:1px solid #3a2408;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 0 0 2px #0b0806, 0 8px 22px rgba(0,0,0,.6); }
+  .btn:hover{ box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 0 0 2px #0b0806, 0 10px 34px rgba(255,140,50,.45); }
+
+  /* ---------- achievement: a runestone carving, not a paper slip ---------- */
+  .ach-in{ background:var(--rivets), linear-gradient(170deg,#6f6a61,#46423c 60%,#2f2c28) !important;
+    box-shadow:0 20px 70px rgba(0,0,0,.75), 0 0 90px rgba(255,140,50,.30), inset 0 0 30px rgba(0,0,0,.5) !important; }
+  .ach-k{ font-family:var(--num) !important; letter-spacing:.5em !important; color:var(--ochre) !important; }
+  .ach-n{ font-family:var(--display) !important; font-weight:400 !important; color:#f1e6cc !important;
+    text-shadow:0 -1px 0 rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.12); }
+  .ach-d{ font-family:var(--body) !important; color:#d6ccb6 !important; }
+  .ach-key{ font-family:var(--num) !important; background:linear-gradient(180deg,#f3c77a,#b77b2a) !important; color:#1a1208 !important; }
 </style>
 </head>
 <body>
@@ -440,7 +656,7 @@
 <div id="shutter">
   <div class="sh top"></div><div class="sh bot"></div>
   <div id="loadline">
-    <div class="t1">TAKE FLIGHT</div>
+    <div class="t1">The shield-wall parts</div>
     <div class="t2">dive into shadow · break the lock · twelve beacons unseen</div>
   </div>
 </div>
@@ -520,12 +736,14 @@
   <div class="card">
     <div>
       <div class="kicker">STORM WARDEN · SABLE REACH</div>
-      <h1>GALE<span class="galevein">VEIN: STORMFLIGHT</span></h1>
+      <h1>Galevein<span class="galevein">STORMFLIGHT</span></h1>
+      <div class="runes" aria-hidden="true">ᚷᚨᛚᛖᚹᛖᛁᚾ ᛫ ᛊᛏᛟᚱᛗᚠᛚᛁᚷᚺᛏ</div>
       <div class="ornament" style="justify-content:center">◈</div>
       <div class="sub">The keepers sweep the black water with searchlights.<br>
         Guide Rook through the storm-lashed reach to the Tempest Gate — <b>never be seen.</b></div>
     </div>
     <div class="playwrap">
+      <svg class="runering" viewBox="0 0 236 236" aria-hidden="true"><defs><path id="rrp" d="M118,118 m-104,0 a104,104 0 1,1 208,0 a104,104 0 1,1 -208,0"/></defs><circle cx="118" cy="118" r="113"/><circle cx="118" cy="118" r="95"/><text><textPath href="#rrp">ᚠᛚᛃ ᛫ ᚢᚾᛊᛖᛖᚾ ᛫ ᚦᚱᛟᚢᚷᚺ ᛫ ᚦᛖ ᛫ ᛊᛏᛟᚱᛗ ᛫ ᚱᛁᛞᛖ ᛫ ᛏᚺᛖ ᛫ ᚹᛁᚾᛞ ᛫</textPath></text></svg>
       <button class="play" id="startBtn" aria-label="Take flight"><span class="tri"></span></button>
       <div class="playlabel">ENTER HUB</div>
     </div>
@@ -1129,6 +1347,140 @@ const pCone=new THREE.Mesh(pcg,new THREE.MeshBasicMaterial({color:0xffe9c4,trans
   blending:THREE.AdditiveBlending,side:THREE.DoubleSide,depthWrite:false,fog:false}));
 pCone.rotation.z=0.1; patrol.add(pCone);
 const PATROL_AIM=Math.atan2(-(REST.z-patrol.position.z),(REST.x-patrol.position.x)); // local +x heading
+
+/* ================= NORSE WORLD: longships, runestones, braziers =================
+   All procedural (no imported models): hull from a half-sphere, curled prow/stern posts
+   ending in carved heads, a striped wadmal sail, painted round shields on the gunwale. */
+const NORSE={ ships:[], fires:[], stones:[] };
+function paintedShieldTex(a,b){
+  const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d');
+  for(let q=0;q<4;q++){ x.fillStyle=q%2?a:b; x.beginPath(); x.moveTo(32,32);
+    x.arc(32,32,31,q*Math.PI/2+Math.PI/4,(q+1)*Math.PI/2+Math.PI/4); x.fill(); }
+  x.strokeStyle='rgba(0,0,0,.25)'; for(let i=4;i<64;i+=9){ x.beginPath(); x.moveTo(i,0); x.lineTo(i,64); x.stroke(); }
+  x.lineWidth=4; x.strokeStyle='#2b2f31'; x.beginPath(); x.arc(32,32,30,0,7); x.stroke();
+  x.fillStyle='#9aa1a4'; x.beginPath(); x.arc(32,32,7,0,7); x.fill();
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace; return t;
+}
+const SHIELD_MATS=[['#8e2420','#d8c7a0'],['#1f3f5a','#d8c7a0'],['#c98a2e','#2a1c12']]
+  .map(([a,b])=>new THREE.MeshStandardMaterial({map:paintedShieldTex(a,b),roughness:.7}));
+const SAIL_MAT=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d');
+  for(let i=0;i<8;i++){ x.fillStyle=i%2?'#d9c9a2':'#8e2420'; x.fillRect(i*8,0,8,64); }
+  x.fillStyle='rgba(0,0,0,.12)'; for(let y=0;y<64;y+=6) x.fillRect(0,y,64,1);
+  const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace;
+  return new THREE.MeshStandardMaterial({map:t,roughness:.9,side:THREE.DoubleSide}); })();
+const hullMat=new THREE.MeshStandardMaterial({color:0x2b1d12,roughness:.85});
+const trimMat=new THREE.MeshStandardMaterial({color:0x6b4a2a,roughness:.7});
+const emberMat=new THREE.MeshBasicMaterial({color:0xffb050});
+function dragonPost(sign){
+  const pts=[]; for(let i=0;i<=8;i++){ const t=i/8; pts.push(new THREE.Vector3(sign*(11+t*3.2-t*t*1.4), 1.2+t*7.5, 0)); }
+  const g=new THREE.Group();
+  g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),16,0.55,6,false),trimMat));
+  const tip=pts[pts.length-1];
+  const head=new THREE.Mesh(new THREE.ConeGeometry(0.95,3,5),trimMat);
+  head.position.copy(tip).add(new THREE.Vector3(sign*1.2,0.2,0)); head.rotation.z=-sign*Math.PI/2*0.85; g.add(head);
+  for(const ez of [0.45,-0.45]){ const eye=new THREE.Mesh(new THREE.SphereGeometry(0.2,6,4),emberMat);
+    eye.position.copy(tip).add(new THREE.Vector3(sign*0.9,0.55,ez)); g.add(eye); }
+  return g;
+}
+function longship(){
+  const g=new THREE.Group();
+  const hull=new THREE.Mesh(new THREE.SphereGeometry(1,28,10,0,Math.PI*2,Math.PI/2,Math.PI/2),hullMat);
+  hull.scale.set(12,3.2,2.6); hull.position.y=1.6; g.add(hull);
+  const rail=new THREE.Mesh(new THREE.TorusGeometry(1,0.07,4,40),trimMat);
+  rail.rotation.x=Math.PI/2; rail.scale.set(12,2.6,1); rail.position.y=1.6; g.add(rail);
+  g.add(dragonPost(1), dragonPost(-1));
+  const mast=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.3,13,6),trimMat); mast.position.y=7.5; g.add(mast);
+  const yard=new THREE.Mesh(new THREE.CylinderGeometry(0.14,0.14,11,5),trimMat); yard.rotation.x=Math.PI/2; yard.position.y=12.6; g.add(yard);
+  const sg=new THREE.PlaneGeometry(10,7.5,6,4), sp=sg.attributes.position;
+  for(let i=0;i<sp.count;i++){ const u=sp.getX(i)/5; sp.setZ(i,(1-u*u)*1.3); } sg.computeVertexNormals();
+  const sail=new THREE.Mesh(sg,SAIL_MAT); sail.rotation.y=Math.PI/2; sail.position.set(0.9,8.8,0); g.add(sail);
+  const sgeo=new THREE.CircleGeometry(0.85,14);
+  for(const side of [1,-1]) for(let i=0;i<7;i++){
+    const x=-7.2+i*2.4, z=side*2.75*Math.sqrt(Math.max(0.05,1-(x/12)**2));
+    const s=new THREE.Mesh(sgeo,SHIELD_MATS[(i+(side>0?0:1))%3]);
+    s.position.set(x,2.15,z); s.rotation.y=side>0?0:Math.PI; g.add(s);
+  }
+  const lantern=new THREE.Mesh(new THREE.SphereGeometry(0.45,8,6),emberMat); lantern.position.set(-9.2,4.4,0); g.add(lantern);
+  return g;
+}
+// the menu's searchlight skiff becomes a keeper longship (its lamp at the prow)
+{ const ps=longship(); ps.position.y=-7.2; ps.scale.setScalar(0.9); patrol.add(ps); }
+// keeper longships working the open water
+for(const [cx,cz,r,w] of [[0,0,300,0.018],[-300,300,130,-0.03],[300,-150,150,0.026],[80,560,160,-0.022]]){
+  const g=longship(); scene.add(g);
+  NORSE.ships.push({g,cx,cz,r,w,a:Math.random()*6.28,ph:Math.random()*6.28});
+}
+
+// RUNESTONES: carved slabs standing in the shallows; the carvings catch the firelight
+function runeTex(){
+  const c=document.createElement('canvas'); c.width=128; c.height=256; const x=c.getContext('2d');
+  const draw=()=>{
+    x.fillStyle='#000'; x.fillRect(0,0,128,256);
+    x.strokeStyle='#fff'; x.lineWidth=3;
+    for(const inset of [12,30]){ x.beginPath(); x.moveTo(inset,256); x.lineTo(inset,64);
+      x.arc(64,64,64-inset,Math.PI,0); x.lineTo(128-inset,256); x.stroke(); }
+    for(const [cx,cy] of [[64,86],[54,104],[74,104]]){ x.beginPath(); x.arc(cx,cy,11,0,7); x.stroke(); }  // interlace knot
+    x.fillStyle='#fff'; x.font='17px "Noto Sans Runic"'; x.textAlign='center';
+    [...'ᚷᚨᛚᛖᚹᛖᛁᚾ'].forEach((r,i)=>x.fillText(r,21,108+i*18));
+    [...'ᚹᚨᚱᛞᛖᚾᛊ'].forEach((r,i)=>x.fillText(r,107,108+i*18));
+    [...'ᛊᛏᛟᚱᛗ'].forEach((r,i)=>x.fillText(r,64,146+i*21));
+  };
+  draw(); const t=new THREE.CanvasTexture(c);
+  document.fonts?.load('17px "Noto Sans Runic"').then(()=>{ draw(); t.needsUpdate=true; }).catch(()=>{});
+  return t;
+}
+const RUNE_TEX=runeTex();
+const runeMat=new THREE.MeshStandardMaterial({color:0x6d6a63,roughness:.92,flatShading:true,
+  emissive:0xff9a40,emissiveMap:RUNE_TEX,emissiveIntensity:1.25});
+function runestone(x,z,face){
+  const g=new THREE.BoxGeometry(3.4,7.5,1.1,1,5,1), p=g.attributes.position;
+  for(let i=0;i<p.count;i++){ const y=p.getY(i), k=(y+3.75)/7.5;
+    p.setX(i,p.getX(i)*(1-k*0.28)); if(y>3) p.setY(i,y-Math.abs(p.getX(i))*0.35); }
+  g.computeVertexNormals();
+  const m=new THREE.Mesh(g,runeMat); m.scale.setScalar(1.7); m.position.set(x,5.6,z);
+  m.rotation.set((Math.random()-0.5)*0.08, face, (Math.random()-0.5)*0.1);
+  scene.add(m); NORSE.stones.push(m); return m;
+}
+for(const [rx,rz,rr] of [[58,32,18],[-64,-22,16],[34,-58,13],[240,-180,9],[-180,-260,10],
+  [260,300,10],[-60,420,9],[380,140,8],[520,-180,9],[-30,70,14]]){
+  const d=Math.hypot(rx,rz)||1, ux=-rx/d, uz=-rz/d, o=rr*1.2+3;
+  runestone(rx+ux*o, rz+uz*o, Math.atan2(ux,uz));
+}
+
+// BRAZIERS: iron bowls of fire at the lighthouse feet and beside the resting place
+const fireTex=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d');
+  const g=x.createRadialGradient(32,40,2,32,36,30); g.addColorStop(0,'rgba(255,240,200,1)');
+  g.addColorStop(.35,'rgba(255,160,60,.9)'); g.addColorStop(1,'rgba(255,60,10,0)');
+  x.fillStyle=g; x.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })();
+const ironMat=new THREE.MeshStandardMaterial({color:0x2a2d2f,roughness:.55,metalness:.6});
+function brazier(x,y,z,withLight){
+  const g=new THREE.Group(); g.position.set(x,y,z);
+  const bowl=new THREE.Mesh(new THREE.CylinderGeometry(1.6,0.7,1.1,10,1,true),ironMat); bowl.position.y=2.6; g.add(bowl);
+  for(let i=0;i<3;i++){ const a=i/3*6.283, leg=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,2.8,4),ironMat);
+    leg.position.set(Math.cos(a)*0.7,1.2,Math.sin(a)*0.7); leg.rotation.set(Math.sin(a)*0.25,0,-Math.cos(a)*0.25); g.add(leg); }
+  const coal=new THREE.Mesh(new THREE.CircleGeometry(1.45,10),emberMat); coal.rotation.x=-Math.PI/2; coal.position.y=3.0; g.add(coal);
+  const flame=new THREE.Sprite(new THREE.SpriteMaterial({map:fireTex,color:0xffffff,transparent:true,
+    blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
+  flame.position.y=4.6; flame.scale.set(3.4,4.8,1); g.add(flame);
+  let light=null; if(withLight){ light=new THREE.PointLight(0xff8a3c,160,55,2); light.position.y=5; g.add(light); }
+  scene.add(g); NORSE.fires.push({g,flame,light,ph:Math.random()*9}); return g;
+}
+for(const sl of searchlights){ const b=sl.lampPos.y-42;
+  brazier(sl.lampPos.x+6.5,b,sl.lampPos.z+3,false); brazier(sl.lampPos.x-5,b,sl.lampPos.z-5.5,false); }
+brazier(REST.x-10,REST.y-1.5,REST.z+7,true);
+
+function updateNorse(dt){
+  for(const sh of NORSE.ships){
+    sh.a+=dt*sh.w; const x=sh.cx+Math.cos(sh.a)*sh.r, z=sh.cz+Math.sin(sh.a)*sh.r;
+    sh.g.position.set(x, waveH(x,z,S.t)-0.5, z);
+    sh.g.rotation.set(Math.sin(S.t*0.7+sh.ph)*0.04, -sh.a+(sh.w>0?-Math.PI/2:Math.PI/2), Math.sin(S.t*0.9+sh.ph)*0.06);
+  }
+  for(const f of NORSE.fires){
+    const k=1+Math.sin(S.t*11+f.ph)*0.12+Math.sin(S.t*23.7+f.ph*2)*0.08;
+    f.flame.scale.set(3.4*(2-k)*0.95, 4.8*k, 1); f.flame.material.opacity=0.8+0.2*Math.sin(S.t*17+f.ph);
+    if(f.light) f.light.intensity=140+60*Math.sin(S.t*13+f.ph)+30*Math.sin(S.t*29);
+  }
+}
 
 /* ---- rain ---- */
 const RAIN_N=1500, rainBox=280; const rainGeo=new THREE.BufferGeometry();
@@ -2729,7 +3081,7 @@ function tick(dt){
   }
   if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
 
-  updateRain(); updateWindLines(); updateShores(); updateSeaLife(dt);
+  updateRain(); updateWindLines(); updateShores(); updateSeaLife(dt); updateNorse(dt);
 
   hud(litNow);
 }
@@ -3407,6 +3759,7 @@ window.SIM={
   strike:()=>{ const p=D.group.position; S.strikeX=p.x; S.strikeZ=p.z; S.strikeT=0.04; },   // force a bolt on us (test)
   uptime:()=>({loopLagMs:+(performance.now()-loopAlive).toFixed(1), bootErrors:bootErrors.slice(), alive:performance.now()-loopAlive<250}),
   bootErrors:()=>bootErrors.slice(),
+  norse:()=>({ships:NORSE.ships.map(s=>s.g.position.toArray().map(v=>+v.toFixed(1))), stones:NORSE.stones.length, fires:NORSE.fires.length}),
 };
 </script>
 </body>
