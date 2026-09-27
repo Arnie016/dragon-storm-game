@@ -1002,6 +1002,9 @@ import { LandmarkPath } from './world-expansion/modules/landmarkPath.js';
 import { gameStructure } from './world-expansion/modules/gameStructure.js';
 import { DRAGON_RIGS, resolveRigFromQuery, rigCatalog } from './world-expansion/modules/dragonRigs.js';
 import { LobbyHub, LobbyMarkers } from './world-expansion/modules/lobbyHub.js';
+import { LANDMARK_SITES } from './world-expansion/modules/proceduralLandmarks.js';
+import * as MAP from './world-expansion/modules/worldMap.js';
+import * as BufferGeometryUtils from './utils/BufferGeometryUtils.js';
 
 const $ = id => document.getElementById(id);
 const bootErrors=[];
@@ -1275,7 +1278,7 @@ function makeWhale(x,z){
   g.position.set(x,-24,z); scene.add(g);
   whales.push({g, x, z, ph:Math.random()*6.283, next:8+Math.random()*22, up:0, dir:Math.random()*6.283});
 }
-makeWhale(-180,340); makeWhale(320,-140); makeWhale(-60,-330); makeWhale(560,420);
+for(const [x,z] of MAP.WHALES) makeWhale(x,z);
 const sharkMat=new THREE.MeshStandardMaterial({color:0x1d2a24,roughness:.7,emissive:0x1c5a3a,emissiveIntensity:.55,flatShading:true});
 function makeShark(x,z){
   const g=new THREE.Group();
@@ -1285,7 +1288,7 @@ function makeShark(x,z){
   tail.position.x=-5.5; tail.rotation.z=Math.PI/2; g.add(tail);
   scene.add(g); sharks.push({g, cx:x, cz:z, ph:Math.random()*6.283, r:18+Math.random()*26, sp:0.35+Math.random()*0.5});
 }
-for(const [sx,sz] of [[90,90],[-140,10],[240,-200],[-260,180],[40,-420],[420,-320],[-420,-120],[150,520]]) makeShark(sx,sz);
+for(const [sx,sz] of MAP.SHARKS) makeShark(sx,sz);
 const birdMat=new THREE.MeshBasicMaterial({color:0x20242e, side:THREE.DoubleSide});
 function makeBirds(x,z,cnt){
   for(let i=0;i<cnt;i++){
@@ -1296,7 +1299,7 @@ function makeBirds(x,z,cnt){
     scene.add(g); birds.push({g, ph:Math.random()*6.283, r:22+Math.random()*30, cx:x, cz:z, h:g.position.y, sp:0.5+Math.random()*0.7});
   }
 }
-makeBirds(60,120,7); makeBirds(-220,-60,6); makeBirds(400,-380,7); makeBirds(-100,600,6);
+for(const [x,z,c] of MAP.BIRDS) makeBirds(x,z,c);
 function updateSeaLife(dt){
   const p=D.group.position;
   for(const wl of whales){
@@ -1375,18 +1378,55 @@ function rock(x,z,r,h){
     cap.position.set(x,h*0.78,z); cap.scale.y=0.42; scene.add(cap); }
   return m;
 }
-rock(0,0,34,42); rock(58,32,18,28); rock(-64,-22,16,34); rock(34,-58,13,20);
-rock(-30,70,14,24); rock(90,-30,12,18);
+/* ================= HOME ISLE: real terrain (heightfield), den on the north cliff, Hearthholm on the south shore ================= */
+const homeIsle=(()=>{
+  const S2=MAP.HOME.r*2.3, N=170;
+  const g=new THREE.PlaneGeometry(S2,S2,N,N); g.rotateX(-Math.PI/2);
+  const p=g.attributes.position, col=new Float32Array(p.count*3);
+  const sand=new THREE.Color(0x6b6250), grass=new THREE.Color(0x2c3a2c), moss=new THREE.Color(0x3c4a34),
+        rockC=new THREE.Color(0x3a3d44), foam=new THREE.Color(0xc9d2d8), c=new THREE.Color();
+  for(let i=0;i<p.count;i++){ const x=p.getX(i)+MAP.HOME.x, z=p.getZ(i)+MAP.HOME.z, h=MAP.homeHeight(x,z);
+    p.setY(i,h);
+    const slope=Math.abs(MAP.homeHeight(x+3,z)-h)+Math.abs(MAP.homeHeight(x,z+3)-h);
+    if(h<0.6) c.copy(foam).lerp(sand,THREE.MathUtils.clamp((h+1.5)/2.1,0,1));
+    else if(h<4) c.copy(sand);
+    else c.copy(grass).lerp(moss,Math.sin(x*.05)*Math.cos(z*.04)*.5+.5);
+    if(slope>4.2||h>62) c.lerp(rockC,THREE.MathUtils.clamp((slope-4.2)/5+(h>62?.5:0),0,1));
+    col[i*3]=c.r; col[i*3+1]=c.g; col[i*3+2]=c.b; }
+  g.setAttribute('color',new THREE.BufferAttribute(col,3)); g.computeVertexNormals();
+  const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({vertexColors:true,roughness:.93,metalness:0,flatShading:true}));
+  m.position.set(MAP.HOME.x,0,MAP.HOME.z); m.receiveShadow=true; scene.add(m); return m;
+})();
+// pines: one instanced mesh, placed where the ground is neither beach, cliff, village nor den
+{ const cone=new THREE.ConeGeometry(3.1,11,6); cone.translate(0,8.5,0);
+  const trunk=new THREE.CylinderGeometry(.45,.6,4,5); trunk.translate(0,2,0);
+  const geo=BufferGeometryUtils.mergeGeometries([cone,trunk],false);
+  const mat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.95,flatShading:true});
+  const N=520, inst=new THREE.InstancedMesh(geo,mat,N); const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
+  let k=0, seed=7; const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
+  for(let tries=0;tries<9000&&k<N;tries++){
+    const x=(rnd()*2-1)*MAP.HOME.r, z=(rnd()*2-1)*MAP.HOME.r, h=MAP.homeHeight(x,z);
+    if(h<6||h>70) continue;
+    const sl=Math.abs(MAP.homeHeight(x+3,z)-h)+Math.abs(MAP.homeHeight(x,z+3)-h); if(sl>3.6) continue;
+    if(Math.hypot(x-MAP.VILLAGE.x,z-MAP.VILLAGE.z)<MAP.VILLAGE.r+14) continue;
+    if(Math.hypot(x-MAP.DEN.x,z-MAP.DEN.z)<MAP.DEN.ledge*2) continue;
+    if(rnd()<.35 && (Math.sin(x*.03)+Math.cos(z*.027))<0.2) continue;   // leave clearings: groves, not carpet
+    const sc=.7+rnd()*.8; q.setFromAxisAngle(new THREE.Vector3(0,1,0),rnd()*6.28);
+    m4.compose(new THREE.Vector3(x,h-.5,z),q,new THREE.Vector3(sc,sc*(.85+rnd()*.4),sc)); inst.setMatrixAt(k,m4);
+    c.setHSL(.30+rnd()*.06,.28+rnd()*.12,.12+rnd()*.07); inst.setColorAt(k,c); k++; }
+  inst.count=k; inst.instanceMatrix.needsUpdate=true; if(inst.instanceColor) inst.instanceColor.needsUpdate=true;
+  scene.add(inst); }
+// the keepers' stacks, east of home
+for(const [x,z,r,h] of MAP.KEEPERS.rocks) rock(x,z,r,h);
 
 // bioluminescent purple crystals (hazards + glow)
 const crystalMat = new THREE.MeshStandardMaterial({ color:0x2a1550, emissive:0x8a3cff, emissiveIntensity:1.4, roughness:.3, flatShading:true });
 function crystal(x,z,h){
   const g=new THREE.ConeGeometry(3.2, h, 6); const m=new THREE.Mesh(g,crystalMat);
   m.position.set(x, h/2, z); m.rotation.y=Math.random()*3; scene.add(m);
-  const gl=new THREE.PointLight(0x9a4cff, 60, 90, 2); gl.position.set(x,h*0.7,z); scene.add(gl);
   colliders.push({x,z,r:4,top:h}); return m;
 }
-crystal(20,18,26); crystal(-44,-8,20); crystal(70,44,30); crystal(-20,-64,22); crystal(-78,40,24);
+for(const [x,z,h] of MAP.KEEPERS.crystals) crystal(x,z,h);
 
 // large mountainous islands ringing the archipelago (terrain to weave through)
 const mtnMat = new THREE.MeshStandardMaterial({ color:0xffffff, vertexColors:true, roughness:.95, flatShading:true });
@@ -1406,13 +1446,8 @@ function mountain(x,z,r,h){
   cap.position.set(x, h*0.5-4 + h*0.5 - h*0.14, z); cap.rotation.y=m.rotation.y; scene.add(cap);
   colliders.push({x,z,r:r*0.5,top:h*0.72}); shoreline(x,z,r*0.62); return m;
 }
-mountain(-260,-120,140,220); mountain(300,180,120,190); mountain(120,-360,150,240);
-mountain(-360,220,110,170); mountain(340,-280,100,150); mountain(-140,380,130,200);
-mountain(460,40,90,140);
-// connective archipelago — stepping stones so the regions read as one sea, not islands of content
-for(const [ix,iz,ir,ih] of [[240,-180,9,14],[330,-300,11,17],[60,-300,8,12],[-180,-260,10,15],
-  [-300,-140,9,13],[-420,60,11,16],[-460,340,10,15],[-320,470,9,13],[-140,640,11,17],[120,660,9,14],
-  [260,300,10,15],[380,140,8,12],[-60,420,9,13],[180,-480,10,16],[520,-180,9,14]]) rock(ix,iz,ir,ih);
+// mountain pairs flank every crossing between regions; the outer ranges wall the world in
+for(const [x,z,r,h] of MAP.MOUNTAINS) mountain(x,z,r,h);
 
 /* ================= FAR REGIONS: the world beyond the lighthouse ================= */
 const charMat=new THREE.MeshStandardMaterial({color:0x17120e,roughness:.95,flatShading:true});
@@ -1426,22 +1461,24 @@ function longhouse(x,z,ry,burned){
   if(burned){ roof.scale.y=0.5+Math.random()*0.4; roof.rotation.x=(Math.random()-0.5)*0.5; }
   scene.add(g); colliders.push({x,z,r:9,top:14}); return g;
 }
-longhouse(470,-430,0.4,true); longhouse(505,-455,1.2,true); longhouse(445,-470,2.2,true);
-longhouse(530,-425,2.8,false);                                  // one stands untouched. why?
-const lastTorch=new THREE.PointLight(0xff9a3c, 300, 120, 2); lastTorch.position.set(530,16,-425); scene.add(lastTorch);
-rock(480,-445,26,18); rock(520,-490,14,12);
+{ const {dx,dz}=MAP.DROWNED;
+longhouse(470+dx,-430+dz,0.4,true); longhouse(505+dx,-455+dz,1.2,true); longhouse(445+dx,-470+dz,2.2,true);
+longhouse(530+dx,-425+dz,2.8,false);                                  // one stands untouched. why?
+rock(480+dx,-445+dz,26,18); rock(520+dx,-490+dz,14,12); }
+const lastTorch=new THREE.PointLight(0xff9a3c, 300, 120, 2); lastTorch.position.set(530+MAP.DROWNED.dx,16,-425+MAP.DROWNED.dz); scene.add(lastTorch);
 // THE BONE ARCHES — the ribs of something vast, bleached over the sea
 const boneMat=new THREE.MeshStandardMaterial({color:0xcfc8ba,roughness:.85,flatShading:true});
-for(let i=0;i<5;i++){
-  const arch=new THREE.Mesh(new THREE.TorusGeometry(46-i*3,3.4-i*0.3,8,22,Math.PI), boneMat);
-  arch.position.set(-330-i*46,2,-410+i*10); arch.rotation.y=0.3+i*0.12; scene.add(arch);
-  colliders.push({x:-330-i*46+44,z:-410+i*10,r:6,top:50}); colliders.push({x:-330-i*46-44,z:-410+i*10,r:6,top:50});
+for(const rb of MAP.RIBS){
+  const arch=new THREE.Mesh(new THREE.TorusGeometry(rb.R,rb.tube,8,26,Math.PI), boneMat);
+  arch.position.set(rb.x,-4,rb.z); arch.rotation.y=rb.yaw; scene.add(arch);
+  colliders.push({x:rb.x+rb.px*rb.R,z:rb.z+rb.pz*rb.R,r:rb.tube+2,top:rb.R*0.6});
+  colliders.push({x:rb.x-rb.px*rb.R,z:rb.z-rb.pz*rb.R,r:rb.tube+2,top:rb.R*0.6});
 }
-const skullRock=rock(-560,-380,30,26);                          // where the head came to rest
+const skullRock=rock(...MAP.SKULL);                             // where the head came to rest
 // THE TEMPEST GATE — sea-stack ring, the aurora pours into it like a curtain
-for(let i=0;i<9;i++){ const a=i/9*6.283, r=150;
-  rock(Math.cos(a)*r, 780+Math.sin(a)*r*0.7, 16+(i%3)*5, 60+(i%4)*22); }
-crystal(0,780,44); crystal(-60,820,30); crystal(55,830,34);
+for(let i=0;i<9;i++){ const a=i/9*6.283, r=165;
+  rock(MAP.GATE.x+Math.cos(a)*r, MAP.GATE.z+Math.sin(a)*r*0.8, 16+(i%3)*5, 60+(i%4)*22); }
+crystal(MAP.GATE.x,MAP.GATE.z,44); crystal(MAP.GATE.x-60,MAP.GATE.z+40,30); crystal(MAP.GATE.x+55,MAP.GATE.z+50,34);
 // implicit story: region ambient lines come from regions.json via chapter director
 
 /* ---- SERPENT CANYON: a weaving slot of sheer cliffs you can almost kiss at full speed ----
@@ -1458,7 +1495,7 @@ function cliff(x,z,w,h,rotY){
   return m;
 }
 // the serpent: paired walls with a ~26u throat, snaking
-const CAN=[[-60,-150,0.3],[-95,-135,0.7],[-130,-105,1.0],[-155,-65,1.25],[-168,-20,1.5]];
+const CAN=MAP.CANYON;
 for(const [cx,cz,a] of CAN){
   const nx=Math.cos(a)*16, nz=Math.sin(a)*16;
   cliff(cx+nx, cz+nz, 34, 86+Math.random()*30, a);
@@ -1510,14 +1547,12 @@ function beacon(x,z,baseH,yaw0,rate,warm){
     hp:4, maxHp:4, hbBg, hbFill, hbW, hbT:0, fireCd:1.5+Math.random(), alerted:0 };
   searchlights.push(sl); return sl;
 }
-beacon(0,0,42,0,0.42,true);
-beacon(120,90,26,2.1,-0.34,true);
-beacon(-140,60,30,4.0,0.29,true);
+for(const [x,z,b,y0,rate] of MAP.KEEPERS.lighthouses) beacon(x,z,b,y0,rate,true);
 
 /* ---- menu patrol skiff: a searchlight on the water that finds the resting dragon ---- */
-const REST=new THREE.Vector3(56,30,31);
+const REST=new THREE.Vector3(...MAP.denPoint());
 const lobbyMarkers=new LobbyMarkers(scene, REST);
-const patrol=new THREE.Group(); patrol.position.set(150,7,95); scene.add(patrol);
+const patrol=new THREE.Group(); patrol.position.set(REST.x-150,7,REST.z-190); scene.add(patrol);
 const pSpot=new THREE.SpotLight(0xffe3b0,2600,420,0.13,0.5,1.1);
 patrol.add(pSpot,pSpot.target); pSpot.target.position.set(300,26,0);
 const pcg=new THREE.ConeGeometry(15,300,20,1,true); pcg.translate(0,-150,0); pcg.rotateZ(Math.PI/2);
@@ -1584,7 +1619,7 @@ function longship(){
 // the menu's searchlight skiff becomes a keeper longship (its lamp at the prow)
 { const ps=longship(); ps.position.y=-7.2; ps.scale.setScalar(0.9); patrol.add(ps); }
 // keeper longships working the open water
-for(const [cx,cz,r,w] of [[0,0,300,0.018],[-300,300,130,-0.03],[300,-150,150,0.026],[80,560,160,-0.022]]){
+for(const [cx,cz,r,w] of MAP.SHIP_LANES){
   const g=longship(); scene.add(g);
   NORSE.ships.push({g,cx,cz,r,w,a:Math.random()*6.28,ph:Math.random()*6.28});
 }
@@ -1619,11 +1654,9 @@ function runestone(x,z,face){
   m.rotation.set((Math.random()-0.5)*0.08, face, (Math.random()-0.5)*0.1);
   scene.add(m); NORSE.stones.push(m); return m;
 }
-for(const [rx,rz,rr] of [[58,32,18],[-64,-22,16],[34,-58,13],[240,-180,9],[-180,-260,10],
-  [260,300,10],[-60,420,9],[380,140,8],[520,-180,9],[-30,70,14]]){
-  const d=Math.hypot(rx,rz)||1, ux=-rx/d, uz=-rz/d, o=rr*1.2+3;
-  runestone(rx+ux*o, rz+uz*o, Math.atan2(ux,uz));
-}
+// waymarkers: a carved stone on a low stack at every crossing, facing home
+for(const [rx,rz] of MAP.RUNESTONES){ rock(rx+9,rz+6,7,5);
+  runestone(rx, rz, Math.atan2(-rx,-rz)); }
 
 // BRAZIERS: iron bowls of fire at the lighthouse feet and beside the resting place
 const fireTex=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d');
@@ -1646,6 +1679,84 @@ function brazier(x,y,z,withLight){
 for(const sl of searchlights){ const b=sl.lampPos.y-42;
   brazier(sl.lampPos.x+6.5,b,sl.lampPos.z+3,false); brazier(sl.lampPos.x-5,b,sl.lampPos.z-5.5,false); }
 brazier(REST.x-10,REST.y-1.5,REST.z+7,true);
+
+/* ---- THE DEN: a cave in the north cliff; he sleeps on its ledge ---- */
+{ const denMat=new THREE.MeshStandardMaterial({color:0x07080b,roughness:1});
+  const back=new THREE.Mesh(new THREE.SphereGeometry(1,20,14,0,Math.PI*2,0,Math.PI/2),denMat);
+  back.scale.set(19,15,15); back.rotation.x=Math.PI/2; back.position.set(REST.x,REST.y-1,REST.z+20); scene.add(back);
+  const lintel=new THREE.Mesh(new THREE.TorusGeometry(17,3.4,7,18,Math.PI),rockMat);
+  lintel.position.set(REST.x,REST.y-2,REST.z+11); scene.add(lintel);
+  for(const sx of [-1,1]){ const post=new THREE.Mesh(new THREE.IcosahedronGeometry(6,1),rockMat);
+    post.scale.set(1,2.2,1); post.position.set(REST.x+sx*17,REST.y+3,REST.z+11); scene.add(post); }
+}
+
+/* ================= HEARTHHOLM: the village you are flying for — it grows with every chapter ================= */
+const VILLAGE={ tier:-1, groups:[] };
+{ const V=MAP.VILLAGE, hy=(x,z)=>Math.max(V.floor,MAP.homeHeight(x,z));
+  const wood=new THREE.MeshStandardMaterial({color:0x4a3322,roughness:.9,flatShading:true});
+  const thatch=new THREE.MeshStandardMaterial({color:0x5b4a2c,roughness:1,flatShading:true});
+  const stone=new THREE.MeshStandardMaterial({color:0x55575c,roughness:.95,flatShading:true});
+  const glow=new THREE.MeshBasicMaterial({color:0xffb45a});
+  const tier=()=>{ const g=new THREE.Group(); g.visible=false; scene.add(g); VILLAGE.groups.push(g); return g; };
+  function hut(g,x,z,ry,sc=1){
+    const y=hy(x,z), h=new THREE.Group(); h.position.set(x,y,z); h.rotation.y=ry; h.scale.setScalar(sc);
+    const body=new THREE.Mesh(new THREE.BoxGeometry(12,5.5,8),wood); body.position.y=2.75; h.add(body);
+    const roof=new THREE.Mesh(new THREE.CylinderGeometry(.4,6.2,13.5,3,1),thatch);
+    roof.rotation.z=Math.PI/2; roof.scale.set(1,1,.8); roof.position.y=7.2; h.add(roof);
+    const door=new THREE.Mesh(new THREE.PlaneGeometry(2,3.2),glow); door.position.set(0,1.7,4.02); h.add(door);   // warm doorway
+    g.add(h); colliders.push({x,z,r:7*sc,top:y+10*sc}); return h;
+  }
+  // tier 0 — the village you start with: a square, a fire, a jetty, two boats
+  const t0=tier();
+  [[-26,-14,.5],[22,-20,-.4],[-30,20,1.9],[28,24,-1.8]].forEach(([dx,dz,r])=>hut(t0,V.x+dx,V.z+dz,r));
+  NORSE.fires.length; brazier(V.x,hy(V.x,V.z),V.z,false);
+  const jetty=new THREE.Mesh(new THREE.BoxGeometry(6,1,58),wood); jetty.position.set(MAP.HARBOR.x-10,1.2,MAP.HARBOR.z-6);
+  jetty.rotation.y=-.6; t0.add(jetty);
+  for(const [dx,dz,r] of [[18,6,-.6],[-6,26,-.5]]){ const b=longship(); b.scale.setScalar(.8);
+    b.position.set(MAP.HARBOR.x+dx,-.6,MAP.HARBOR.z+dz); b.rotation.y=r; t0.add(b); }
+  // tier 1 — First Flight: a dragon roost, a tall timber perch facing the den
+  const t1=tier(); { const x=V.x-52,z=V.z-40,y=hy(x,z);
+    for(const [a,b] of [[-4,-4],[4,-4],[-4,4],[4,4]]){ const leg=new THREE.Mesh(new THREE.CylinderGeometry(.6,.8,26,5),wood); leg.position.set(x+a,y+13,z+b); t1.add(leg); }
+    const deck=new THREE.Mesh(new THREE.CylinderGeometry(8,8,1.2,10),wood); deck.position.set(x,y+26,z); t1.add(deck);
+    const perch=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,14,5),wood); perch.rotation.z=Math.PI/2; perch.position.set(x,y+30,z); t1.add(perch);
+    colliders.push({x,z,r:9,top:y+31}); }
+  // tier 2 — Home Waters: the forge, and two new homes
+  const t2=tier(); { const x=V.x+48,z=V.z-8,y=hy(x,z);
+    const f=new THREE.Mesh(new THREE.BoxGeometry(14,8,11),stone); f.position.set(x,y+4,z); t2.add(f);
+    const ch=new THREE.Mesh(new THREE.CylinderGeometry(1.8,2.4,14,6),stone); ch.position.set(x+4,y+11,z-2); t2.add(ch);
+    const ember=new THREE.Mesh(new THREE.PlaneGeometry(6,3),glow); ember.position.set(x,y+2.5,z+5.6); t2.add(ember);
+    brazier(x+4,y+17,z-2,false); colliders.push({x,z,r:9,top:y+18});
+    hut(t2,V.x-8,V.z+46,.2,.9); hut(t2,V.x+14,V.z-50,-.3,.9); }
+  // tier 3 — Serpent Run: the long hall at the head of the square
+  const t3=tier(); hut(t3,V.x,V.z-44,0,2.1);
+  // tier 4 — The Long Night: a watchtower on the headland and a palisade
+  const t4=tier(); { const x=V.x+78,z=V.z+34,y=hy(x,z);
+    const tw=new THREE.Mesh(new THREE.CylinderGeometry(4,5,30,6),wood); tw.position.set(x,y+15,z); t4.add(tw);
+    const cap=new THREE.Mesh(new THREE.ConeGeometry(6.5,7,6),thatch); cap.position.set(x,y+33,z); t4.add(cap);
+    brazier(x,y+30,z,false); colliders.push({x,z,r:7,top:y+36});
+    for(let i=0;i<14;i++){ const a=-1.2+i*.2, px=V.x+Math.cos(a)*82, pz=V.z-Math.sin(a)*82;
+      const stake=new THREE.Mesh(new THREE.CylinderGeometry(.7,.7,7,5),wood); stake.position.set(px,hy(px,pz)+3,pz); t4.add(stake); } }
+  // tier 5 — the Gate is open: banners and lanterns over the square
+  const t5=tier(); for(let i=0;i<18;i++){ const a=i/18*6.283, r=34;
+    const l=new THREE.Mesh(new THREE.SphereGeometry(.7,6,4),glow); l.position.set(V.x+Math.cos(a)*r,hy(V.x,V.z)+12+Math.sin(i*1.7)*1.2,V.z+Math.sin(a)*r); t5.add(l); }
+}
+const VILLAGE_LINES=['',
+  'Hearthholm builds a roost for her. The whole village turned out to raise it.',
+  'The forge is lit again. Every fitting now has a smith to make it.',
+  'They raised the long hall. The story of the canyon is told there first.',
+  'A watchtower on the headland — Hearthholm keeps its own light now.',
+  'Lanterns over the square. They are waiting for you to come home.'];
+function driveVillage(){
+  let stored=0; try{ stored=+localStorage.getItem('galevein_hearthholm')||0; }catch(e){}
+  const earned=Math.max(0,Math.min(5,(S.chapter||0)+(S.cause==='ESCAPED'?1:0)));
+  const want=Math.max(stored,earned);
+  if(want===VILLAGE.tier) return;
+  const grew=VILLAGE.tier>=0 && want>VILLAGE.tier;
+  VILLAGE.tier=want; VILLAGE.groups.forEach((g,i)=>g.visible=i<=want);
+  try{ localStorage.setItem('galevein_hearthholm',String(want)); }catch(e){}
+  if(grew && S.started) achievement('Hearthholm grows', VILLAGE_LINES[want], 'VILLAGE · '+want+' / 5');
+}
+setTimeout(driveVillage,0);   // S is declared further down the module
 
 function updateNorse(dt){
   for(const sh of NORSE.ships){
@@ -1705,10 +1816,7 @@ const streakSeed=Array.from({length:STREAK_N},()=>[Math.random(),Math.random(),M
 const rings=[]; const RING_R=13; const N_RINGS=12;
 const ringBase=new THREE.MeshStandardMaterial({ color:0x1a0f38, emissive:0x8b46ff, emissiveIntensity:3.0, fog:false });
 const ringDone=new THREE.MeshStandardMaterial({ color:0x0f2e26, emissive:0x2fd6a0, emissiveIntensity:1.4, fog:false });
-const route=[[0,44,200],[150,70,-40],[-90,66,-150],[-170,72,-10],          // home waters + canyon
-  [140,60,-260],[420,70,-380],[520,64,-470],                                  // out to the Drowned Village
-  [180,80,-560],[-320,90,-420],[-560,96,240],                                 // under the Bone Arches
-  [-260,110,560],[0,120,780]];                                                // north to the Tempest Gate
+const route=MAP.ROUTE;                       // home -> keepers -> serpent reach -> rib wastes -> gate (see worldMap.js)
 for(let i=0;i<N_RINGS;i++){
   const [x,y,z]=route[i];
   const m=new THREE.Mesh(new THREE.TorusGeometry(RING_R,1.3,10,40), ringBase.clone());
@@ -1717,7 +1825,7 @@ for(let i=0;i<N_RINGS;i++){
   m.lookAt(new THREE.Vector3(nx,y,nz)); m.userData.hit=false;
   rings.push(m); scene.add(m);
 }
-const gateGroup=new THREE.Group(); gateGroup.position.set(0,120,780); scene.add(gateGroup);
+const gateGroup=new THREE.Group(); gateGroup.position.set(MAP.GATE.x,MAP.GATE.y,MAP.GATE.z); scene.add(gateGroup);
 const gateOuter=new THREE.Mesh(new THREE.TorusGeometry(54,3.2,12,72),
   new THREE.MeshStandardMaterial({color:0x17253c,emissive:0x7d4cff,emissiveIntensity:1.8,metalness:.35,roughness:.38}));
 const gateInner=new THREE.Mesh(new THREE.TorusGeometry(43,1.1,8,64),
@@ -1739,7 +1847,7 @@ function updateTempestGate(dt){
 }
 
 /* ============================ DRAGON ============================ */
-const START=new THREE.Vector3(0,58,250);
+const START=new THREE.Vector3(REST.x,REST.y+6,REST.z);
 const D={ group:new THREE.Group(), model:null, mixer:null, flap:null, glide:null,
   yaw:Math.PI, pitch:0, roll:0, speed:20, flapping:false, headNode:null, glow:null,
   turn:0, pTurn:0, pPitch:0, bones:null, mouth:null, mouthLt:null,
@@ -1758,7 +1866,8 @@ function nextObjectiveTarget(){
     : rings.find(r=>!r.userData.hit);
   return nb?.position??null;
 }
-const landmarkPath=new LandmarkPath(scene,{flightRoute:route});
+const landmarkPath=new LandmarkPath(scene,{flightRoute:route,
+  sites:LANDMARK_SITES.map(site=>MAP.LANDMARK_POSITIONS[site.id]?{...site,position:MAP.LANDMARK_POSITIONS[site.id]}:site)});
 const landmarkReady=landmarkPath.build();
 landmarkReady.then(async ()=>{
   for(const c of landmarkPath.getCollisionProxies()) colliders.push({x:c.x,z:c.z,r:c.radius,top:c.top,landmark:c.id});
@@ -2470,9 +2579,10 @@ function addViolence(v){
 /* ---- CHAPTER I: the tutorial cove — three low practice rings between the home cliffs ---- */
 const tutRings=[];
 const tutMat=new THREE.MeshStandardMaterial({color:0x123a30, emissive:0x7fe6c6, emissiveIntensity:2.4});
-for(const [tx,ty,tz] of [[80,40,250],[10,52,300],[-70,44,250]]){
+for(const [i,[tx,ty,tz]] of MAP.TUTORIAL.entries()){
   const m=new THREE.Mesh(new THREE.TorusGeometry(12,1.1,10,34), tutMat.clone());
-  m.position.set(tx,ty,tz); m.lookAt(REST.x,ty,REST.z); m.userData.hit=false;
+  const prev=i?MAP.TUTORIAL[i-1]:[REST.x,REST.y,REST.z];      // each ring faces the way you arrive
+  m.position.set(tx,ty,tz); m.lookAt(prev[0],ty,prev[2]); m.userData.hit=false;
   tutRings.push(m); scene.add(m);
 }
 function driveTutorial(dt){
@@ -3089,6 +3199,16 @@ function tick(dt){
     p.y += (wh+3.0-p.y)*Math.min(1,dt*5);
   }
   S.impactCd=Math.max(0,S.impactCd-dt);
+  const th=MAP.homeHeight(p.x,p.z);
+  if(th>-1 && !S.launching){
+    if(p.y<th+2.5 && S.impactCd<=0){
+      S.hp-=Math.max(8,14+Math.max(0,D.speed-30)*.5-upLv('scaleplate')*3); S.hurt=1; S.shake=Math.max(S.shake,.8); S.impactCd=1.1;
+      D.speed=Math.max(13,D.speed*.55); D.pitch=Math.max(D.pitch,0.35); p.y=th+5;
+      AU.play('crash',.6); popup('GROUND STRIKE · '+Math.max(0,Math.round(S.hp))+' HEALTH');
+      if(S.hp<=0) crash('DASHED ON THE ROCKS');
+    } else if(p.y<th+9){ p.y+=(th+9-p.y)*Math.min(1,dt*2.2);        // she lifts you off the hillside
+      if(D.speed>22 && (S.grazeT=(S.grazeT||0)-dt)<=0){ S.grazeT=1.4; popup('CLOSE CALL'); smallBurst(p.x,p.y-2,p.z,0xcfd8ff); } }
+  }
   if(!S.launching){ let grazing=false;
     for(const c of colliders){
       const dx=p.x-c.x, dz=p.z-c.z, horiz=Math.hypot(dx,dz);
@@ -3200,7 +3320,7 @@ function tick(dt){
       AU.play('ring',0.6); shockwave(gm.position,0x2fd6a0); popup('GATE '+gateCount+' / 3');
       S.scales+=gateCount===3?2:1;
       S.detection=Math.max(0,S.detection-0.15); } }                       // the canyon hides you
-  driveTutorial(dt);
+  driveTutorial(dt); driveVillage();
   if(S.started && !S.done && S.tutDone && structure?.director?.chapter?.storyBeat==='thread_canyon'){
     const haw=D.group.position.y-waveH(D.group.position.x,D.group.position.z,S.t);
     S.altitudePeak=Math.max(S.altitudePeak||0,haw);
@@ -3670,7 +3790,9 @@ function render(dt=1/60){
   }
   renderWorld();
 }
+let CAM_OVERRIDE=null;   // debug/verification only: SIM.viewFrom(...)
 function renderWorld(){
+  if(CAM_OVERRIDE){ camera.position.set(...CAM_OVERRIDE[0]); camera.lookAt(...CAM_OVERRIDE[1]); camera.fov=CAM_OVERRIDE[2]||55; camera.updateProjectionMatrix(); }
   sky.position.copy(camera.position);
   horizonDirector.update(camera.position,S.t,TOD.day);
   refreshSeaFog();
@@ -3978,6 +4100,15 @@ window.SIM={
   strike:()=>{ const p=D.group.position; S.strikeX=p.x; S.strikeZ=p.z; S.strikeT=0.04; },   // force a bolt on us (test)
   uptime:()=>({loopLagMs:+(performance.now()-loopAlive).toFixed(1), bootErrors:bootErrors.slice(), alive:performance.now()-loopAlive<250}),
   bootErrors:()=>bootErrors.slice(),
+  layout:()=>({
+    colliders:colliders.map(c=>[+c.x.toFixed(0),+c.z.toFixed(0),+c.r.toFixed(0),+c.top.toFixed(0)]),
+    rings:rings.map(r=>r.position.toArray().map(v=>+v.toFixed(0))), tut:tutRings.map(r=>r.position.toArray().map(v=>+v.toFixed(0))),
+    gates:gates.map(g=>g.position.toArray().map(v=>+v.toFixed(0))), towers:searchlights.map(s=>s.lampPos.toArray().map(v=>+v.toFixed(0))),
+    landmarks:landmarkPath.route.map(e=>({id:e.id, p:e.position})),
+    rest:REST.toArray().map(v=>+v.toFixed(0)), start:START.toArray().map(v=>+v.toFixed(0)),
+    ships:NORSE.ships.map(s=>[s.cx,s.cz,s.r]), stones:NORSE.stones.map(m=>[+m.position.x.toFixed(0),+m.position.z.toFixed(0)]),
+    whales:whales.map(w=>[w.x,w.z]), sharks:sharks.map(k=>[k.cx,k.cz]) }),
+  viewFrom:(pos,look,fov)=>{ CAM_OVERRIDE=pos?[pos,look,fov]:null; return !!CAM_OVERRIDE; },
   norse:()=>({ships:NORSE.ships.map(s=>s.g.position.toArray().map(v=>+v.toFixed(1))), stones:NORSE.stones.length, fires:NORSE.fires.length}),
 };
 </script>
