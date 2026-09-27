@@ -37,3 +37,4 @@ Do not open `index.html` with `file://`. The game loads ES modules and the rigge
 - Plasma breath, echolocation, flock stealth, spiral acceleration, Stormbreak Dive, and lightning harvest
 - The Forge upgrades and Flight Codex skill tracking
 - Dynamic weather, sea life, storm audio, graphics presets, and local vendored assets
+- Storm strikes use a potential-biased bolt path by default (`?lightning=jag` for the old random polyline)

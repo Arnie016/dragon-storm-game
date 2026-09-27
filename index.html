@@ -642,6 +642,70 @@ AU.load('thunder','synthesized-audio/thunder.mp3',false,0.6);
 AU.load('zap','synthesized-audio/zap.mp3',false,0.55);
 AU.load('wind','synthesized-audio/wind.mp3',true,0.0);
 
+/* Adaptive bed: hub calm → flight tension → hunted/locked snap. Visual grade rides the same threat. */
+const TONE={ threat:0, lastStage:0, snap:0, mode:'hub',
+  fogHunt:new THREE.Color(0x1a0610), ambHunt:new THREE.Color(0x3a1828) };
+function driveThreatTone(dt){
+  if(!AU.on||S.muted){
+    for(const n of ['menu','music','amb']){ const a=AU.el[n]; if(a) a.volume=0; }
+    return;
+  }
+  let target=0, mode='hub';
+  if(S.done){
+    mode = (S.cause==='ESCAPED'||($('overTitle')?.className||'')==='good') ? 'escape' : 'spotted';
+    target = mode==='escape' ? 0.35 : 1;
+  } else if(!S.started){
+    mode='hub'; target=0;
+  } else if(S.alertStage>=2){
+    mode='locked'; target=1;
+  } else if(S.alertStage>=1){
+    mode='hunted'; target=0.62;
+  } else {
+    mode='flight'; target=0.18+TOD.day*0.38;
+  }
+  if(mode!==TONE.mode){
+    TONE.mode=mode;
+    if(target>TONE.threat+0.08) TONE.snap=0.55;
+  }
+  const rate=(TONE.snap>0 ? 10 : 2.4);
+  TONE.threat += (target-TONE.threat)*Math.min(1,dt*rate);
+  TONE.snap=Math.max(0,TONE.snap-dt);
+  const th=THREE.MathUtils.clamp(TONE.threat,0,1);
+  const d=TOD.day;
+
+  const menu=AU.el.menu, mus=AU.el.music, ambA=AU.el.amb;
+  if(menu){
+    const want = !S.started ? 0.36 : Math.max(0,(0.28*(1-th))*(1-d*0.75));
+    menu.volume += (want-menu.volume)*Math.min(1,dt*(TONE.snap>0?8:3));
+    if(want>0.02 && menu.paused) menu.play().catch(()=>{});
+    if(want<=0.02 && !menu.paused && S.started) menu.pause();
+  }
+  if(mus){
+    const want = S.started ? (0.10+th*0.52+d*0.16) : 0;
+    mus.volume += (want-mus.volume)*Math.min(1,dt*(TONE.snap>0?9:3.2));
+    try{ mus.playbackRate = 1+th*0.16+(S.alertStage>=2?0.06:0); }catch(e){}
+    if(want>0.02 && mus.paused) mus.play().catch(()=>{});
+    if(want<=0.02 && !mus.paused && !S.started) mus.pause();
+  }
+  if(ambA){
+    const want = S.started ? 0.22+th*0.18 : 0.28;
+    ambA.volume += (want-ambA.volume)*Math.min(1,dt*2.5);
+    if(want>0.02 && ambA.paused) ambA.play().catch(()=>{});
+  }
+
+  if(S.started && !S.done){
+    renderer.toneMappingExposure *= (1-th*0.22);
+    renderer.toneMappingExposure += Math.sin(S.t*(12+th*16))*th*0.045;
+    scene.fog.density *= (1+th*0.75);
+    if(th>0.35){
+      const k=(th-0.35)*0.55;
+      scene.fog.color.lerp(TONE.fogHunt, k);
+      amb.color.lerp(TONE.ambHunt, k*0.75);
+      if(typeof rimP!=='undefined' && rimP) rimP.intensity = Math.max(rimP.intensity, 0.9+th*1.4);
+    }
+  }
+}
+
 /* ============================ RENDERER / SCENE ============================ */
 const renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setSize(innerWidth, innerHeight);
@@ -1453,24 +1517,143 @@ const chargeSeconds=()=>Math.max(.54,.9-upLv('gland')*.12);
 
 /* ---- plasma lightning (X): a jagged bolt from the mouth that shatters towers ---- */
 const bolts=[], BOLT_SEG=16;
+/* Pooled FX — charge/shoot used to alloc BufferGeometry every tick and hitch hard. */
+const FX={
+  gfx:'med',
+  crack:[], crackI:0,
+  sparks:[], sparkI:0,
+  _mp:new THREE.Vector3(), _p1:new THREE.Vector3(), _p2:new THREE.Vector3(),
+  _dir:new THREE.Vector3(), _tmp:new THREE.Vector3(),
+  chargeRing:null, chargeHum:null, humGain:null,
+  sky:[], skyI:0, skyLt:null,
+  ballGeo:null, haloGeo:null, ballMat:null, haloMat:null,
+};
+function initFxPools(){
+  const lineMat=()=>new THREE.LineBasicMaterial({color:0xd9b6ff,transparent:true,opacity:0.9,
+    blending:THREE.AdditiveBlending,depthWrite:false});
+  for(let i=0;i<8;i++){
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6),3));
+    const line=new THREE.Line(geo, lineMat());
+    line.visible=false; line.frustumCulled=false; scene.add(line);
+    FX.crack.push({line, geo, life:0, dur:0.12});
+  }
+  for(let i=0;i<8;i++){
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6),3));
+    const line=new THREE.Line(geo, new THREE.LineBasicMaterial({color:0xefe2ff,transparent:true,opacity:0.9,
+      blending:THREE.AdditiveBlending,depthWrite:false}));
+    line.visible=false; line.frustumCulled=false; scene.add(line);
+    FX.sparks.push({line, geo, life:0, dur:0.22});
+  }
+  for(let i=0;i<4;i++){
+    const geo=new THREE.BufferGeometry();
+    const n=18;
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n*3),3));
+    const line=new THREE.Line(geo, new THREE.LineBasicMaterial({color:0xeef7ff,transparent:true,opacity:1,
+      blending:THREE.AdditiveBlending,depthWrite:false,linewidth:2}));
+    line.visible=false; line.frustumCulled=false; scene.add(line);
+    FX.sky.push({line, geo, n, life:0, dur:0.65});
+  }
+  FX.skyLt=new THREE.PointLight(0xd8ecff,0,520,2); scene.add(FX.skyLt);
+  FX.chargeRing=new THREE.Mesh(
+    new THREE.TorusGeometry(1,0.1,6,20),
+    new THREE.MeshBasicMaterial({color:0xc79bff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false}));
+  FX.chargeRing.visible=false; scene.add(FX.chargeRing);
+  FX.ballGeo=new THREE.SphereGeometry(1,10,10);
+  FX.haloGeo=new THREE.SphereGeometry(2,10,10);
+  FX.ballMat=new THREE.MeshBasicMaterial({color:0xf0e6ff,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true});
+  FX.haloMat=new THREE.MeshBasicMaterial({color:0xb06bff,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.5});
+}
+function setLineSeg(entry, a, b, life, dur){
+  const pos=entry.geo.attributes.position.array;
+  pos[0]=a.x; pos[1]=a.y; pos[2]=a.z; pos[3]=b.x; pos[4]=b.y; pos[5]=b.z;
+  entry.geo.attributes.position.needsUpdate=true;
+  entry.life=life; entry.dur=dur; entry.line.visible=true;
+  entry.line.material.opacity=0.95;
+}
+function updateFxPools(dt){
+  for(const e of FX.crack){
+    if(e.life<=0){ e.line.visible=false; continue; }
+    e.life-=dt; e.line.material.opacity=Math.max(0,e.life/e.dur);
+    if(e.life<=0) e.line.visible=false;
+  }
+  for(const e of FX.sparks){
+    if(e.life<=0){ e.line.visible=false; continue; }
+    e.life-=dt; e.line.material.opacity=Math.max(0,e.life/e.dur);
+    if(e.life<=0) e.line.visible=false;
+  }
+  for(const e of FX.sky){
+    if(e.life<=0){ e.line.visible=false; continue; }
+    e.life-=dt; e.line.material.opacity=Math.max(0,e.life/e.dur);
+    if(e.life<=0) e.line.visible=false;
+  }
+  if(FX.skyLt.intensity>0){
+    FX.skyLt.intensity=Math.max(0,FX.skyLt.intensity-dt*900);
+  }
+  if(FX.chargeRing.visible){
+    FX.chargeRing.material.opacity=Math.max(0,FX.chargeRing.material.opacity-dt*1.6);
+    FX.chargeRing.scale.multiplyScalar(1+dt*2.4);
+    if(FX.chargeRing.material.opacity<=0.02) FX.chargeRing.visible=false;
+  }
+}
+function pulseChargeRing(mp, rad){
+  FX.chargeRing.visible=true;
+  FX.chargeRing.position.copy(mp);
+  FX.chargeRing.quaternion.copy(camera.quaternion);
+  FX.chargeRing.scale.setScalar(Math.max(0.01,rad*1.5));
+  FX.chargeRing.material.opacity=0.7;
+}
+function startChargeHum(){
+  try{
+    if(!WIND.ctx) initWind();
+    if(!WIND.ctx||FX.chargeHum) return;
+    const ctx=WIND.ctx;
+    const osc=ctx.createOscillator(); osc.type='sawtooth'; osc.frequency.value=48;
+    const osc2=ctx.createOscillator(); osc2.type='triangle'; osc2.frequency.value=96;
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=420; bp.Q.value=4;
+    const g=ctx.createGain(); g.gain.value=0.0001;
+    osc.connect(bp); osc2.connect(bp); bp.connect(g); g.connect(ctx.destination);
+    osc.start(); osc2.start();
+    FX.chargeHum=osc; FX.chargeHum2=osc2; FX.humGain=g; FX.humBp=bp;
+  }catch(e){}
+}
+function updateChargeHum(cp, on){
+  if(!on){
+    if(FX.humGain){ try{ FX.humGain.gain.exponentialRampToValueAtTime(0.0001, WIND.ctx.currentTime+0.08); }catch(e){} }
+    if(FX.chargeHum){
+      const o=FX.chargeHum, o2=FX.chargeHum2, g=FX.humGain;
+      setTimeout(()=>{ try{ o.stop(); o2.stop(); }catch(e){} },120);
+      FX.chargeHum=null; FX.chargeHum2=null; FX.humGain=null;
+    }
+    return;
+  }
+  if(!FX.chargeHum) startChargeHum();
+  if(!FX.humGain||!WIND.ctx) return;
+  const t=WIND.ctx.currentTime;
+  const vol=S.muted?0.0001:(0.012+cp*0.055);
+  try{
+    FX.humGain.gain.setTargetAtTime(vol, t, 0.05);
+    FX.chargeHum.frequency.setTargetAtTime(42+cp*90, t, 0.05);
+    FX.chargeHum2.frequency.setTargetAtTime(84+cp*160, t, 0.05);
+    if(FX.humBp) FX.humBp.frequency.setTargetAtTime(280+cp*900, t, 0.05);
+  }catch(e){}
+}
 function shoot(power=0.35){
   if(S.shootCd>0 || !D.model || S.charges<1) return; S.shootCd=0.4; S.charges-=1;
   power=Math.min(1.25,power+upLv('gland')*.07);
-  // three distinct tiers: SPIT (fast, cheap) / BOLT / ARC BURST (screen-shaking)
   S.tier = power>0.85 ? 2 : (power>0.45 ? 1 : 0);
   if(S.tier===2){ popup('ARC BURST'); S.shootCd=0.65; }
-  if(S.superCharge){ power=1.25; S.superCharge=0; popup('STORMFIRE'); }   // harvested lightning
-  const head=new THREE.Vector3(); (D.mouth||D.headNode||D.group).getWorldPosition(head);
-  const dir=new THREE.Vector3(-Math.sin(D.yaw),Math.sin(D.pitch)*0.95,-Math.cos(D.yaw)).normalize();
+  if(S.superCharge){ power=1.25; S.superCharge=0; popup('STORMFIRE'); }
+  updateChargeHum(0,false);
+  const head=FX._mp; (D.mouth||D.headNode||D.group).getWorldPosition(head);
+  const dir=FX._dir.set(-Math.sin(D.yaw),Math.sin(D.pitch)*0.95,-Math.cos(D.yaw)).normalize();
   const R=0.9+power*2.2;
-  // white-hot plasma head
-  const m=new THREE.Mesh(new THREE.SphereGeometry(R,12,12),
-    new THREE.MeshBasicMaterial({color:0xf0e6ff, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true}));
-  const halo=new THREE.Mesh(new THREE.SphereGeometry(R*2.0,12,12),
-    new THREE.MeshBasicMaterial({color:0xb06bff, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true, opacity:.5}));
-  m.add(halo); m.position.copy(head).addScaledVector(dir,3);
+  const m=new THREE.Mesh(FX.ballGeo, FX.ballMat.clone());
+  m.scale.setScalar(R);
+  const halo=new THREE.Mesh(FX.haloGeo, FX.haloMat.clone());
+  halo.scale.setScalar(R); m.add(halo); m.position.copy(head).addScaledVector(dir,3);
   const lt=new THREE.PointLight(0xc07bff,300+power*760,160+power*180,2); m.add(lt);
-  // crackling lightning line from muzzle to head (regenerated every frame)
   const N=BOLT_SEG, lgeo=new THREE.BufferGeometry();
   lgeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N*3), 3));
   const line=new THREE.Line(lgeo, new THREE.LineBasicMaterial({color:0xe0ccff, transparent:true,
@@ -1479,30 +1662,31 @@ function shoot(power=0.35){
   bolts.push({ m, lt, line, lgeo, origin:head.clone(), vel:dir.clone().multiplyScalar(220+power*150),
     life:2.4, power, jag:6+power*10 });
   if(D.glow) D.glow.intensity=70+power*90;
-  if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; }   // discharge the mouth ball
-  // anime-style muzzle burst: radial spark rays + a fast cut-arc ring around the bolt's path
+  if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; }
   const mz=m.position;
-  for(let i=0;i<10;i++){ const a2=Math.random()*6.283, r2=Math.random()*0.7+0.3;
-    const sg=new THREE.BufferGeometry().setFromPoints([mz.clone(),
-      mz.clone().add(new THREE.Vector3(Math.cos(a2)*(4+power*5)*r2,(Math.random()-0.5)*5*r2,Math.sin(a2)*(4+power*5)*r2))]);
-    const sl2=new THREE.Line(sg,new THREE.LineBasicMaterial({color:0xefe2ff,transparent:true,opacity:0.9,
-      blending:THREE.AdditiveBlending,depthWrite:false}));
-    scene.add(sl2); shocks.push({m:sl2,life:0.22,dur:0.22,noscale:true});
+  const sparkN = FX.gfx==='low' ? 3 : (FX.gfx==='med' ? 5 : 7);
+  for(let i=0;i<sparkN;i++){
+    const a2=Math.random()*6.283, r2=Math.random()*0.7+0.3;
+    FX._p1.copy(mz);
+    FX._p2.set(Math.cos(a2)*(4+power*5)*r2,(Math.random()-0.5)*5*r2,Math.sin(a2)*(4+power*5)*r2).add(mz);
+    const e=FX.sparks[FX.sparkI++%FX.sparks.length];
+    setLineSeg(e, FX._p1, FX._p2, 0.22, 0.22);
   }
-  const arc=new THREE.Mesh(new THREE.TorusGeometry(1.6,0.22,6,26),
+  const arc=new THREE.Mesh(new THREE.TorusGeometry(1.6,0.22,6,20),
     new THREE.MeshBasicMaterial({color:0xd8b8ff,transparent:true,opacity:0.95,blending:THREE.AdditiveBlending,depthWrite:false}));
   arc.position.copy(mz); arc.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir); scene.add(arc);
-  shocks.push({m:arc,life:0.3,dur:0.3,axis:true});
-  // lightning CRACK: bright zap + a delayed thunder tail that deepens with charge
+  shocks.push({m:arc,life:0.28,dur:0.28,axis:true});
   const a=AU.el.zap; if(a){ a.playbackRate=1.45-power*0.5; } AU.play('zap',0.45+power*0.35);
   const th=AU.el.thunder;
   if(th){ setTimeout(()=>{ try{ th.currentTime=0; th.playbackRate=1.5-power*0.7; th.volume=0.2+power*0.45;
     th.play().catch(()=>{}); }catch(e){} }, 40+power*70); }
+  if(power>0.55){ AU.play('crash',0.35+power*0.3); addViolence(0.55); }
   S.flash=Math.max(S.flash,0.14+power*0.34);
-  if(power>0.55){ AU.play('crash',0.4+power*0.35); addViolence(0.55); }  // arc bursts strain the strap
-  if(power>0.8){ S.shake=Math.max(S.shake,0.5); }
-  D.recoil=0.4+power*0.6; S.shake=Math.max(S.shake,0.2+power*0.35);   // felt kick when you fire
+  if(power>0.8) S.shake=Math.max(S.shake,0.5);
+  D.recoil=0.4+power*0.6; S.shake=Math.max(S.shake,0.2+power*0.35);
+  moon.intensity=Math.max(moon.intensity, 1.2+power*1.4);
 }
+initFxPools();
 const _b0=new THREE.Vector3(), _b1=new THREE.Vector3(), _bp=new THREE.Vector3(), _perp=new THREE.Vector3();
 // --- recursive branching arc: subdivide-and-displace, children fork off the trunk ---
 function arcPoints(a,b,gen,amp,out){
@@ -1639,11 +1823,16 @@ function shockwave(pos,color){
 }
 function updateShocks(dt){
   for(let i=shocks.length-1;i>=0;i--){ const s=shocks[i]; s.life-=dt; const k=Math.min(1,1-s.life/(s.dur||0.6));
+    if(s.light){
+      if(s.m.intensity!=null) s.m.intensity=(s.baseIntensity||420)*(1-k);
+      if(s.life<=0){ scene.remove(s.m); shocks.splice(i,1); }
+      continue;
+    }
     if(s.shrink) s.m.scale.setScalar(Math.max(0.05,1-k*0.85));           // converging charge ring
     else if(!s.noscale) s.m.scale.setScalar(1+k*(s.flat?6:(s.axis?9:3.2)));
-    s.m.material.opacity=0.95*(1-k);
+    if(s.m.material) s.m.material.opacity=0.95*(1-k);
     if(!s.flat&&!s.axis&&!s.noscale) s.m.quaternion.copy(camera.quaternion);
-    if(s.life<=0){ s.m.geometry.dispose(); scene.remove(s.m); shocks.splice(i,1); }
+    if(s.life<=0){ if(s.m.geometry) s.m.geometry.dispose(); scene.remove(s.m); shocks.splice(i,1); }
   }
 }
 const popEl=document.getElementById('popup');
@@ -1945,25 +2134,130 @@ function driveStormbreakDive(dt){
 /* ================= UNIQUE 3: STORM LIGHTNING HARVEST =================
    The storm throws real bolts at the sea. A column telegraphs where it will land —
    fly INTO it and you drink the strike: full plasma + a supercharged blast, but it
-   lights you up like a flare for every keeper watching. */
-const teleMark=new THREE.Mesh(new THREE.CylinderGeometry(9,9,340,14,1,true),
-  new THREE.MeshBasicMaterial({color:0x9fd8ff,transparent:true,opacity:0,side:THREE.DoubleSide,
+   lights you up like a flare for every keeper watching.
+   Bolt path: default `phys` = coarse potential-biased discharge (EXP-LIGHTNING-PHYS-01);
+   `?lightning=jag` restores the old random polyline. Demo metrics from social posts are not requirements. */
+const lightningMode=(new URLSearchParams(location.search).get('lightning')||'phys').toLowerCase();
+/* Fat telegraph so the strike is findable against rain/spotlights — not a hairline. */
+const teleMark=new THREE.Mesh(new THREE.CylinderGeometry(18,22,380,16,1,true),
+  new THREE.MeshBasicMaterial({color:0xb8f0ff,transparent:true,opacity:0,side:THREE.DoubleSide,
     blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
 teleMark.visible=false; scene.add(teleMark);
-function fireStrike(){
-  const x=S.strikeX, z=S.strikeZ, topY=330, wh=waveH(x,z,S.t);
+const teleCore=new THREE.Mesh(new THREE.CylinderGeometry(3.2,3.2,380,8,1,true),
+  new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,side:THREE.DoubleSide,
+    blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
+teleCore.visible=false; scene.add(teleCore);
+function buildJagStrikePoints(x,z,topY,wh){
   const N=18, pts=[];
   for(let i=0;i<N;i++){ const t=i/(N-1);
     pts.push(new THREE.Vector3(x+(i&&i<N-1?(Math.random()-0.5)*22:0), topY+(wh-topY)*t, z+(i&&i<N-1?(Math.random()-0.5)*22:0))); }
-  const lg=new THREE.BufferGeometry().setFromPoints(pts);
-  const ln=new THREE.Line(lg,new THREE.LineBasicMaterial({color:0xeaf6ff,transparent:true,opacity:1,
-    blending:THREE.AdditiveBlending,depthWrite:false}));
-  scene.add(ln); shocks.push({m:ln,life:0.3,dur:0.3,noscale:true});
+  return pts;
+}
+/* Cheap electrostatic-style stroke: noisy potential on a coarse column grid, then
+   greedily descend toward sea potential. Shape emerges from the field, not hand-drawn zigzags. */
+function buildPhysStrikePoints(x,z,topY,wh){
+  const ny=22, nr=5, R=26;
+  const pot=new Float32Array(ny*nr*nr);
+  const idx=(iy,ix,iz)=>((iy*nr)+ix)*nr+iz;
+  for(let iy=0;iy<ny;iy++) for(let ix=0;ix<nr;ix++) for(let iz=0;iz<nr;iz++){
+    const t=iy/(ny-1), gx=(ix-(nr-1)/2)/(nr-1), gz=(iz-(nr-1)/2)/(nr-1);
+    // cloud (+) near top, ground (−) near sea; permittivity noise biases the channel
+    pot[idx(iy,ix,iz)]=(1-t)*2.4 - t*2.8 - (gx*gx+gz*gz)*1.1 + (Math.random()-0.5)*0.85;
+  }
+  let ix=Math.floor(nr/2), iz=Math.floor(nr/2);
+  const pts=[new THREE.Vector3(x,topY,z)];
+  for(let iy=1;iy<ny;iy++){
+    let best=ix, bestz=iz, bestV=-1e9;
+    for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++){
+      const nx=Math.max(0,Math.min(nr-1,ix+dx)), nz=Math.max(0,Math.min(nr-1,iz+dz));
+      const v=pot[idx(iy,nx,nz)] - 0.08*(dx*dx+dz*dz);
+      if(v>bestV){ bestV=v; best=nx; bestz=nz; }
+    }
+    ix=best; iz=bestz;
+    const t=iy/(ny-1);
+    const ox=((ix-(nr-1)/2)/(nr-1))*R, oz=((iz-(nr-1)/2)/(nr-1))*R;
+    pts.push(new THREE.Vector3(x+ox, topY+(wh-topY)*t, z+oz));
+  }
+  // one secondary leader for a living storm look (still pooled, short life)
+  if(pts.length>8 && Math.random()<0.7){
+    const forkAt=4+Math.floor(Math.random()*(pts.length-8));
+    const base=pts[forkAt], tip=pts[Math.min(pts.length-1,forkAt+5)];
+    const mid=base.clone().lerp(tip,0.55).add(new THREE.Vector3((Math.random()-0.5)*18, (Math.random()-0.5)*10, (Math.random()-0.5)*18));
+    return { main:pts, fork:[base.clone(), mid, tip.clone().add(new THREE.Vector3((Math.random()-0.5)*8,-6,(Math.random()-0.5)*8))] };
+  }
+  return { main:pts, fork:null };
+}
+/* Ambient sky lightning — pooled polylines (no TubeGeometry alloc hitch). */
+function fireSkyBolt(){
+  const anchor=S.started&&D.group ? D.group.position : REST;
+  const yaw=S.started ? D.yaw : Math.atan2(camera.position.x-anchor.x, camera.position.z-anchor.z);
+  const side=(Math.random()<0.5?-1:1);
+  const dist=90+Math.random()*160;
+  const ax=anchor.x+Math.cos(yaw)*dist*0.35+Math.sin(yaw)*side*(40+Math.random()*90);
+  const az=anchor.z+Math.sin(yaw)*dist*0.35-Math.cos(yaw)*side*(40+Math.random()*90);
+  const y0=220+Math.random()*130, y1=130+Math.random()*90;
+  const span=80+Math.random()*120;
+  const x1=ax+Math.sin(yaw+side)*span, z1=az+Math.cos(yaw+side)*span;
+  const e=FX.sky[FX.skyI++%FX.sky.length];
+  const n=e.n, pos=e.geo.attributes.position.array;
+  for(let i=0;i<n;i++){
+    const t=i/(n-1);
+    const jx=(i&&i<n-1?(Math.random()-0.5)*32:0), jz=(i&&i<n-1?(Math.random()-0.5)*32:0);
+    const jy=(i&&i<n-1?(Math.random()-0.5)*22:0);
+    let y=y0+(y1-y0)*t+jy;
+    if(i===n-1 && Math.random()<0.6) y-=50+Math.random()*80;
+    pos[i*3]=ax+(x1-ax)*t+jx; pos[i*3+1]=y; pos[i*3+2]=az+(z1-az)*t+jz;
+  }
+  e.geo.attributes.position.needsUpdate=true;
+  e.life=0.75; e.dur=0.75; e.line.visible=true; e.line.material.opacity=1;
+  e.line.material.color.setHex(0xffffff);
+  // second pass = slightly offset twin for thickness (no tubes)
+  if(FX.gfx!=='low'){
+    const e2=FX.sky[FX.skyI++%FX.sky.length];
+    const p2=e2.geo.attributes.position.array;
+    for(let i=0;i<n;i++){
+      p2[i*3]=pos[i*3]+(Math.random()-0.5)*4;
+      p2[i*3+1]=pos[i*3+1]+(Math.random()-0.5)*3;
+      p2[i*3+2]=pos[i*3+2]+(Math.random()-0.5)*4;
+    }
+    e2.geo.attributes.position.needsUpdate=true;
+    e2.life=0.55; e2.dur=0.55; e2.line.visible=true; e2.line.material.opacity=0.85;
+    e2.line.material.color.setHex(0xb8e8ff);
+  }
+  const mi=Math.floor(n/2);
+  FX.skyLt.position.set(pos[mi*3], pos[mi*3+1], pos[mi*3+2]);
+  FX.skyLt.intensity=FX.gfx==='low'?280:520;
+  S.flash=Math.max(S.flash, 0.55+Math.random()*0.35);
+  moon.intensity=Math.max(moon.intensity, 2.2);
+  if(typeof rimP!=='undefined') rimP.intensity=Math.max(rimP.intensity, 1.6);
+}
+function fireStrike(){
+  const x=S.strikeX, z=S.strikeZ, topY=380, wh=waveH(x,z,S.t);
+  const built=lightningMode==='jag'
+    ? { main:buildJagStrikePoints(x,z,topY,wh), fork:null }
+    : buildPhysStrikePoints(x,z,topY,wh);
+  const paint=(pts, opacity, life)=>{
+    const e=FX.sky[FX.skyI++%FX.sky.length];
+    const n=Math.min(e.n, pts.length);
+    const pos=e.geo.attributes.position.array;
+    for(let i=0;i<e.n;i++){
+      const src=pts[Math.min(pts.length-1, Math.floor(i*(pts.length-1)/(e.n-1)))];
+      pos[i*3]=src.x; pos[i*3+1]=src.y; pos[i*3+2]=src.z;
+    }
+    e.geo.attributes.position.needsUpdate=true;
+    e.life=life; e.dur=life; e.line.visible=true; e.line.material.opacity=opacity;
+    e.line.material.color.setHex(0xffffff);
+  };
+  paint(built.main, 1, 1.1);
+  if(FX.gfx!=='low') paint(built.main, 0.7, 0.85); // twin for thickness
+  if(built.fork) paint(built.fork, 0.85, 0.9);
+  FX.skyLt.position.set(x,(topY+wh)*0.45,z); FX.skyLt.intensity=480;
   bigExplosion(new THREE.Vector3(x,wh+2,z),0xbfe0ff);
-  S.flash=Math.max(S.flash,0.75); AU.play('thunder',0.7);
-  // did the dragon fly into it?
+  S.flash=Math.max(S.flash,1); AU.play('thunder',0.85);
+  moon.intensity=Math.max(moon.intensity, 2.8);
+  popup('STORM BOLT');
   const p=D.group.position;
-  if(Math.hypot(p.x-x,p.z-z)<42 && !S.done && S.grace<=0){
+  if(Math.hypot(p.x-x,p.z-z)<48 && !S.done && S.grace<=0){
     S.charges=3; S.superCharge=1; S.detection=Math.min(1,S.detection+0.22);
     S.shake=Math.max(S.shake,0.9); S.flash=Math.max(S.flash,1);
     if(D.glow) D.glow.intensity=200;
@@ -1971,18 +2265,23 @@ function fireStrike(){
   }
 }
 function updateStorm(dt){
-  if(!S.started||S.done){ teleMark.visible=false; return; }
-  S.strikeNext=(S.strikeNext??12)-dt;
+  if(!S.started||S.done){ teleMark.visible=false; teleCore.visible=false; return; }
+  S.strikeNext=(S.strikeNext??3.5)-dt;   // first strike arrives fast so you can see it
   if(S.strikeNext<=0 && S.strikeT<=0){
-    S.strikeNext=13+Math.random()*12;
-    const p=D.group.position, a=Math.random()*6.283, r=55+Math.random()*130;
-    S.strikeX=p.x+Math.cos(a)*r; S.strikeZ=p.z+Math.sin(a)*r; S.strikeT=1.4;
+    S.strikeNext=7+Math.random()*6;     // then every ~7–13s
+    const p=D.group.position, a=Math.random()*6.283, r=35+Math.random()*70; // closer = on camera
+    S.strikeX=p.x+Math.cos(a)*r; S.strikeZ=p.z+Math.sin(a)*r; S.strikeT=2.0;
+    popup('STRIKE INCOMING — fly the cyan column');
   }
   if(S.strikeT>0){
     S.strikeT-=dt;
-    teleMark.visible=true; teleMark.position.set(S.strikeX,160,S.strikeZ);
-    teleMark.material.opacity=0.10+0.28*Math.abs(Math.sin(S.t*22))*(1-S.strikeT/1.4);
-    if(S.strikeT<=0){ teleMark.visible=false; fireStrike(); }
+    const midY=(380+waveH(S.strikeX,S.strikeZ,S.t))*0.5;
+    teleMark.visible=true; teleCore.visible=true;
+    teleMark.position.set(S.strikeX,midY,S.strikeZ);
+    teleCore.position.copy(teleMark.position);
+    const pulse=0.22+0.45*Math.abs(Math.sin(S.t*18));
+    teleMark.material.opacity=pulse; teleCore.material.opacity=0.35+pulse*0.5;
+    if(S.strikeT<=0){ teleMark.visible=false; teleCore.visible=false; fireStrike(); }
   }
 }
 
@@ -2072,9 +2371,7 @@ function driveTimeOfDay(dt){
   for(const r of rings)if(!r.userData.hit)r.material.emissiveIntensity=3.15+d*1.75;
   landmarkPath.setNightfall(d,S.t);
   horizonDirector.masses.material.emissiveIntensity=.08+.16*d;
-  // music: warm menu bed at dusk -> dark tension at night
-  if(AU.on&&!S.muted){ if(AU.el.menu){ AU.el.menu.volume=(1-d)*0.34; if(AU.el.menu.paused&&d<0.95)AU.el.menu.play().catch(()=>{});}
-    if(AU.el.music) AU.el.music.volume=0.16+d*0.34; }
+  // music beds are owned by driveThreatTone (alert / hub / night), not TOD alone
   // full night without reaching the Tempest Gate: every keeper wakes
   if(d>=1 && !S.keepersWoke && S.started && !S.done){ S.keepersWoke=true;
     if(S.score<rings.length){ AU.play('detected',0.8); showOver('NIGHTFALL','THE GATE IS LOST','bad',
@@ -2110,7 +2407,7 @@ function tick(dt){
   if((S.shopOpen||S.bookOpen)&&S.started&&!S.done) return;
   S.t+=dt; seaUniforms.uT.value=S.t; sky.material.uniforms.uT.value=S.t;
   if(S.started&&!S.done) S.flightT+=dt;
-  updateTempestGate(dt); driveTimeOfDay(dt); driveRogue(dt);
+  updateTempestGate(dt); driveTimeOfDay(dt); driveThreatTone(dt); driveRogue(dt);
   landmarkPath.update(D.group.position);
   // escalation: more keepers wake as night falls (extend beam reach + speed)
   for(let i=0;i<searchlights.length;i++){ const sl=searchlights[i], d=routeDifficulty();
@@ -2133,7 +2430,15 @@ function tick(dt){
     const off=Math.abs(patrol.rotation.y-PATROL_AIM);
     if(off<0.045 && S.t>1.5 && S.t-(S.lastSpot||0)>4){ S.lastSpot=S.t; spotMoment(); }
     if(S.t>7 && !menuEl.classList.contains('live')) spotMoment();  // safety reveal
-    updateRain();
+    // Hub / resting cinematic still gets sky lightning (weather is visible before you launch).
+    if(S.t>(S.nextThunder||2)){
+      S.nextThunder=S.t+3.5+Math.random()*5;
+      fireSkyBolt();
+      S.flash=Math.max(S.flash,0.85);
+      setTimeout(()=>AU.play('thunder',0.45), 160+Math.random()*280);
+    }
+    updateShocks(dt); updateFxPools(dt); updateRain();
+    if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
     return;
   }
   if(S.done){ if(D.mixer) D.mixer.update(dt); return; }
@@ -2198,33 +2503,34 @@ function tick(dt){
   S.charges=Math.min(3,S.charges+dt/(4.6-upLv('gland')*0.5));
   if(S.chargeT>=0){ S.chargeT+=dt; const cp=Math.min(1,S.chargeT/chargeSeconds());
     if(D.glow) D.glow.intensity=20+cp*70+Math.sin(S.t*40)*8;
-    // NOTE: the orb is parented to the head BONE which inherits the model's 9x scale —
-    // keep local scale tiny or it engulfs the camera and whites out the screen.
     if(D.mouth){ D.mouth.scale.setScalar(0.035+cp*0.11+Math.sin(S.t*45)*0.010*cp);
       D.mouth.material.opacity=0.4+0.35*cp; D.mouthLt.intensity=14+cp*70; D.mouthLt.distance=24+cp*26;
       D.mouth.material.color.setHSL(0.75-cp*0.08, 1, 0.6+cp*0.3); }
-    // readable charge cues AT the mouth: a converging ring + crackling arcs (no screen-wash)
+    updateChargeHum(cp, true);
+    // pooled crackle — no new BufferGeometry while holding X
     S.crackT=(S.crackT||0)-dt;
-    if(D.headNode && S.crackT<=0){ S.crackT=0.07-cp*0.04;
-      const mp=new THREE.Vector3(); (D.mouth||D.headNode).getWorldPosition(mp);
+    const crackEvery = FX.gfx==='low' ? 0.14 : (FX.gfx==='med' ? 0.09 : 0.07);
+    if(D.headNode && S.crackT<=0){ S.crackT=crackEvery-cp*0.03;
+      (D.mouth||D.headNode).getWorldPosition(FX._mp);
       const rad=3.2+cp*2.2;
-      for(let i=0;i<2;i++){ const a1=Math.random()*6.283, a2=a1+(Math.random()-0.5)*1.6;
-        const p1=mp.clone().add(new THREE.Vector3(Math.cos(a1)*rad,(Math.random()-0.5)*rad,Math.sin(a1)*rad));
-        const p2=mp.clone().add(new THREE.Vector3(Math.cos(a2)*rad*0.35,(Math.random()-0.5)*rad*0.35,Math.sin(a2)*rad*0.35));
-        const cg=new THREE.BufferGeometry().setFromPoints([p1,p2]);
-        const cl=new THREE.Line(cg,new THREE.LineBasicMaterial({color:0xd9b6ff,transparent:true,opacity:0.9,
-          blending:THREE.AdditiveBlending,depthWrite:false}));
-        scene.add(cl); shocks.push({m:cl,life:0.1,dur:0.1,noscale:true}); }
-      S.ringT=(S.ringT||0)-0.07;
-      if(cp>0.4 && S.ringT<=0){ S.ringT=0.42;                       // one clean pulse, not an onion
-        const ring=new THREE.Mesh(new THREE.TorusGeometry(rad*1.5,0.12,6,22),
-          new THREE.MeshBasicMaterial({color:0xc79bff,transparent:true,opacity:0.55,blending:THREE.AdditiveBlending,depthWrite:false}));
-        ring.position.copy(mp); ring.quaternion.copy(camera.quaternion); scene.add(ring);
-        shocks.push({m:ring,life:0.34,dur:0.34,shrink:true}); }
+      const cracks = FX.gfx==='low' ? 1 : 2;
+      for(let i=0;i<cracks;i++){
+        const a1=Math.random()*6.283, a2=a1+(Math.random()-0.5)*1.6;
+        FX._p1.set(Math.cos(a1)*rad,(Math.random()-0.5)*rad,Math.sin(a1)*rad).add(FX._mp);
+        FX._p2.set(Math.cos(a2)*rad*0.35,(Math.random()-0.5)*rad*0.35,Math.sin(a2)*rad*0.35).add(FX._mp);
+        const e=FX.crack[FX.crackI++%FX.crack.length];
+        setLineSeg(e, FX._p1, FX._p2, 0.11, 0.11);
+      }
+      S.ringT=(S.ringT||0)-crackEvery;
+      if(cp>0.4 && S.ringT<=0){ S.ringT=0.42; pulseChargeRing(FX._mp, rad); }
     }
     S.shake=Math.max(S.shake,Math.min(0.18,S.chargeT*0.14));
-    if(cp>=1 && !S._chargeReady){ S._chargeReady=true; AU.play('flap',0.3); }        // "fully charged" tick
-  } else if(D.mouth && D.mouth.scale.x>0.01){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; S._chargeReady=false; }
+    if(cp>=1 && !S._chargeReady){ S._chargeReady=true; AU.play('ring',0.35); }
+  } else {
+    updateChargeHum(0,false);
+    if(D.mouth && D.mouth.scale.x>0.01){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; S._chargeReady=false; }
+  }
+  updateFxPools(dt);
   updateBolts(dt); updateShocks(dt); updateDebris(dt); updateBursts(dt); updateTowers(dt); updateTowerCombat(dt);
   updateEcho(dt); driveStormbreakDive(dt); driveSpiral(dt); updateStorm(dt); updateFlock(dt);
   S.hurt=Math.max(0,S.hurt-dt*2); S.hp=Math.min(S.hpMax,S.hp+dt*1.5);   // slow regen between hits
@@ -2339,8 +2645,16 @@ function tick(dt){
   if(litNow>0.02){ S.detection += litNow*(.24+danger*.42)*dt*flockHide; }
   else { S.detection -= (.34-danger*.08)*dt; }
   S.detection=THREE.MathUtils.clamp(S.detection,0,1);
-  if(S.detection>=.72 && S.alertStage<2){ S.alertStage=2; AU.play('detected',.65); popup('LOCKED · BREAK LINE OF SIGHT'); }
-  else if(S.detection>=.38 && S.alertStage<1){ S.alertStage=1; AU.play('detected',.4); popup('HUNTED'); }
+  if(S.detection>=.72 && S.alertStage<2){
+    S.alertStage=2; TONE.snap=0.7; TONE.threat=Math.max(TONE.threat,0.92);
+    AU.play('detected',.65); AU.fadeTo('music',0.62,180); AU.fadeTo('menu',0,220);
+    popup('LOCKED · BREAK LINE OF SIGHT');
+  }
+  else if(S.detection>=.38 && S.alertStage<1){
+    S.alertStage=1; TONE.snap=0.55; TONE.threat=Math.max(TONE.threat,0.55);
+    AU.play('detected',.4); AU.fadeTo('music',0.42,240); AU.fadeTo('menu',0.05,300);
+    popup('HUNTED');
+  }
   else if(S.detection<.18) S.alertStage=0;
   if(S.detection>=1 && !S.practiceMode) detected();
 
@@ -2406,8 +2720,13 @@ function tick(dt){
     }
   }
 
-  /* ---- lightning + thunder ---- */
-  if(S.t>S.nextThunder){ S.nextThunder=S.t+8+Math.random()*14; S.flash=1; setTimeout(()=>AU.play('thunder',0.55), 250+Math.random()*500); }
+  /* ---- lightning + thunder (sky bolts — the weather you expect to see) ---- */
+  if(S.t>S.nextThunder){
+    S.nextThunder=S.t+4+Math.random()*7;
+    fireSkyBolt();
+    S.flash=1;
+    setTimeout(()=>AU.play('thunder',0.55), 180+Math.random()*320);
+  }
   if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
 
   updateRain(); updateWindLines(); updateShores(); updateSeaLife(dt);
@@ -2492,7 +2811,9 @@ function hud(litNow){
 /* ---- endings ---- */
 function showOver(kick,title,cls,sub){
   S.done=true; input.flap=false;
-  AU.fadeTo('music',0,600); AU.fadeTo('amb',0.15,600);
+  TONE.snap=0.8; TONE.mode = cls==='good' ? 'escape' : 'spotted';
+  if(cls==='good'){ AU.fadeTo('music',0.28,700); AU.fadeTo('menu',0.22,900); AU.fadeTo('amb',0.2,600); }
+  else { AU.fadeTo('menu',0,200); AU.fadeTo('music',0.7,160); AU.fadeTo('amb',0.08,400); }
   $('overKick').textContent=kick; const h=$('overTitle'); h.textContent=title; h.className=cls;
   $('overSub').innerHTML=sub;
   $('overBeacons').textContent=S.score+' / '+rings.length;
@@ -2505,14 +2826,18 @@ function returnToHub(reason=''){
   menuEl.classList.remove('hide'); menuEl.classList.add('live');
   $('lobbyHub').classList.add('on'); $('lobbyHub').classList.remove('hide');
   S.started=false; S.done=false; S.launching=false; input.flap=false;
+  S.alertStage=0; S.detection=0; TONE.mode='hub'; TONE.threat=0; TONE.snap=0.4;
+  AU.fadeTo('music',0,500); AU.fadeTo('menu',0.36,700); AU.fadeTo('amb',0.28,600);
   lobby.returnToHub(reason); stageRest();
 }
-function detected(){ if(S.done)return; AU.play('detected',0.9); showOver('DETECTED','SPOTTED','bad',
+function detected(){ if(S.done)return; S.cause='DETECTED'; TONE.snap=1; TONE.threat=1;
+  AU.play('detected',0.9); showOver('DETECTED','SPOTTED','bad',
   'The searchlight found you. The keepers loose their bolts into the dark.'); }
 function crash(reason){ if(S.done)return; S.cause=reason; AU.play('crash',0.9); S.shake=1; showOver('WRECKED',reason,'bad',
   'Even a Galevein cannot fly through stone.'); }
 function escaped(){ if(S.done)return;
-  S.done=true; S.finishing=true; const token=++S.finishToken; GATE.open=.08;
+  S.done=true; S.finishing=true; S.cause='ESCAPED'; const token=++S.finishToken; GATE.open=.08;
+  TONE.snap=0.5; TONE.threat=0.4;
   AU.play('ring',0.9); AU.play('thunder',.35); S.flash=1; storyPop('The Gate hears Galevein. The storm folds open.',2.2);
   setTimeout(()=>{ if(S.finishing&&S.finishToken===token) showOver('ESCAPED','TEMPEST GATE','good',
     'All twelve beacons. The aurora opens, and the Sable Reach falls behind you.'); },1800);
@@ -2548,7 +2873,7 @@ function startAudio(){
 function setMuted(muted){
   S.muted=!!muted; AU.muted=S.muted;
   const b=$('muteBtn'); b.textContent=S.muted?'M · SOUND OFF':'M · SOUND ON'; b.setAttribute('aria-pressed',String(S.muted));
-  if(S.muted){ for(const a of Object.values(AU.el)) a.pause(); if(WIND.gain) WIND.gain.gain.value=0; }
+  if(S.muted){ for(const a of Object.values(AU.el)) a.pause(); if(WIND.gain) WIND.gain.gain.value=0; updateChargeHum(0,false); }
   else if(AU.on){ AU.loop('amb'); AU.loop('music'); updateWind(); }
 }
 function begin(opts={}){
@@ -2557,6 +2882,7 @@ function begin(opts={}){
   S.practiceMode=!!opts.practice||S.lobbyMode==='practice';
   $('lobbyHub').classList.remove('on'); $('lobbyHub').classList.add('hide');
   startAudio(); triggerRipple();
+  TONE.mode='flight'; TONE.threat=0.15; TONE.snap=0.35; S.alertStage=0;
   $('shutter').classList.add('closed');
   setTimeout(()=>{
     S.started=true; S.flightT=0; S.grace=3; TOD.day=0.0; S.keepersWoke=false; S.hp=S.hpMax; S.hurt=0;
@@ -2657,6 +2983,7 @@ $('muteBtn').addEventListener('click',()=>setMuted(!S.muted));
 /* ---- graphics presets: LOW / MED / HIGH (persisted) ---- */
 function applyGfx(level){
   localStorage.setItem('galevein_gfx',level);
+  FX.gfx=level;
   document.querySelectorAll('.gfxrow b').forEach(b=>b.classList.toggle('on',b.dataset.g===level));
   const hi=level==='high', med=level==='med';
   renderer.setPixelRatio(hi?Math.min(devicePixelRatio,2):med?1.5:1);
@@ -2672,6 +2999,8 @@ function applyGfx(level){
     moon.target=D.group; }
   scene.traverse(o=>{ if(o.isMesh&&o.material&&o.material.isMeshStandardMaterial){ o.receiveShadow=hi; } });
   if(D.model) D.model.traverse(o=>{ if(o.isMesh) o.castShadow=hi; });
+  // punchier night grade on MED/HIGH without extra draw calls
+  renderer.toneMappingExposure = hi ? 1.55 : (med ? 1.42 : 1.28);
 }
 document.querySelectorAll('.gfxrow b').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); applyGfx(b.dataset.g); }));
 applyGfx(localStorage.getItem('galevein_gfx')||'med');
