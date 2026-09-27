@@ -727,6 +727,13 @@
   #missionBeat{ font-family:var(--body); font-style:italic; font-size:14px; color:var(--bone-dim); margin-top:5px; }
   #missionBeat:not(.on){ display:none; }
   #objTag .objmeta{ display:none !important; }
+  /* raid target brackets */
+  #raidMarks .raidmark{ position:absolute; transform:translate(-50%,-50%); pointer-events:none; display:none; }
+  #raidMarks .raidmark i{ position:absolute; inset:0; border:2px solid rgba(255,90,60,.9);
+    clip-path:polygon(0 0,30% 0,30% 3px,3px 3px,3px 30%,0 30%,0 70%,3px 70%,3px calc(100% - 3px),30% calc(100% - 3px),30% 100%,0 100%,
+      0 0,100% 0,100% 30%,calc(100% - 3px) 30%,calc(100% - 3px) 3px,70% 3px,70% 0,100% 0,100% 100%,70% 100%,70% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 70%,100% 70%,100% 100%,100% 0);
+    filter:drop-shadow(0 0 6px rgba(255,80,40,.7)); }
+  #raidMarks .raidmark b{ position:absolute; left:50%; top:100%; transform:translateX(-50%); margin-top:4px; font-size:10px; letter-spacing:2px; color:#ff7a50; white-space:nowrap; }
   /* hub open: the shield steps aside so the three doors own the centre */
   #menu .card:has(#lobbyHub.on) .playwrap{ opacity:0 !important; pointer-events:none !important; transform:scale(.8) !important; }
   #lobbyHub{ flex-direction:column; gap:20px; }
@@ -868,6 +875,7 @@
   <div id="ach"><div class="ach-in"><div class="ach-k">SKILL LEARNED</div>
     <div class="ach-n" id="achName">—</div><div class="ach-d" id="achDesc">—</div>
     <div class="ach-key" id="achKey">—</div></div></div>
+  <div id="raidMarks"></div>
   <div id="chargeHud"><div id="chargeRing"><i></i></div><div id="chargeTxt">SPIT</div></div>
   <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> stormbreak dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> codex · <b>B</b> forge · <b>M</b> mute</div>
 </div>
@@ -1039,7 +1047,8 @@ const AU = {
     const st=()=>{ const k=Math.min(1,(performance.now()-t0)/ms); a.volume=f+(to-f)*k; if(k<1)requestAnimationFrame(st); else if(to<=0)a.pause(); };
     if(to>0&&a.paused)a.play().catch(()=>{}); st(); },
 };
-AU.load('menu','licensed-assets/audio/music_menu.mp3',true,0.0);
+AU.load('menu','licensed-assets/audio/theme_what_the_sky_was_for.mp3',true,0.0);   // the user's own Suno track
+AU.el.menu.preload='metadata';                                                          // 3.6 MB: stream it, don't block boot
 AU.load('music','synthesized-audio/music_tension.mp3',true,0.0);
 AU.load('amb','synthesized-audio/amb_sea.mp3',true,0.0);
 AU.load('flap','synthesized-audio/flap.mp3',false,0.5);
@@ -1424,9 +1433,9 @@ const homeIsle=(()=>{
   const trunk=new THREE.CylinderGeometry(.45,.6,4,5); trunk.translate(0,2,0);
   const geo=BufferGeometryUtils.mergeGeometries([cone,trunk],false);
   const mat=new THREE.MeshStandardMaterial({color:0xffffff,roughness:.95,flatShading:true});
-  const N=520, inst=new THREE.InstancedMesh(geo,mat,N); const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
+  const N=950, inst=new THREE.InstancedMesh(geo,mat,N); const m4=new THREE.Matrix4(), q=new THREE.Quaternion(), c=new THREE.Color();
   let k=0, seed=7; const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
-  for(let tries=0;tries<9000&&k<N;tries++){
+  for(let tries=0;tries<16000&&k<N;tries++){
     const x=(rnd()*2-1)*MAP.HOME.r, z=(rnd()*2-1)*MAP.HOME.r, h=MAP.homeHeight(x,z);
     if(h<6||h>70) continue;
     const sl=Math.abs(MAP.homeHeight(x+3,z)-h)+Math.abs(MAP.homeHeight(x,z+3)-h); if(sl>3.6) continue;
@@ -1438,6 +1447,20 @@ const homeIsle=(()=>{
     c.setHSL(.30+rnd()*.06,.28+rnd()*.12,.12+rnd()*.07); inst.setColorAt(k,c); k++; }
   inst.count=k; inst.instanceMatrix.needsUpdate=true; if(inst.instanceColor) inst.instanceColor.needsUpdate=true;
   scene.add(inst); }
+// THE OLD TREE — a single ancient giant on the west ridge; you can see it from the den and the village
+{ const tx=-120, tz=-50, ty=MAP.homeHeight(tx,tz)-2;
+  const bark=new THREE.MeshStandardMaterial({color:0x3a2c20,roughness:.95,flatShading:true});
+  const leaf=new THREE.MeshStandardMaterial({color:0x22331f,roughness:.95,flatShading:true});
+  const tree=new THREE.Group(); tree.position.set(tx,ty,tz);
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(4,9,74,9,4),bark); trunk.position.y=37; tree.add(trunk);
+  for(let i=0;i<6;i++){ const a=i/6*6.283+.4, br=new THREE.Mesh(new THREE.CylinderGeometry(1.2,2.6,30,6),bark);
+    br.position.set(Math.cos(a)*9,58+i%3*6,Math.sin(a)*9); br.rotation.set(Math.sin(a)*.9,0,-Math.cos(a)*.9); tree.add(br);
+    const cl=new THREE.Mesh(new THREE.IcosahedronGeometry(15+i%3*4,1),leaf);
+    cl.position.set(Math.cos(a)*22,74+(i%2)*8,Math.sin(a)*22); cl.scale.y=.7; tree.add(cl); }
+  const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(24,1),leaf); crown.position.y=90; crown.scale.y=.75; tree.add(crown);
+  for(let i=0;i<5;i++){ const a=i/5*6.283, root=new THREE.Mesh(new THREE.ConeGeometry(3.2,16,5),bark);
+    root.position.set(Math.cos(a)*9,3,Math.sin(a)*9); root.rotation.set(Math.sin(a)*1.1,0,-Math.cos(a)*1.1); tree.add(root); }
+  scene.add(tree); colliders.push({x:tx,z:tz,r:11,top:ty+70}); colliders.push({x:tx,z:tz,r:30,top:ty+104,canopy:true}); }
 // the keepers' stacks, east of home
 for(const [x,z,r,h] of MAP.KEEPERS.rocks) rock(x,z,r,h);
 
@@ -1713,7 +1736,7 @@ brazier(REST.x-10,REST.y-1.5,REST.z+7,true);
 }
 
 /* ================= HEARTHHOLM: the village you are flying for — it grows with every chapter ================= */
-const VILLAGE={ tier:-1, groups:[] };
+const VILLAGE={ tier:-1, groups:[], huts:[] };
 { const V=MAP.VILLAGE, hy=(x,z)=>Math.max(V.floor,MAP.homeHeight(x,z));
   const wood=new THREE.MeshStandardMaterial({color:0x4a3322,roughness:.9,flatShading:true});
   const thatch=new THREE.MeshStandardMaterial({color:0x5b4a2c,roughness:1,flatShading:true});
@@ -1726,7 +1749,7 @@ const VILLAGE={ tier:-1, groups:[] };
     const roof=new THREE.Mesh(new THREE.CylinderGeometry(.4,6.2,13.5,3,1),thatch);
     roof.rotation.z=Math.PI/2; roof.scale.set(1,1,.8); roof.position.y=7.2; h.add(roof);
     const door=new THREE.Mesh(new THREE.PlaneGeometry(2,3.2),glow); door.position.set(0,1.7,4.02); h.add(door);   // warm doorway
-    g.add(h); colliders.push({x,z,r:7*sc,top:y+10*sc}); return h;
+    g.add(h); VILLAGE.huts.push([x,y+6*sc,z]); colliders.push({x,z,r:7*sc,top:y+10*sc}); return h;
   }
   // tier 0 — the village you start with: a square, a fire, a jetty, two boats
   const t0=tier();
@@ -1885,6 +1908,7 @@ const loader=new GLTFLoader(); loader.setDRACOLoader(draco);
 // uniform writes per frame instead of a loop over sixteen cloned materials.
 let structure=null;
 function nextObjectiveTarget(){
+  if(RAID.on) return raidTarget();
   const nb=S.chapter===0
     ? tutRings.find(r=>!r.userData.hit)
     : rings.find(r=>!r.userData.hit);
@@ -2322,6 +2346,7 @@ function shoot(power=0.35){
   updateChargeHum(0,false);
   const head=FX._mp; (D.mouth||D.headNode||D.group).getWorldPosition(head);
   const dir=FX._dir.set(-Math.sin(D.yaw),Math.sin(D.pitch)*0.95,-Math.cos(D.yaw)).normalize();
+  raidAimAssist(head,dir);
   const R=0.9+power*2.2;
   const m=new THREE.Mesh(FX.ballGeo, FX.ballMat.clone());
   m.scale.setScalar(R);
@@ -2462,8 +2487,8 @@ function updateBolts(dt){
     if(b.slot&&b.slot.owner===b){ b.slot.lt.intensity*=0.95; b.slot.lt.position.copy(b.m.position); }
     b.m.material.opacity=Math.min(1,b.life*2); b.line.material.opacity=0.5+0.5*Math.random();
     fillBolt(b);
-    let hit=false;
-    for(const sl of searchlights){ if(sl.destroyed) continue;
+    let hit=raidBoltHit(b);
+    if(!hit) for(const sl of searchlights){ if(sl.destroyed) continue;
       if(b.m.position.distanceTo(sl.lampPos)< (18 + (b.power||0.3)*26)){   // charged = wider kill radius
         const dmg = b.power>0.55 ? 3 : 1.4;                         // charged shots hurt far more
         sl.hp-=dmg; sl.hbT=3.2; sl.disabled=Math.max(sl.disabled,2.2); sl.lit=0;
@@ -2969,6 +2994,140 @@ function updateStorm(dt){
   }
 }
 
+/* ================= THE RAID ON HEARTHHOLM — keeper riders attack the village; dogfight them =================
+   Triggered in Story mode when Chapter II's fourth beacon is taken. The beacon road locks until the sky is
+   clear. Raiders circle the village and dive-bomb its huts; come within range and they break off to fight
+   you — limited turn rate, lead-aimed fire — so a hard turn or a spiral shakes them. */
+const RAID={ on:false, riders:[], wave:0, hearth:100, fires:0, marks:[] };
+const raiderMat=new THREE.MeshStandardMaterial({color:0x2a1410,roughness:.85,emissive:0x3a0a06,emissiveIntensity:.6,flatShading:true});
+const raiderWing=new THREE.MeshStandardMaterial({color:0x3a1a14,roughness:.9,side:THREE.DoubleSide,flatShading:true});
+const raiderEye=new THREE.MeshBasicMaterial({color:0xff4020});
+function makeRaider(){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.ConeGeometry(1.5,8,6),raiderMat); body.rotation.x=-Math.PI/2; g.add(body);   // nose toward -z
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(.6,7,5),raiderMat); tail.rotation.x=Math.PI/2; tail.position.z=6.5; g.add(tail);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(1.3,8,6),raiderMat); head.position.set(0,.4,-4.6); g.add(head);
+  for(const ex of [-.55,.55]){ const e=new THREE.Mesh(new THREE.SphereGeometry(.28,6,4),raiderEye); e.position.set(ex,.8,-5.5); g.add(e); }
+  const rider=new THREE.Mesh(new THREE.BoxGeometry(1,1.8,1),new THREE.MeshStandardMaterial({color:0x6b5a44,roughness:.9})); rider.position.set(0,1.9,-.6); g.add(rider);
+  const wings=[]; for(const s of [1,-1]){ const pv=new THREE.Group(); pv.position.set(s*1.2,.3,-.5);
+    const w=new THREE.Mesh(new THREE.PlaneGeometry(9,4.2),raiderWing); w.rotation.x=-Math.PI/2; w.position.x=s*4.5; pv.add(w); g.add(pv); wings.push({pv,s}); }
+  g.scale.setScalar(1.25); scene.add(g); return {g,wings};
+}
+function spawnRaider(i,n){
+  const {g,wings}=makeRaider(), a=-0.9+i*(0.5), R=520;
+  const x=MAP.VILLAGE.x+Math.cos(a)*R, z=MAP.VILLAGE.z-Math.sin(a)*R;
+  g.position.set(x,70+i*6,z);
+  const r={g,wings,hp:3,yaw:Math.atan2(-(MAP.VILLAGE.x-x),-(MAP.VILLAGE.z-z)),speed:34,fireCd:2+Math.random()*2,
+    diveCd:4+Math.random()*4,orbit:Math.random()*6.28,falling:0,vy:0,dead:false,ph:Math.random()*6};
+  RAID.riders.push(r);
+  const el=document.createElement('div'); el.className='raidmark'; el.innerHTML='<i></i><b></b>'; $('raidMarks').appendChild(el); r.mark=el;
+}
+function startRaid(){
+  if(RAID.on||S.raidDone) return;
+  RAID.on=true; RAID.wave=1; RAID.hearth=100; S.raid=true;
+  for(let i=0;i<3;i++) spawnRaider(i,3);
+  popup('HEARTHHOLM IS UNDER ATTACK'); AU.play('detected',0.8); setTimeout(()=>AU.play('thunder',0.6),250);
+  storyPop('Keeper riders — on dragons — over Hearthholm. They turned the beasts against us. Go home. Now.',6.5);
+  S.shake=Math.max(S.shake,0.5);
+}
+function endRaid(won){
+  RAID.on=false; S.raid=false; S.raidDone=won;
+  for(const r of RAID.riders){ scene.remove(r.g); r.mark?.remove(); } RAID.riders.length=0;
+  if(won){ S.scales=(S.scales||0)+10;
+    achievement('Hearthholm stands','The riders are in the sea. The village is still yours.','RAID WON · +10 SCALES','HOME');
+    storyPop('They will come back with more. Back to the road — the canyon waits.',5.5); }
+}
+function raidTarget(){
+  if(!RAID.on) return null;
+  const p=D.group.position; let best=null,bd=1e9;
+  for(const r of RAID.riders){ if(r.dead||r.falling) continue; const d=r.g.position.distanceTo(p); if(d<bd){bd=d;best=r;} }
+  return best?best.g.position:new THREE.Vector3(MAP.VILLAGE.x,40,MAP.VILLAGE.z);
+}
+function raidAimAssist(from,dir){           // bend a plasma shot toward a raider inside a 22° cone
+  if(!RAID.on) return;
+  let best=null,bc=Math.cos(0.38);
+  for(const r of RAID.riders){ if(r.dead||r.falling) continue;
+    const to=r.g.position.clone().sub(from); const d=to.length(); if(d>320) continue;
+    const c=to.normalize().dot(dir); if(c>bc){ bc=c; best=r; } }
+  if(best){ const lead=best.g.position.clone().add(new THREE.Vector3(-Math.sin(best.yaw),0,-Math.cos(best.yaw)).multiplyScalar(best.speed*0.18));
+    dir.copy(lead.sub(from).normalize()); }
+}
+function raidBoltHit(b){
+  if(!RAID.on) return false;
+  for(const r of RAID.riders){ if(r.dead||r.falling) continue;
+    if(b.m.position.distanceTo(r.g.position)<9+(b.power||0.3)*6){
+      r.hp-= (b.power||0)>0.55 ? 3 : 1.4; smallBurst(r.g.position.x,r.g.position.y,r.g.position.z,0xffb060);
+      AU.play('crash',0.4); S.shake=Math.max(S.shake,0.25);
+      if(r.hp<=0){ r.falling=1; r.vy=-4; popup('RIDER DOWN'); S.scales=(S.scales||0)+4; bigExplosion(r.g.position.clone(),0xff7a3a); }
+      else popup('HIT · '+Math.ceil(r.hp)+' LEFT');
+      return true; } }
+  return false;
+}
+function raiderFire(r){
+  const from=r.g.position.clone().add(new THREE.Vector3(-Math.sin(r.yaw),0,-Math.cos(r.yaw)).multiplyScalar(6));
+  const p=D.group.position, lead=p.clone().addScaledVector(new THREE.Vector3(-Math.sin(D.yaw),0,-Math.cos(D.yaw)),D.speed*0.55);
+  const dir=lead.sub(from).normalize();
+  const m=new THREE.Mesh(new THREE.SphereGeometry(1.2,8,8),new THREE.MeshBasicMaterial({color:0xff6a2a,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
+  m.position.copy(from); scene.add(m); foeBolts.push({m,vel:dir.multiplyScalar(90),life:4});
+  AU.play('zap',0.25);
+}
+const _rv=new THREE.Vector3();
+function updateRaid(dt){
+  if(!RAID.on) return;
+  const p=D.group.position, V=MAP.VILLAGE;
+  let alive=0;
+  for(const r of RAID.riders){
+    const g=g2(r); if(r.dead) continue;
+    for(const w of r.wings) w.pv.rotation.z=w.s*Math.sin(S.t*7+r.ph)*0.55;
+    if(r.falling){ r.vy-=30*dt; g.position.y+=r.vy*dt; g.rotation.z+=dt*4; g.rotation.x+=dt*1.5;
+      g.position.x+=-Math.sin(r.yaw)*r.speed*0.6*dt; g.position.z+=-Math.cos(r.yaw)*r.speed*0.6*dt;
+      const wh=waveH(g.position.x,g.position.z,S.t), th=MAP.homeHeight(g.position.x,g.position.z);
+      if(g.position.y<Math.max(wh,th)+1){ r.dead=true; smallBurst(g.position.x,Math.max(wh,th)+2,g.position.z,0xdcecf6);
+        g.visible=false; r.mark.style.display='none'; }
+      continue; }
+    alive++;
+    const dP=g.position.distanceTo(p);
+    let tx,ty,tz;
+    if(dP<240 && S.started && !S.done){                       // dogfight: chase the player's lead point
+      tx=p.x-Math.sin(D.yaw)*D.speed*0.8; tz=p.z-Math.cos(D.yaw)*D.speed*0.8; ty=p.y+4; r.speed=THREE.MathUtils.lerp(r.speed,38,dt);
+    } else {                                                   // raid: circle the village, dive on the huts
+      r.orbit+=dt*0.35; r.diveCd-=dt; r.speed=THREE.MathUtils.lerp(r.speed,32,dt);
+      if(r.diveCd<=0 && VILLAGE.huts.length){ r.dive=VILLAGE.huts[Math.floor(Math.random()*VILLAGE.huts.length)]; r.diveCd=9+Math.random()*5; }
+      if(r.dive){ [tx,ty,tz]=[r.dive[0],r.dive[1]+10,r.dive[2]];
+        if(Math.hypot(g.position.x-tx,g.position.z-tz)<16){ RAID.hearth-=9; smallBurst(tx,ty,tz,0xff7a2a); AU.play('crash',0.3);
+          if(RAID.fires<10){ RAID.fires++; const f=new THREE.Sprite(new THREE.SpriteMaterial({map:fireTex,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
+            f.position.set(tx+(Math.random()-.5)*6,ty-2,tz+(Math.random()-.5)*6); scene.add(f); const fe={g:f,flame:f,light:null,ph:Math.random()*9}; NORSE.fires.push(fe); (RAID.fireList=RAID.fireList||[]).push(fe); }
+          r.dive=null; } }
+      else { tx=V.x+Math.cos(r.orbit)*95; tz=V.z+Math.sin(r.orbit)*95; ty=58; }
+    }
+    ty=Math.max(ty,MAP.homeHeight(g.position.x,g.position.z)+16);
+    let want=Math.atan2(-(tx-g.position.x),-(tz-g.position.z)), diff=want-r.yaw;
+    while(diff>Math.PI)diff-=Math.PI*2; while(diff<-Math.PI)diff+=Math.PI*2;
+    const turn=THREE.MathUtils.clamp(diff,-1.25*dt,1.25*dt); r.yaw+=turn;
+    g.position.x+=-Math.sin(r.yaw)*r.speed*dt; g.position.z+=-Math.cos(r.yaw)*r.speed*dt;
+    g.position.y+=THREE.MathUtils.clamp(ty-g.position.y,-14,14)*dt;
+    g.rotation.set(0,r.yaw,0); g.rotateZ(-THREE.MathUtils.clamp(diff,-1,1)*0.7);
+    r.fireCd-=dt;
+    if(dP<200 && r.fireCd<=0 && S.grace<=0 && !S.done){
+      _rv.copy(p).sub(g.position).normalize();
+      if(_rv.dot(new THREE.Vector3(-Math.sin(r.yaw),0,-Math.cos(r.yaw)))>0.86){ raiderFire(r); r.fireCd=2.2+Math.random()*1.2; } }
+  }
+  // brackets
+  for(const r of RAID.riders){ if(r.dead){ continue; }
+    const v=r.g.position.clone().project(camera), on=v.z<1&&Math.abs(v.x)<1.05&&Math.abs(v.y)<1.05;
+    const el=r.mark; el.style.display=(on&&!r.falling)?'block':'none'; if(!on) continue;
+    const d=r.g.position.distanceTo(p), sz=THREE.MathUtils.clamp(2600/d,26,90);
+    el.style.left=((v.x*.5+.5)*innerWidth)+'px'; el.style.top=((-v.y*.5+.5)*innerHeight)+'px'; el.style.width=el.style.height=sz+'px';
+    el.querySelector('b').textContent='●'.repeat(Math.max(0,Math.ceil(r.hp)));
+  }
+  if(alive<=1 && RAID.wave===1){ RAID.wave=2; spawnRaider(0,2); spawnRaider(2,2); popup('MORE RIDERS FROM THE EAST'); alive+=2; }
+  S.raidLeft=alive;
+  if(RAID.hearth<=0 && !S.done){ endRaid(false);
+    showOver('RAID','HEARTHHOLM BURNS','bad','The riders reached the roofs before you reached them. <br>Next time, turn for home the moment the horn sounds.'); return; }
+  if(alive===0 && RAID.wave===2) endRaid(true);
+}
+function g2(r){ return r.g; }
+
 /* ================= UNIQUE 4: DRAGON CALL — the wild flock answers (F) =================
    Shapes rise out of the dark and wheel around you. While they fly with you the
    keepers can't pick you out of the swarm — detection barely builds. */
@@ -3399,7 +3558,7 @@ function tick(dt){
   for(const r of rings){ r.rotation.z+=dt*(r.userData.hit?0.25:0.6);
     if(r.userData.pop>0){ r.userData.pop-=dt*2.6; r.scale.setScalar(1+Math.max(0,r.userData.pop)*0.4); }
     if(r.userData.hit){ continue; }
-    if(S.chapter===0) continue;
+    if(S.chapter===0 || S.raid) continue;                 // the road is locked while Hearthholm burns
     r.material.emissiveIntensity=2.6+Math.sin(S.t*3+r.position.x*0.1)*0.9;   // breathe
     if(p.distanceTo(r.position)<RING_R+2){
       r.userData.hit=true; r.userData.pop=1; r.material=ringDone; S.score++;
@@ -3411,6 +3570,7 @@ function tick(dt){
       S.flash=Math.max(S.flash,0.2);
       structure?.director?.syncChapterFromProgress(S.score,S.tutDone);
       if(S.score===rings.length) escaped();
+      if(S.score===4 && (S.lobbyMode||'story')==='story' && !S.raidDone && !S.simDriven) startRaid();
     }
   }
 
@@ -3423,7 +3583,7 @@ function tick(dt){
   }
   if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
 
-  updateRain(); updateWindLines(); updateShores(); updateSeaLife(dt); updateNorse(dt);
+  updateRain(); updateWindLines(); updateShores(); updateSeaLife(dt); updateNorse(dt); updateRaid(dt);
 
   hud(litNow);
 }
@@ -3571,7 +3731,7 @@ function setMuted(muted){
   if(S.muted){ for(const a of Object.values(AU.el)) a.pause(); if(WIND.gain) WIND.gain.gain.value=0; updateChargeHum(0,false); }
   else if(AU.on){ AU.loop('amb'); AU.loop('music'); updateWind(); }
 }
-function begin(opts={}){
+function begin(opts={}){ S.simDriven=false;
   if(S.launching||S.started) return; S.launching=true;
   S.lobbyMode=opts.mode||S.lobbyMode||'story';
   S.practiceMode=!!opts.practice||S.lobbyMode==='practice';
@@ -3606,6 +3766,8 @@ function begin(opts={}){
   setTimeout(()=>{ S.launching=false; },2900);
 }
 function reset(){
+  if(RAID.on) endRaid(false); S.raid=false; S.raidDone=false; RAID.fires=0;
+  for(const fe of (RAID.fireList||[])){ scene.remove(fe.g); const i=NORSE.fires.indexOf(fe); if(i>=0) NORSE.fires.splice(i,1); } RAID.fireList=[];
   startAudio(); D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=0; D.pitch=0.22; D.roll=0; D.speed=30; input.flap=false;
   S.done=false; S.flightT=0; S.detection=0; S.score=0; S.shake=0; S.fpv=false; S.nextThunder=S.t+5; S.shootCd=0;
   S.finishing=false; S.finishToken++; GATE.open=0; S.impactCd=0; S.alertStage=0;
@@ -3904,7 +4066,7 @@ function simHeadingTo(x,y,z){
   const p=D.group.position, dx=x-p.x, dz=z-p.z;
   return Math.atan2(-dx,-dz);
 }
-function simJumpBeacon(n, opts={}){
+function simJumpBeacon(n, opts={}){ S.simDriven=true;
   const score=THREE.MathUtils.clamp(Math.floor(n),0,rings.length);
   const flyIndex=Math.min(score, rings.length-1);
   if(opts.setupRun!==false){
@@ -3952,7 +4114,7 @@ function simJumpChapter(n){
   }
   return SIM.state();
 }
-function simJumpState(patch={}){
+function simJumpState(patch={}){ S.simDriven=true;
   if(patch.started!=null) S.started=!!patch.started;
   if(patch.done!=null) S.done=!!patch.done;
   if(patch.chapter!=null) S.chapter=patch.chapter;
@@ -4153,6 +4315,8 @@ window.SIM={
     rest:REST.toArray().map(v=>+v.toFixed(0)), start:START.toArray().map(v=>+v.toFixed(0)),
     ships:NORSE.ships.map(s=>[s.cx,s.cz,s.r]), stones:NORSE.stones.map(m=>[+m.position.x.toFixed(0),+m.position.z.toFixed(0)]),
     whales:whales.map(w=>[w.x,w.z]), sharks:sharks.map(k=>[k.cx,k.cz]) }),
+  raid:()=>{ startRaid(); return RAID.riders.length; },
+  raidState:()=>({on:RAID.on,hearth:RAID.hearth,left:S.raidLeft,wave:RAID.wave,done:!!S.raidDone,riders:RAID.riders.filter(r=>!r.dead).map(r=>r.g.position.toArray().map(Math.round).concat([+r.yaw.toFixed(2)]))}),
   viewFrom:(pos,look,fov)=>{ CAM_OVERRIDE=pos?[pos,look,fov]:null; return !!CAM_OVERRIDE; },
   norse:()=>({ships:NORSE.ships.map(s=>s.g.position.toArray().map(v=>+v.toFixed(1))), stones:NORSE.stones.length, fires:NORSE.fires.length}),
 };

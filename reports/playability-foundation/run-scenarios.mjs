@@ -45,7 +45,7 @@ try {
     };
   `);
   // 2026-09-28: the objective is now one action line plus distance ('Fly to beacon 6 of 8 · 312 m').
-  const expected = 'Fly to beacon 6 of 8';
+  const expected = 'Fly to beacon 7 of 8';   // jumpBeacon(6) = six collected; the next is 7
   results.scenarios.jumpBeacon6 = {
     pass: (beacon6.objective || '').startsWith(expected),
     expected,
