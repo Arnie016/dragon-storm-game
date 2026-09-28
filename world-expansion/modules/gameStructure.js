@@ -139,7 +139,7 @@ function createRuntime(S, D, landmarkPath, options) {
         // One plain instruction: what to do next and how far it is. Chapter context lives in the label above.
         const score = S.score ?? 0, ch = S.chapter ?? 0;
         const need = [3, 4, 8, 11, 12][Math.min(4, ch)];
-        const action = S.raid ? `Defend Hearthholm · ${S.raidLeft ?? 0} raiders` : ch === 0 ? `Fly through ring ${Math.min(3, (S._tutSeen ?? 0) + 1)} of 3`
+        const action = S.mystLine ? S.mystLine : S.raid ? `Defend Hearthholm · ${S.raidLeft ?? 0} raiders` : ch === 0 ? `Fly through ring ${Math.min(3, (S._tutSeen ?? 0) + 1)} of 3`
           : score >= 11 ? 'Reach the Tempest Gate'
           : `Fly to beacon ${score + 1} of ${need}`;
         objText.innerHTML = `${action}<span class="dist">${hud.distanceText && hud.distanceText !== '—' ? ' · ' + hud.distanceText : ''}</span>`;

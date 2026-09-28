@@ -734,6 +734,17 @@
       0 0,100% 0,100% 30%,calc(100% - 3px) 30%,calc(100% - 3px) 3px,70% 3px,70% 0,100% 0,100% 100%,70% 100%,70% calc(100% - 3px),calc(100% - 3px) calc(100% - 3px),calc(100% - 3px) 70%,100% 70%,100% 100%,100% 0);
     filter:drop-shadow(0 0 6px rgba(255,80,40,.7)); }
   #raidMarks .raidmark b{ position:absolute; left:50%; top:100%; transform:translateX(-50%); margin-top:4px; font-size:10px; letter-spacing:2px; color:#ff7a50; white-space:nowrap; }
+  #saga{ position:fixed; inset:0; z-index:11; display:flex; align-items:center; justify-content:center; background:rgba(8,6,4,.72);
+    opacity:0; pointer-events:none; transition:opacity .5s; }
+  #saga.on{ opacity:1; pointer-events:auto; cursor:pointer; }
+  #saga .book{ position:relative; left:auto; top:auto; transform:scale(.94); opacity:1; width:min(86vw,900px); aspect-ratio:1.55; transition:transform .6s cubic-bezier(.2,.9,.25,1); }
+  #saga.on .book{ transform:scale(1); }
+  #saga.on .pg.r{ animation:leaf .8s .15s cubic-bezier(.3,.7,.2,1) both; transform-origin:0 50%; }
+  #saga .saga-k{ font-family:var(--num); letter-spacing:.4em; font-size:12px; color:#8a5a22; margin-bottom:10px; }
+  #saga h3{ font-family:var(--display); font-weight:400; font-size:clamp(24px,3vw,40px); margin:0 0 18px; color:#3b2c1a; }
+  #saga .saga-q{ font-family:var(--body); font-style:italic; font-size:clamp(15px,1.5vw,20px); line-height:1.6; color:#5b4426; }
+  #saga .saga-b{ font-family:var(--body); font-size:clamp(16px,1.6vw,21px); line-height:1.7; color:#3b2c1a; margin-top:14%; }
+  #saga .saga-go{ position:absolute; bottom:7%; right:8%; font-family:var(--num); font-size:11px; letter-spacing:.3em; color:#8a6a3a; }
   /* hub open: the shield steps aside so the three doors own the centre */
   #menu .card:has(#lobbyHub.on) .playwrap{ opacity:0 !important; pointer-events:none !important; transform:scale(.8) !important; }
   #lobbyHub{ flex-direction:column; gap:20px; }
@@ -875,6 +886,9 @@
   <div id="ach"><div class="ach-in"><div class="ach-k">SKILL LEARNED</div>
     <div class="ach-n" id="achName">—</div><div class="ach-d" id="achDesc">—</div>
     <div class="ach-key" id="achKey">—</div></div></div>
+  <div id="saga"><div class="book paper"><div class="spread">
+    <div class="pg l"><div class="saga-k" id="sagaK">THE SAGA</div><h3 id="sagaT">—</h3><div class="saga-q" id="sagaQ"></div></div>
+    <div class="pg r"><div class="saga-b" id="sagaB"></div><div class="saga-go">click or press Space to fly</div></div></div></div></div>
   <div id="raidMarks"></div>
   <div id="chargeHud"><div id="chargeRing"><i></i></div><div id="chargeTxt">SPIT</div></div>
   <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> stormbreak dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> codex · <b>B</b> forge · <b>M</b> mute</div>
@@ -944,8 +958,8 @@
     <div id="lobbyHub" class="hide">
       <div class="lobby-hub-kicker">Choose your flight path</div>
       <div class="lobby-nodes">
-        <div class="lobby-node" data-lobby-mode="story"><b>STORY</b><i>Full beacon road · chapters · nightfall</i></div>
-        <div class="lobby-node" data-lobby-mode="practice"><b>PRACTICE</b><i>Wake Cove rings · no keeper hunt</i></div>
+        <div class="lobby-node" data-lobby-mode="story"><b>STORY</b><i>Follow the saga, chapter by chapter</i></div>
+        <div class="lobby-node" data-lobby-mode="practice"><b>EXPLORE</b><i>Fly free · find the legends</i></div>
         <div class="lobby-node" data-lobby-mode="chapter"><b>CHAPTER</b><i>Jump to a saved checkpoint</i></div>
       </div>
       <div id="lobbyChapterPanel" data-lobby-chapter-panel>
@@ -1830,7 +1844,7 @@ const windGeo=new THREE.BufferGeometry();
 const wp=new Float32Array(WIND_N*6);
 windGeo.setAttribute('position',new THREE.BufferAttribute(wp,3));
 const windLines=new THREE.LineSegments(windGeo,new THREE.LineBasicMaterial({color:0xbcd0e8,
-  transparent:true, opacity:0.16, blending:THREE.AdditiveBlending, depthWrite:false, fog:false}));
+  transparent:true, opacity:0.06, blending:THREE.AdditiveBlending, depthWrite:false, fog:true}));   // a hint of wind, not a scribble
 windLines.frustumCulled=false; scene.add(windLines);
 const windSeed=Array.from({length:WIND_N},()=>[Math.random(),Math.random(),Math.random()]);
 const WINDV=new THREE.Vector3();
@@ -1936,7 +1950,8 @@ landmarkReady.then(async ()=>{
     getHeightAboveWater:(pos)=>pos.y-waveH(pos.x,pos.z,S.t),
     getObjectiveTarget:nextObjectiveTarget,
     getTowersDestroyed:()=>searchlights.filter(s=>s.disabled>0).length,
-    onChapterStory:(chapter)=>{ if(chapter.popupOnEnter) popup(chapter.popupOnEnter); if(chapter.storyLine) storyPop(chapter.storyLine,5.5); },
+    onChapterStory:(chapter)=>{ if(S.lobbyMode==='story' && !S.simDriven && S.started){ sagaOpen('ch'+(chapter.index+1)); return; }
+      if(chapter.popupOnEnter) popup(chapter.popupOnEnter); if(chapter.storyLine) storyPop(chapter.storyLine,5.5); },
     onRegionStory:(region)=>{ if(region.ambientLine){ storyPop(region.ambientLine,6); AU.play('ring',0.35); } },
   });
 }).catch(err=>{
@@ -2177,6 +2192,9 @@ addEventListener('mousedown',()=>{ if(S.started&&!S.done) input.flap=true; });
 addEventListener('mouseup',()=>{ input.flap=false; });
 addEventListener('keydown',e=>{
   key[e.code]=true;
+  if((e.code==='ShiftLeft'||e.code==='ShiftRight') && !e.repeat && S.started && !S.done && !(S.ultraCd>0)){
+    S.ultraT=2.5; S.ultraCd=12; D.speed=Math.max(D.speed,70); popup('ULTRA LAUNCH'); AU.play('zap',.6); AU.play('flap',.7);
+    S.flash=Math.max(S.flash,.25); shockwave(D.group.position.clone(),0x9fd8ff); }
   if(e.code==='Space'){ if(S.started&&!S.done){ input.flap=true;
       if(!e.repeat){ S.lift=Math.min(20,(S.lift||0)+9+upLv('stirrup')*2.2); S.beatCd=0.30;   // every TAP lifts you
         S.shake=Math.max(S.shake,0.2); AU.play('flap',0.55);
@@ -2487,7 +2505,7 @@ function updateBolts(dt){
     if(b.slot&&b.slot.owner===b){ b.slot.lt.intensity*=0.95; b.slot.lt.position.copy(b.m.position); }
     b.m.material.opacity=Math.min(1,b.life*2); b.line.material.opacity=0.5+0.5*Math.random();
     fillBolt(b);
-    let hit=raidBoltHit(b);
+    let hit=raidBoltHit(b) || !!(MYST.active?.boltHit?.(b));
     if(!hit) for(const sl of searchlights){ if(sl.destroyed) continue;
       if(b.m.position.distanceTo(sl.lampPos)< (18 + (b.power||0.3)*26)){   // charged = wider kill radius
         const dmg = b.power>0.55 ? 3 : 1.4;                         // charged shots hurt far more
@@ -3128,6 +3146,107 @@ function updateRaid(dt){
 }
 function g2(r){ return r.g; }
 
+/* ================= MYSTERIES — side content scattered across the reach =================
+   Unlocked after the story (or any time in Practice). Fly into a gold beam to begin. */
+const MYST_SITES=[
+  {id:'race',   name:'The Skyrace',            x:230,  z:-150, play:true},
+  {id:'darts',  name:'Dragon Darts',            x:-560, z:-420, play:true},
+  {id:'rescue', name:'Stranded on the Stack',   x:-380, z:-640, play:true},
+  {id:'bell',   name:'The Sunken Bell',        x:1180, z:-700},
+  {id:'reavers',name:'The Lost Ship',x:1300,z:-1150},
+  {id:'egg',    name:'The Dragon Egg',          x:-950, z:-480},
+  {id:'stacks', name:'The Singing Stacks',      x:-640, z:-1420},
+  {id:'eye',    name:'Eye of the Storm',        x:120,  z:-1950},
+  {id:'hoard',  name:'The Frozen Hoard',        x:-1200,z:-1180},
+  {id:'tree',   name:"The Old Tree's Secret",   x:-120, z:40}
+];
+const MYST={ active:null, sites:[], best:{} , target(){ return this.active?.target?.()||null; } };
+try{ MYST.best=JSON.parse(localStorage.getItem('galevein_myst')||'{}'); }catch(e){}
+const qTex=(t,col)=>{ const c=document.createElement('canvas'); c.width=c.height=128; const x=c.getContext('2d');
+  x.fillStyle=col; x.font='bold 96px Georgia'; x.textAlign='center'; x.textBaseline='middle'; x.fillText(t,64,70); return new THREE.CanvasTexture(c); };
+const beamOn=new THREE.MeshBasicMaterial({color:0xffc86a,transparent:true,opacity:.22,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});
+const beamOff=new THREE.MeshBasicMaterial({color:0x8a8a96,transparent:true,opacity:.08,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});
+for(const st of MYST_SITES){
+  const g=new THREE.Group(); g.position.set(st.x,0,st.z); scene.add(g);
+  const beam=new THREE.Mesh(new THREE.CylinderGeometry(3,5,300,10,1,true),st.play?beamOn:beamOff); beam.position.y=150; g.add(beam);
+  const q=new THREE.Sprite(new THREE.SpriteMaterial({map:qTex('?',st.play?'#ffd27a':'#9a9aa6'),transparent:true,depthWrite:false,fog:false}));
+  q.scale.set(16,16,1); q.position.y=62; g.add(q);
+  g.visible=false; MYST.sites.push({...st,g,q,done:false});
+}
+const mystUnlocked=()=>(S.lobbyMode==='practice') || (()=>{ try{ return localStorage.getItem('galevein_story_done')==='1'; }catch(e){ return false; } })();
+const goldRing=new THREE.MeshStandardMaterial({color:0x3a2a08,emissive:0xffb840,emissiveIntensity:2.4});
+function mkRing(x,y,z,look){ const m=new THREE.Mesh(new THREE.TorusGeometry(12,1.1,8,32),goldRing); m.position.set(x,y,z); if(look) m.lookAt(...look); scene.add(m); return m; }
+function mystEnd(msg,won,id,score){
+  const a=MYST.active; if(!a) return; a.cleanup?.(); MYST.active=null; S.mystLine='';
+  if(won){ S.scales=(S.scales||0)+8; if(id&&score!=null){ const b=MYST.best[id]; if(b==null||score<b){ MYST.best[id]=score; try{ localStorage.setItem('galevein_myst',JSON.stringify(MYST.best)); }catch(e){} } }
+    achievement(msg[0],msg[1],'+8 SCALES','MYSTERY'); } else popup(msg[0]);
+}
+const MYST_RUN={
+  race(){ const pts=[[330,50,-60],[520,60,120],[700,70,-40],[640,55,-300],[420,62,-420],[180,70,-360],[-40,80,-420],[-200,60,-240],[-280,50,20],[40,60,240]];
+    const rs=pts.map((p,i)=>mkRing(...p,pts[(i+1)%pts.length])); let i=0, t0=S.t;
+    return { target:()=>rs[i]?.position,
+      tick(){ const p=D.group.position; S.mystLine=`Skyrace · ring ${i+1}/${rs.length} · ${(S.t-t0).toFixed(1)} s`+(MYST.best.race?` · best ${MYST.best.race.toFixed(1)}`:'');
+        if(p.distanceTo(rs[i].position)<14){ rs[i].visible=false; AU.play('ring',.6); i++; if(i>=rs.length){ const tt=S.t-t0; mystEnd(['Skyrace finished',tt.toFixed(1)+' s — Shift is your friend.'],true,'race',tt); } }
+        if(S.t-t0>150) mystEnd(['Skyrace — out of time'],false); },
+      cleanup(){ rs.forEach(r=>scene.remove(r)); } }; },
+  darts(){ const c=MYST_SITES[1]; const tex=(()=>{ const cv=document.createElement('canvas'); cv.width=cv.height=64; const x=cv.getContext('2d');
+      ['#8e2420','#e9dfc4','#8e2420','#e9dfc4','#e2a64b'].forEach((col,k)=>{ x.fillStyle=col; x.beginPath(); x.arc(32,32,31-k*6,0,7); x.fill(); }); return new THREE.CanvasTexture(cv); })();
+    const ts=[]; for(let k=0;k<6;k++){ const a=k/6*6.28, m=new THREE.Mesh(new THREE.CircleGeometry(6,24),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));
+      m.position.set(c.x+Math.cos(a)*110,40+k%3*18,c.z+Math.sin(a)*110); m.lookAt(c.x,m.position.y,c.z); scene.add(m); ts.push(m); }
+    let t0=S.t, hits=0;
+    return { target:()=>ts.find(t=>t.visible)?.position,
+      boltHit(b){ for(const t of ts){ if(t.visible && b.m.position.distanceTo(t.position)<9){ t.visible=false; hits++; AU.play('ring',.7); popup('BULLSEYE · '+hits+'/6'); return true; } } return false; },
+      tick(){ const left=60-(S.t-t0); S.mystLine=`Dragon Darts · ${hits}/6 targets · ${Math.max(0,left).toFixed(0)} s · hold X`;
+        if(hits>=6) mystEnd(['Dead-eye','Six for six. The fishermen will talk about this.'],true);
+        else if(left<=0) mystEnd(['Darts — time up · '+hits+'/6'],false); },
+      cleanup(){ ts.forEach(t=>scene.remove(t)); } }; },
+  rescue(){ const c=MYST_SITES[2]; const stack=rock(c.x,c.z,12,34);
+    const man=new THREE.Group(); const body=new THREE.Mesh(new THREE.CylinderGeometry(.8,1,3.2,6),new THREE.MeshStandardMaterial({color:0x7a5a3a})); body.position.y=1.6; man.add(body);
+    const flare=new THREE.Sprite(new THREE.SpriteMaterial({map:GLOW_TEX,color:0xff5a2a,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})); flare.scale.set(10,10,1); flare.position.y=6; man.add(flare);
+    man.position.set(c.x,40,c.z); scene.add(man); let carried=false;
+    const home=new THREE.Vector3(MAP.VILLAGE.x,20,MAP.VILLAGE.z);
+    return { target:()=>carried?home:man.position,
+      tick(){ const p=D.group.position; flare.material.opacity=.6+.4*Math.sin(S.t*8);
+        if(!carried){ S.mystLine='Rescue · reach the stranded fisher (fly low, slow)'; if(p.distanceTo(man.position)<18){ carried=true; popup('GOT HIM — TAKE HIM HOME'); AU.play('flap',.6); } }
+        else { man.position.copy(p).add(new THREE.Vector3(0,-5,0)); S.mystLine=`Rescue · carry him to Hearthholm · ${Math.round(p.distanceTo(home))} m`;
+          if(Math.hypot(p.x-home.x,p.z-home.z)<40) mystEnd(['Home safe',"His family is already lighting the fire for you."],true); } },
+      cleanup(){ scene.remove(man); } }; }
+};
+function updateMysteries(dt){
+  const on=S.started && !S.done && mystUnlocked();
+  for(const st of MYST.sites){ st.g.visible=on && !MYST.active; st.q.position.y=62+Math.sin(S.t*1.5+st.x)*3; }
+  if(!on){ if(MYST.active) mystEnd(['Mystery abandoned'],false); return; }
+  if(MYST.active){ MYST.active.tick(); return; }
+  const p=D.group.position;
+  if(S.saga) return;
+  for(const st of MYST.sites){ if((st._cool||0)>S.t) continue; if(Math.hypot(p.x-st.x,p.z-st.z)<14){
+      if(!st.play){ if(!st._told){ st._told=true; storyPop(st.name+' — sealed. Not yet… (coming in a later update)',4); } continue; }
+      const id=st.id; st._cool=S.t+4; sagaOpen(id,()=>{ MYST.active=MYST_RUN[id](); AU.play('ring',.8); }); break; } }
+}
+
+/* ================= SAGA PAGES — the book opens between chapters and before each legend ================= */
+const SAGA={
+  ch1:{t:'First Flight', q:'"Cattle die, kinsmen die, you die too — but a good name never dies." — sayings of the High One',
+       b:'She has never carried a rider. Take her out over the cliffs. Three rings. Learn how she moves.'},
+  ch2:{t:'Home Waters', q:'"The wise one who comes to a house keeps quiet and watches."',
+       b:'Out east, the keepers light their lamps and hunt for dragons. Slip past them. Four beacons.'},
+  ch3:{t:'The Serpent Run', q:'"Brothers will fight and kill each other; the world goes into the storm."',
+       b:'A narrow canyon, cliffs close enough to touch. Stay low, stay fast, stay unseen.'},
+  ch4:{t:'The Long Night', q:'"She sees a hall standing, fairer than the sun, on the shore of the dead."',
+       b:'The sun is gone. Ahead lie the ribs of something huge. Fly through them.'},
+  ch5:{t:'The Storm Gate', q:'"She sees the earth rise a second time out of the sea, green again."',
+       b:'One last gate, where the sky tears open. Get there before full dark.'},
+  race:{t:'The Skyrace', q:'"Nothing runs faster than thought."', b:'Ten golden rings around the islands. Fly them in order. Shift for a burst of speed.'},
+  darts:{t:'Dragon Darts', q:'"A steady hand is worth more than a strong one."', b:'Six painted targets float over the water. Hit them all with plasma in sixty seconds.'},
+  rescue:{t:'Stranded on the Stack', q:'"Better no load on the road than a heavy heart."', b:'A fisher is stuck on a sea stack, waving a flare. Fly in low, pick him up, bring him home.'}
+};
+function sagaOpen(key,then){ const d=SAGA[key]; if(!d||!S.started){ then&&then(); return; }
+  $('sagaT').textContent=d.t; $('sagaQ').textContent=d.q; $('sagaB').textContent=d.b;
+  $('sagaK').textContent=key.startsWith('ch')?'THE SAGA':'A LEGEND'; S.saga=true; $('saga').classList.add('on'); AU.play('flap',.3);
+  const close=()=>{ if(!S.saga) return; S.saga=false; $('saga').classList.remove('on'); removeEventListener('keydown',kd); then&&then(); };
+  const kd=e=>{ if(e.code==='Space'||e.code==='Enter'){ e.preventDefault(); close(); } };
+  $('saga').onclick=close; addEventListener('keydown',kd); SAGA._close=close; }
+
 /* ================= UNIQUE 4: DRAGON CALL — the wild flock answers (F) =================
    Shapes rise out of the dark and wheel around you. While they fly with you the
    keepers can't pick you out of the swarm — detection barely builds. */
@@ -3247,6 +3366,7 @@ function driveRogue(dt){
 }
 
 function tick(dt){
+  if(S.saga){ renderWorld(); return; }
   if((S.shopOpen||S.bookOpen)&&S.started&&!S.done) return;
   S.t+=dt; seaUniforms.uT.value=S.t; sky.material.uniforms.uT.value=S.t;
   if(S.started&&!S.done) S.flightT+=dt;
@@ -3302,7 +3422,9 @@ function tick(dt){
   const CRUISE=26, GRAV=13;
   const thrust=(input.flap?26:0) + throttle*20;             // W drives forward, flap bursts
   D.speed += (thrust - Math.sin(D.pitch)*GRAV*1.15 - (D.speed-CRUISE)*0.42)*dt;
-  D.speed = THREE.MathUtils.clamp(D.speed, 13, 62 + (S.dive||0)*20 + (S.spiral||0)*34);   // stormbreak dive breaks the ceiling
+  if(S.ultraT>0){ S.ultraT-=dt; D.speed=Math.min(D.speed+140*dt,170); S.boost=1; S.shake=Math.max(S.shake,.25); }
+  S.ultraCd=Math.max(0,(S.ultraCd||0)-dt);
+  D.speed = THREE.MathUtils.clamp(D.speed, 13, (S.ultraT>0?170:62) + (S.dive||0)*20 + (S.spiral||0)*34);   // stormbreak dive breaks the ceiling
 
   /* ---- acceleration factor drives all the speed FX ---- */
   const inst=(D.speed-S.prevSpeed)/Math.max(dt,1e-3); S.prevSpeed=D.speed;
@@ -3583,7 +3705,7 @@ function tick(dt){
   }
   if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
 
-  updateRain(); updateWindLines(); updateShores(); updateSeaLife(dt); updateNorse(dt); updateRaid(dt);
+  updateRain(); updateWindLines(); updateShores(); updateSeaLife(dt); updateNorse(dt); updateRaid(dt); updateMysteries(dt);
 
   hud(litNow);
 }
@@ -3652,14 +3774,14 @@ function hud(litNow){
   $('duskV2').textContent = $('duskV').textContent;
   $('duskV').textContent = TOD.day<0.35?'dusk' : TOD.day<0.7?'twilight' : TOD.day<0.99?'nightfall' : 'night';
   // next-beacon arrow projected to screen
-  const nb=S.chapter===0?tutRings.find(r=>!r.userData.hit):rings.find(r=>!r.userData.hit);
+  const tgt=MYST.active?MYST.target():nextObjectiveTarget();
   const A=$('arrow');
-  if(nb){ const v=nb.position.clone().project(camera);
-    if(v.z<1){ const sx=(v.x*.5+.5)*innerWidth, sy=(-v.y*.5+.5)*innerHeight;
-      const mx=Math.max(30,Math.min(innerWidth-30,sx)), my=Math.max(70,Math.min(innerHeight-40,sy));
-      A.style.left=(mx-11)+'px'; A.style.top=(my-10)+'px';
-      A.style.transform='rotate('+Math.atan2(sy-my,sx-mx)+'rad)'; A.style.opacity=.9;
-    } else A.style.opacity=0;
+  if(tgt){ const v=tgt.clone().project(camera); let sx=(v.x*.5+.5)*innerWidth, sy=(-v.y*.5+.5)*innerHeight;
+    const behind=v.z>1; if(behind){ sx=innerWidth-sx; sy=innerHeight*1.5; }        // behind you: pin to the bottom edge
+    const onScreen=!behind && sx>40&&sx<innerWidth-40&&sy>80&&sy<innerHeight-50;
+    const mx=Math.max(40,Math.min(innerWidth-40,sx)), my=Math.max(90,Math.min(innerHeight-60,sy));
+    A.style.left=(mx-11)+'px'; A.style.top=(my-10)+'px';
+    A.style.transform=onScreen?'rotate(-1.5708rad)':'rotate('+Math.atan2(sy-my,sx-mx)+'rad)'; A.style.opacity=1;
   } else A.style.opacity=0;
 }
 
@@ -3690,7 +3812,7 @@ function detected(){ if(S.done)return; S.cause='DETECTED'; TONE.snap=1; TONE.thr
   'The searchlight found you. The keepers loose their bolts into the dark.'); }
 function crash(reason){ if(S.done)return; S.cause=reason; AU.play('crash',0.9); S.shake=1; showOver('WRECKED',reason,'bad',
   'Even a Galevein cannot fly through stone.'); }
-function escaped(){ if(S.done)return;
+function escaped(){ try{ localStorage.setItem('galevein_story_done','1'); }catch(e){} if(S.done)return;
   S.done=true; S.finishing=true; S.cause='ESCAPED'; const token=++S.finishToken; GATE.open=.08;
   TONE.snap=0.5; TONE.threat=0.4;
   AU.play('ring',0.9); AU.play('thunder',.35); S.flash=1; storyPop('The Gate hears Galevein. The storm folds open.',2.2);
@@ -3901,7 +4023,7 @@ function applyGfx(level){
   renderer.toneMappingExposure = hi ? 1.55 : (med ? 1.42 : 1.28);
 }
 document.querySelectorAll('.gfxrow b').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); applyGfx(b.dataset.g); }));
-applyGfx(localStorage.getItem('galevein_gfx')||'med');
+applyGfx(localStorage.getItem('galevein_gfx')||'high');
 
 /* ============================ CAMERA + LOOP ============================ */
 const _hp=new THREE.Vector3();
