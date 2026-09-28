@@ -745,6 +745,22 @@
   #saga .saga-q{ font-family:var(--body); font-style:italic; font-size:clamp(15px,1.5vw,20px); line-height:1.6; color:#5b4426; }
   #saga .saga-b{ font-family:var(--body); font-size:clamp(16px,1.6vw,21px); line-height:1.7; color:#3b2c1a; margin-top:14%; }
   #saga .saga-go{ position:absolute; bottom:7%; right:8%; font-family:var(--num); font-size:11px; letter-spacing:.3em; color:#8a6a3a; }
+  /* story progress (P), dragon voice line, full map (G) */
+  #progress{ position:absolute; left:14px; top:200px; width:210px; padding:10px 14px; background:rgba(14,11,9,.72);
+    border:1px solid rgba(233,223,196,.14); border-radius:3px; font-family:var(--num); color:var(--bone-dim); transition:opacity .3s; }
+  #progress.off{ opacity:0; }
+  #progress .pg-t{ font-size:11px; letter-spacing:.3em; color:var(--ochre); margin-bottom:6px; } #progress .pg-t i{ font-style:normal; color:#6d6556; font-size:9px; letter-spacing:.1em; margin-left:6px; }
+  #progress ol{ list-style:none; margin:0; padding:0; font-size:13px; }
+  #progress li{ padding:3px 0 3px 20px; position:relative; } #progress li::before{ content:'○'; position:absolute; left:0; }
+  #progress li.done{ color:#6f8f6f; text-decoration:line-through; } #progress li.done::before{ content:'✓'; }
+  #progress li.now{ color:#f4ead4; font-weight:700; } #progress li.now::before{ content:'➤'; color:var(--ochre); }
+  #rookSay{ position:absolute; left:50%; bottom:24%; transform:translateX(-50%); padding:9px 18px; max-width:560px; text-align:center;
+    background:rgba(14,11,9,.78); border:1px solid rgba(233,223,196,.18); border-radius:3px; opacity:0; transition:opacity .4s;
+    font-family:var(--body); font-size:18px; color:#efe4c8; }
+  #rookSay.on{ opacity:1; } #rookSay b{ font-family:var(--num); letter-spacing:.2em; font-size:11px; color:#9fd8ff; margin-right:10px; }
+  #bigmap{ position:fixed; inset:0; z-index:9; display:none; align-items:center; justify-content:center; background:rgba(8,6,4,.86); }
+  #bigmap.on{ display:flex; } #bigmap canvas{ width:min(88vh,88vw); height:min(88vh,88vw); border-radius:4px; box-shadow:0 20px 70px #000; }
+  #bigmap .map-k{ position:absolute; bottom:4%; font-family:var(--num); letter-spacing:.3em; font-size:12px; color:var(--bone-dim); }
   /* hub open: the shield steps aside so the three doors own the centre */
   #menu .card:has(#lobbyHub.on) .playwrap{ opacity:0 !important; pointer-events:none !important; transform:scale(.8) !important; }
   #lobbyHub{ flex-direction:column; gap:20px; }
@@ -889,9 +905,12 @@
   <div id="saga"><div class="book paper"><div class="spread">
     <div class="pg l"><div class="saga-k" id="sagaK">THE SAGA</div><h3 id="sagaT">—</h3><div class="saga-q" id="sagaQ"></div></div>
     <div class="pg r"><div class="saga-b" id="sagaB"></div><div class="saga-go">click or press Space to fly</div></div></div></div></div>
+  <div id="progress"><div class="pg-t">SAGA <i>P to hide</i></div><ol id="pgList"></ol></div>
+  <div id="rookSay"><b>Rook</b><span id="rookLine"></span></div>
+  <div id="bigmap"><canvas id="mapC" width="900" height="900"></canvas><div class="map-k">MAP · G to close</div></div>
   <div id="raidMarks"></div>
   <div id="chargeHud"><div id="chargeRing"><i></i></div><div id="chargeTxt">SPIT</div></div>
-  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> stormbreak dive · <b>Q/E</b> look · <b>V</b> view · <b>TAB</b> codex · <b>B</b> forge · <b>M</b> mute</div>
+  <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> stormbreak dive · <b>Q/E</b> look · <b>V</b> view · <b>G</b> map · <b>P</b> saga · <b>T</b> voice · <b>Shift</b> launch · <b>TAB</b> codex · <b>B</b> forge · <b>M</b> mute</div>
 </div>
 
 <div id="trailer" aria-label="Opening — click to skip">
@@ -1063,7 +1082,8 @@ const AU = {
 };
 AU.load('menu','licensed-assets/audio/theme_what_the_sky_was_for.mp3',true,0.0);   // the user's own Suno track
 AU.el.menu.preload='metadata';                                                          // 3.6 MB: stream it, don't block boot
-AU.load('music','synthesized-audio/music_tension.mp3',true,0.0);
+AU.load('music','synthesized-audio/theme_explore.mp3',true,0.0);   // original Nordic theme (compose_themes.py)
+AU.load('battle','synthesized-audio/theme_battle.mp3',true,0.0); AU.el.battle.preload='metadata';
 AU.load('amb','synthesized-audio/amb_sea.mp3',true,0.0);
 AU.load('flap','synthesized-audio/flap.mp3',false,0.5);
 AU.load('ring','synthesized-audio/ring.mp3',false,0.7);
@@ -3042,14 +3062,14 @@ function spawnRaider(i,n){
 }
 function startRaid(){
   if(RAID.on||S.raidDone) return;
-  RAID.on=true; RAID.wave=1; RAID.hearth=100; S.raid=true;
+  RAID.on=true; RAID.wave=1; RAID.hearth=100; S.raid=true; AU.fadeTo('battle',0.6,900); AU.fadeTo('music',0.05,900);
   for(let i=0;i<3;i++) spawnRaider(i,3);
   popup('HEARTHHOLM IS UNDER ATTACK'); AU.play('detected',0.8); setTimeout(()=>AU.play('thunder',0.6),250);
   storyPop('Keeper riders — on dragons — over Hearthholm. They turned the beasts against us. Go home. Now.',6.5);
   S.shake=Math.max(S.shake,0.5);
 }
 function endRaid(won){
-  RAID.on=false; S.raid=false; S.raidDone=won;
+  RAID.on=false; S.raid=false; S.raidDone=won; AU.fadeTo('battle',0,2200);
   for(const r of RAID.riders){ scene.remove(r.g); r.mark?.remove(); } RAID.riders.length=0;
   if(won){ S.scales=(S.scales||0)+10;
     achievement('Hearthholm stands','The riders are in the sea. The village is still yours.','RAID WON · +10 SCALES','HOME');
@@ -3223,6 +3243,49 @@ function updateMysteries(dt){
       if(!st.play){ if(!st._told){ st._told=true; storyPop(st.name+' — sealed. Not yet… (coming in a later update)',4); } continue; }
       const id=st.id; st._cool=S.t+4; sagaOpen(id,()=>{ MYST.active=MYST_RUN[id](); AU.play('ring',.8); }); break; } }
 }
+
+
+/* ================= STORY PROGRESS (P) · DRAGON VOICE · MAP (G) ================= */
+const PROGRESS=[['First Flight — three rings over home',()=>S.chapter>=1],['Home Waters — pass the lighthouses',()=>S.score>=4],
+  ['Defend Hearthholm',()=>S.raidDone],['The Serpent Run — the canyon',()=>S.score>=8],['The Long Night — the ribs',()=>S.score>=11],['The Storm Gate',()=>S.score>=12]];
+function drawProgress(){ const el=$('pgList'); if(!el) return; let now=false;
+  el.innerHTML=PROGRESS.map(([t,d])=>{ const done=d(); const cls=done?'done':(!now?(now=true,'now'):''); return `<li class="${cls}">${t}</li>`; }).join(''); }
+// the dragon talks back: short subtitled lines, optionally spoken by the browser's own voice (T toggles)
+const ROOK={ t:0, voice:false, said:{} };
+function rookSay(line,key){ if(key){ if(ROOK.said[key]) return; ROOK.said[key]=1; }
+  $('rookLine').textContent=line; $('rookSay').classList.add('on'); ROOK.t=S.t+4.5;
+  if(ROOK.voice && window.speechSynthesis){ try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(line); u.pitch=.7; u.rate=.95; speechSynthesis.speak(u); }catch(e){} } }
+function driveRook(){
+  if(ROOK.t && S.t>ROOK.t){ $('rookSay').classList.remove('on'); ROOK.t=0; }
+  if(!S.started||S.done) return;
+  if(S.flightT>2) rookSay("Hold on. I've waited a long time to fly with someone.",'hello');
+  if(S.chapter>=1) rookSay('The lights to the east hunt my kind. Keep us in the dark.','east');
+  if(S.raid) rookSay('Smoke over Hearthholm! Turn around — they came for your home.','raid');
+  if(S.raidDone) rookSay('They will be back. But not tonight.','raidwon');
+  if(S.hp<35) rookSay("I'm hurt. Stay low, stay out of the light.",'hurt');
+  if(S.score>=8) rookSay('Bones, big as ships. Something like me died here.','ribs');
+  if(MYST.active) rookSay('A legend? Lead the way.','legend');
+}
+// full map
+function drawMap(){ const c=$('mapC'), x=c.getContext('2d'), W=c.width, sc=W/4200, cx=W/2, cz=W*0.62;
+  const P=(wx,wz)=>[cx+wx*sc, cz+wz*sc];
+  x.fillStyle='#d9c7a0'; x.fillRect(0,0,W,W);
+  x.fillStyle='rgba(60,90,110,.35)'; x.fillRect(0,0,W,W);
+  x.fillStyle='#8a9a6a'; let [hx,hz]=P(0,0); x.beginPath(); x.ellipse(hx,hz,300*sc,280*sc,0,0,7); x.fill();
+  x.fillStyle='#6b5a44'; for(const [mx,mz,r] of MAP.MOUNTAINS){ const [a,b]=P(mx,mz); x.beginPath(); x.moveTo(a,b-r*sc*.9); x.lineTo(a+r*sc*.8,b+r*sc*.5); x.lineTo(a-r*sc*.8,b+r*sc*.5); x.fill(); }
+  x.strokeStyle='rgba(120,40,30,.8)'; x.setLineDash([6,6]); x.lineWidth=2; x.beginPath(); rings.forEach((r,i)=>{ const [a,b]=P(r.position.x,r.position.z); i?x.lineTo(a,b):x.moveTo(a,b); }); x.stroke(); x.setLineDash([]);
+  rings.forEach((r,i)=>{ const [a,b]=P(r.position.x,r.position.z); x.fillStyle=r.userData.hit?'#5a7a5a':'#8e2420'; x.beginPath(); x.arc(a,b,5,0,7); x.fill(); });
+  x.font='bold 16px Georgia'; x.textAlign='center';
+  for(const st of MYST.sites){ const [a,b]=P(st.x,st.z); x.fillStyle=st.play?'#b8860b':'#8a8378'; x.fillText('?',a,b+5); }
+  x.font='13px Georgia'; x.fillStyle='#3b2c1a';
+  for(const [n,wx,wz] of [['Hearthholm',MAP.VILLAGE.x,MAP.VILLAGE.z+40],['Keeper Shallows',760,120],['Serpent Reach',950,-1000],['Rib Wastes',-200,-930],['Storm Gate',-240,-1790],['Feeding Grounds',-620,-120]]){ const [a,b]=P(wx,wz); x.fillText(n,a,b); }
+  const t=MYST.active?MYST.target():nextObjectiveTarget(); if(t){ const [a,b]=P(t.x,t.z); x.strokeStyle='#e2a64b'; x.lineWidth=3; x.beginPath(); x.arc(a,b,11,0,7); x.stroke(); }
+  const p=D.group.position, [a,b]=P(p.x,p.z); x.save(); x.translate(a,b); x.rotate(-D.yaw); x.fillStyle='#10131c'; x.beginPath(); x.moveTo(0,-11); x.lineTo(7,8); x.lineTo(-7,8); x.fill(); x.restore();
+  x.font='bold 22px Georgia'; x.fillStyle='#3b2c1a'; x.fillText('The Sable Reach',W/2,34); }
+addEventListener('keydown',e=>{ if(!S.started) return;
+  if(e.code==='KeyP'){ $('progress').classList.toggle('off'); }
+  if(e.code==='KeyG'){ const m=$('bigmap'); m.classList.toggle('on'); if(m.classList.contains('on')) drawMap(); }
+  if(e.code==='KeyT'){ ROOK.voice=!ROOK.voice; popup(ROOK.voice?'ROOK SPEAKS ALOUD':'ROOK: SUBTITLES ONLY'); } });
 
 /* ================= SAGA PAGES — the book opens between chapters and before each legend ================= */
 const SAGA={
@@ -3705,7 +3768,7 @@ function tick(dt){
   }
   if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
 
-  updateRain(); updateWindLines(); updateShores(); updateSeaLife(dt); updateNorse(dt); updateRaid(dt); updateMysteries(dt);
+  updateRain(); updateWindLines(); updateShores(); updateSeaLife(dt); updateNorse(dt); updateRaid(dt); updateMysteries(dt); driveRook(); if(((S.pgT=(S.pgT||0)-1))<=0){ S.pgT=30; drawProgress(); if($('bigmap').classList.contains('on')) drawMap(); }
 
   hud(litNow);
 }
