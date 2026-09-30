@@ -38,3 +38,16 @@ Do not open `index.html` with `file://`. The game loads ES modules and the rigge
 - The Forge upgrades and Flight Codex skill tracking
 - Dynamic weather, sea life, storm audio, graphics presets, and local vendored assets
 - Storm strikes use a potential-biased bolt path by default (`?lightning=jag` for the old random polyline)
+
+## Graphics and flight polish
+
+Five persisted graphics levels are available: **Low, Medium, High, Extra High, Extreme**.
+They scale resolution, rain/trails, sea geometry, mountain detail distance, dragon shadows and cinematic depth. Collision and enemy warning timings remain consistent across settings.
+
+- **G:** terrain chart with heading, objective and tower states.
+- **Escape:** pause/resume or close the active panel.
+- **Graphics:** change quality during flight; the open panel pauses the game.
+
+Mountains use a shared terrain surface for collision, projectiles and navigation. Watchtowers show target/health feedback, warn before firing and lose their lock behind terrain. Retry clears the previous run while keeping earned upgrades.
+
+See [the change and verification report](reports/flight-polish/REPORT.md) for tests, screenshots and measured limitations.
