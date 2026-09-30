@@ -1,0 +1,2777 @@
+{
+  "date": "2026-09-30T11:31:25.659Z",
+  "environment": "Headless Chromium 153 using SwiftShader CPU rendering; render timings are not hardware FPS benchmarks.",
+  "source": "Recovered enhancement branch",
+  "checks": [
+    {
+      "name": "Boots actual WebGL scene and dragon assets",
+      "status": "pass",
+      "state": {
+        "paused": false,
+        "runToken": 0,
+        "t": 1.4,
+        "flightT": 0,
+        "started": false,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 20,
+        "pos": [
+          -20,
+          25.5,
+          -262
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.351,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "rig": {
+        "loaded": true,
+        "invalidBones": [],
+        "flapTimeScale": 1,
+        "glideTimeScale": 0.12
+      },
+      "graphics": {
+        "id": "low",
+        "label": "Low",
+        "ratio": 1,
+        "scale": 0.8,
+        "rain": 350,
+        "wind": 0,
+        "streaks": 0,
+        "sea": 100,
+        "shadow": 0,
+        "dof": false,
+        "postScale": 0.5,
+        "detail": 0,
+        "pixelRatio": 0.8,
+        "width": 640,
+        "height": 400,
+        "shadowEnabled": false
+      },
+      "errors": []
+    },
+    {
+      "name": "Real Start \u2192 Story controls launch the game",
+      "status": "pass",
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 2.9,
+        "flightT": 0.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 29.8,
+        "pos": [
+          -20,
+          31.8,
+          -263.5
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      }
+    },
+    {
+      "name": "Keyboard flight changes position and keeps the rig finite",
+      "status": "pass",
+      "before": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 2.9,
+        "flightT": 0.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 29.6,
+        "pos": [
+          -20,
+          32,
+          -265
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "after": {
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 4.4,
+          "flightT": 1.6,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 0,
+          "spd": 36.5,
+          "pos": [
+            -19.4,
+            75.9,
+            -294.4
+          ],
+          "fpv": false,
+          "chapter": 0,
+          "tutorial": 0,
+          "routeVisible": 0,
+          "cause": "",
+          "scales": 0,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "rig": {
+          "loaded": true,
+          "invalidBones": [],
+          "flapTimeScale": 1.1368138857618932,
+          "glideTimeScale": 0.7
+        }
+      }
+    },
+    {
+      "name": "Escape pauses simulation and Resume button works",
+      "status": "pass",
+      "before": {
+        "paused": true,
+        "launching": false,
+        "runToken": 1,
+        "t": 4.4,
+        "flightT": 1.6,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 36.5,
+        "pos": [
+          -19.4,
+          75.9,
+          -294.4
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "frozen": {
+        "paused": true,
+        "launching": false,
+        "runToken": 1,
+        "t": 4.4,
+        "flightT": 1.6,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 36.5,
+        "pos": [
+          -19.4,
+          75.9,
+          -294.4
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "resumed": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 4.4,
+        "flightT": 1.6,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 36.5,
+        "pos": [
+          -19.4,
+          75.9,
+          -294.4
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      }
+    },
+    {
+      "name": "G opens a real terrain chart and freezes flight",
+      "status": "pass",
+      "state": {
+        "paused": true,
+        "launching": false,
+        "runToken": 1,
+        "t": 4.4,
+        "flightT": 1.6,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 36.5,
+        "pos": [
+          -19.4,
+          75.9,
+          -294.4
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "canvas": "900 \u00d7 900 chart exported from browser 2D canvas"
+    },
+    {
+      "name": "Graphics button applies low",
+      "status": "pass",
+      "settings": {
+        "id": "low",
+        "label": "Low",
+        "ratio": 1,
+        "scale": 0.8,
+        "rain": 350,
+        "wind": 0,
+        "streaks": 0,
+        "sea": 100,
+        "shadow": 0,
+        "dof": false,
+        "postScale": 0.5,
+        "detail": 0,
+        "pixelRatio": 0.8,
+        "width": 640,
+        "height": 400,
+        "shadowEnabled": false
+      },
+      "saved": "low",
+      "pressed": "low"
+    },
+    {
+      "name": "Graphics button applies med",
+      "status": "pass",
+      "settings": {
+        "id": "med",
+        "label": "Medium",
+        "ratio": 1,
+        "scale": 1,
+        "rain": 650,
+        "wind": 45,
+        "streaks": 60,
+        "sea": 140,
+        "shadow": 0,
+        "dof": false,
+        "postScale": 0.5,
+        "detail": 1,
+        "pixelRatio": 1,
+        "width": 800,
+        "height": 500,
+        "shadowEnabled": false
+      },
+      "saved": "med",
+      "pressed": "med"
+    },
+    {
+      "name": "Graphics button applies high",
+      "status": "pass",
+      "settings": {
+        "id": "high",
+        "label": "High",
+        "ratio": 1.5,
+        "scale": 1,
+        "rain": 1000,
+        "wind": 75,
+        "streaks": 100,
+        "sea": 180,
+        "shadow": 1024,
+        "dof": false,
+        "postScale": 0.65,
+        "detail": 2,
+        "pixelRatio": 1,
+        "width": 800,
+        "height": 500,
+        "shadowEnabled": true
+      },
+      "saved": "high",
+      "pressed": "high"
+    },
+    {
+      "name": "Graphics button applies extra",
+      "status": "pass",
+      "settings": {
+        "id": "extra",
+        "label": "Extra High",
+        "ratio": 1.75,
+        "scale": 1,
+        "rain": 1250,
+        "wind": 95,
+        "streaks": 125,
+        "sea": 220,
+        "shadow": 1536,
+        "dof": true,
+        "postScale": 0.75,
+        "detail": 3,
+        "pixelRatio": 1,
+        "width": 800,
+        "height": 500,
+        "shadowEnabled": true
+      },
+      "saved": "extra",
+      "pressed": "extra"
+    },
+    {
+      "name": "Graphics button applies extreme",
+      "status": "pass",
+      "settings": {
+        "id": "extreme",
+        "label": "Extreme",
+        "ratio": 2,
+        "scale": 1,
+        "rain": 1500,
+        "wind": 110,
+        "streaks": 150,
+        "sea": 280,
+        "shadow": 2048,
+        "dof": true,
+        "postScale": 1,
+        "detail": 4,
+        "pixelRatio": 1,
+        "width": 800,
+        "height": 500,
+        "shadowEnabled": true
+      },
+      "saved": "extreme",
+      "pressed": "extreme"
+    },
+    {
+      "name": "Input-only campaign route attempt",
+      "status": "pass",
+      "method": "Normal begin/reset, then steerObjective only sets control inputs and stepSimulation advances real rules. No position, score or health assignments. Up to 600 simulated seconds; not a full unassisted human playthrough.",
+      "history": [
+        {
+          "simulationSteps": 600,
+          "paused": false,
+          "launching": false,
+          "runToken": 3,
+          "t": 15.1,
+          "flightT": 10.1,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 0,
+          "spd": 40.8,
+          "pos": [
+            -179.4,
+            59.3,
+            -195.8
+          ],
+          "fpv": false,
+          "chapter": 0,
+          "tutorial": 1,
+          "routeVisible": 0,
+          "cause": "",
+          "scales": 1,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        {
+          "simulationSteps": 1200,
+          "paused": false,
+          "launching": false,
+          "runToken": 3,
+          "t": 25.1,
+          "flightT": 20.1,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 0,
+          "spd": 40.8,
+          "pos": [
+            -113.7,
+            50.9,
+            55.2
+          ],
+          "fpv": false,
+          "chapter": 0,
+          "tutorial": 2,
+          "routeVisible": 0,
+          "cause": "",
+          "scales": 2,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        {
+          "simulationSteps": 1800,
+          "paused": true,
+          "launching": false,
+          "runToken": 3,
+          "t": 30.6,
+          "flightT": 25.5,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 0,
+          "spd": 26.2,
+          "pos": [
+            50.4,
+            49.9,
+            177.4
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 3,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        {
+          "simulationSteps": 2400,
+          "paused": false,
+          "launching": false,
+          "runToken": 3,
+          "t": 40.6,
+          "flightT": 35.5,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 0,
+          "spd": 40.5,
+          "pos": [
+            395.9,
+            50.6,
+            15.8
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 3,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0.026,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        {
+          "simulationSteps": 3000,
+          "paused": false,
+          "launching": false,
+          "runToken": 3,
+          "t": 50.6,
+          "flightT": 45.5,
+          "started": true,
+          "done": false,
+          "det": 0.11,
+          "score": 2,
+          "spd": 38.5,
+          "pos": [
+            727.4,
+            60.8,
+            -43.4
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 9,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0.074,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        {
+          "simulationSteps": 3600,
+          "paused": true,
+          "launching": false,
+          "runToken": 3,
+          "t": 60.3,
+          "flightT": 55.3,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 4,
+          "spd": 26.8,
+          "pos": [
+            787.4,
+            65.6,
+            -307.2
+          ],
+          "fpv": false,
+          "chapter": 2,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 16,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0.12,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        {
+          "simulationSteps": 4200,
+          "paused": false,
+          "launching": false,
+          "runToken": 3,
+          "t": 70.3,
+          "flightT": 65.3,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 4,
+          "spd": 25.3,
+          "pos": [
+            745.8,
+            65.4,
+            -555.1
+          ],
+          "fpv": false,
+          "chapter": 2,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 16,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0.168,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        {
+          "simulationSteps": 4800,
+          "paused": false,
+          "launching": false,
+          "runToken": 3,
+          "t": 80.4,
+          "flightT": 75.3,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 4,
+          "spd": 26.7,
+          "pos": [
+            738.8,
+            65.6,
+            -545.9
+          ],
+          "fpv": false,
+          "chapter": 2,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 16,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0.216,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        {
+          "simulationSteps": 5400,
+          "paused": false,
+          "launching": false,
+          "runToken": 3,
+          "t": 90.4,
+          "flightT": 85.3,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 4,
+          "spd": 26.7,
+          "pos": [
+            757.4,
+            65.4,
+            -594.7
+          ],
+          "fpv": false,
+          "chapter": 2,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 16,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0.264,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        {
+          "simulationSteps": 6000,
+          "paused": false,
+          "launching": false,
+          "runToken": 3,
+          "t": 100.4,
+          "flightT": 95.3,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 4,
+          "spd": 26.7,
+          "pos": [
+            721.6,
+            64,
+            -574.9
+          ],
+          "fpv": false,
+          "chapter": 2,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 16,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0.311,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        {
+          "simulationSteps": 6600,
+          "paused": false,
+          "launching": false,
+          "runToken": 3,
+          "t": 105.6,
+          "flightT": 100.6,
+          "started": true,
+          "done": true,
+          "det": 0,
+          "score": 4,
+          "spd": 26,
+          "pos": [
+            762.4,
+            61.4,
+            -548.9
+          ],
+          "fpv": false,
+          "chapter": 2,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 16,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0.336,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        }
+      ],
+      "last": {
+        "paused": false,
+        "launching": false,
+        "runToken": 3,
+        "t": 105.6,
+        "flightT": 100.6,
+        "started": true,
+        "done": true,
+        "det": 0,
+        "score": 4,
+        "spd": 26,
+        "pos": [
+          762.4,
+          61.4,
+          -548.9
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.336,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaignComplete": false,
+      "extent": "Three tutorial rings and four beacons; run ended during village raid because route driver did not fight raiders."
+    },
+    {
+      "name": "Charged X shot damages a watchtower",
+      "status": "pass",
+      "setup": {
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            -0.4011240498441573,
+            -0.08987854919801107,
+            0.9116037203909838
+          ],
+          "range": 510,
+          "coneHalf": 0.3,
+          "hp": 4,
+          "maxHp": 4,
+          "destroyed": false,
+          "disabled": 0,
+          "lit": 0,
+          "fireWindup": 0,
+          "fireCd": 1.6198388655896965
+        },
+        "player": {
+          "paused": false,
+          "launching": false,
+          "runToken": 5,
+          "t": 106.2,
+          "flightT": 0,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 3,
+          "spd": 0,
+          "pos": [
+            700,
+            82,
+            -5
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 16,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "setup": "Synthetic chapter and firing position; actual keyboard X charges and releases the shot."
+      },
+      "charged": {
+        "paused": false,
+        "launching": false,
+        "runToken": 5,
+        "t": 107.8,
+        "flightT": 1.6,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 3,
+        "spd": 19.3,
+        "pos": [
+          700.3,
+          73.9,
+          -31
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": 1.58,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "after": {
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 5,
+          "t": 109.8,
+          "flightT": 3.6,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 3,
+          "spd": 23.1,
+          "pos": [
+            699.7,
+            69.4,
+            -74.6
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 16,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 2.43,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 1
+        },
+        "combat": {
+          "towers": [
+            {
+              "index": 0,
+              "lampPos": [
+                700,
+                84,
+                -100
+              ],
+              "beamDirection": [
+                -0.894449700795623,
+                -0.08987854919801107,
+                -0.4380428964618436
+              ],
+              "range": 480,
+              "coneHalf": 0.3,
+              "hp": 1,
+              "maxHp": 4,
+              "destroyed": false,
+              "disabled": 0.28333333333333627,
+              "lit": 0,
+              "fireWindup": 0,
+              "fireCd": 0
+            },
+            {
+              "index": 1,
+              "lampPos": [
+                860,
+                68,
+                30
+              ],
+              "beamDirection": [
+                0.6772270054790863,
+                -0.08987854919801107,
+                -0.730263945052671
+              ],
+              "range": 288,
+              "coneHalf": 0.3,
+              "hp": 4,
+              "maxHp": 4,
+              "destroyed": false,
+              "disabled": 0,
+              "lit": 0,
+              "fireWindup": 0,
+              "fireCd": 0
+            },
+            {
+              "index": 2,
+              "lampPos": [
+                640,
+                72,
+                80
+              ],
+              "beamDirection": [
+                0.888336827223558,
+                -0.08987854919801107,
+                -0.45031047932781176
+              ],
+              "range": 288,
+              "coneHalf": 0.3,
+              "hp": 4,
+              "maxHp": 4,
+              "destroyed": false,
+              "disabled": 0,
+              "lit": 0,
+              "fireWindup": 0,
+              "fireCd": 0
+            }
+          ],
+          "bolts": 0,
+          "foeBolts": 0,
+          "target": -1,
+          "invulnerable": 0,
+          "maxPlayerBolts": 10,
+          "maxEnemyBolts": 20
+        },
+        "hit": "\u00d7HIT \u22123 \u00b7 1 HP"
+      }
+    },
+    {
+      "name": "Watchtower telegraphs, fires back and damages dragon",
+      "status": "fail",
+      "error": "Error: No enemy damage observed\n    at assert (file:///workspace/scratch/13b7a043f2a6/dragon-storm-game/reports/flight-polish/browser-verification.mjs:17:36)\n    at file:///workspace/scratch/13b7a043f2a6/dragon-storm-game/reports/flight-polish/browser-verification.mjs:37:1249\n    at async check (file:///workspace/scratch/13b7a043f2a6/dragon-storm-game/reports/flight-polish/browser-verification.mjs:16:43)\n    at async file:///workspace/scratch/13b7a043f2a6/dragon-storm-game/reports/flight-polish/browser-verification.mjs:37:2"
+    },
+    {
+      "name": "Death screen retry restores a clean active run",
+      "status": "pass",
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 7,
+        "t": 116.9,
+        "flightT": 0.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 29.8,
+        "pos": [
+          -19.9,
+          31.7,
+          -263.5
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "combat": {
+        "towers": [
+          {
+            "index": 0,
+            "lampPos": [
+              700,
+              84,
+              -100
+            ],
+            "beamDirection": [
+              -0.7059876564101714,
+              -0.08987854919801104,
+              0.7024978828370478
+            ],
+            "range": 420,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0,
+            "fireWindup": 0,
+            "fireCd": 2.703236549152141
+          },
+          {
+            "index": 1,
+            "lampPos": [
+              860,
+              68,
+              30
+            ],
+            "beamDirection": [
+              0.19260142637093283,
+              -0.08987854919801107,
+              0.977152258838889
+            ],
+            "range": 180,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0,
+            "fireWindup": 0,
+            "fireCd": 2.0932204521353808
+          },
+          {
+            "index": 2,
+            "lampPos": [
+              640,
+              72,
+              80
+            ],
+            "beamDirection": [
+              -0.9878813422910371,
+              -0.08987854919801105,
+              0.12653971687703325
+            ],
+            "range": 180,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0,
+            "fireWindup": 0,
+            "fireCd": 2.2320526986294236
+          }
+        ],
+        "bolts": 0,
+        "foeBolts": 0,
+        "target": -1,
+        "invulnerable": 0,
+        "maxPlayerBolts": 10,
+        "maxEnemyBolts": 20
+      }
+    },
+    {
+      "name": "All selectable dragon rigs load and keep finite bones",
+      "status": "pass",
+      "rigs": [
+        {
+          "rig": {
+            "id": "stormcrest",
+            "loreName": "Stormcrest",
+            "probed": {
+              "quaternius": true
+            }
+          },
+          "health": {
+            "loaded": true,
+            "invalidBones": [],
+            "flapTimeScale": 1.0149850518158519,
+            "glideTimeScale": 0.7
+          }
+        },
+        {
+          "rig": {
+            "id": "corrected",
+            "loreName": "Obsidian Gale",
+            "probed": {
+              "quaternius": true
+            }
+          },
+          "health": {
+            "loaded": true,
+            "invalidBones": [],
+            "flapTimeScale": 1.0146325484905232,
+            "glideTimeScale": 0.7
+          }
+        },
+        {
+          "rig": {
+            "id": "voltspine",
+            "loreName": "Voltspine",
+            "probed": {
+              "quaternius": true
+            }
+          },
+          "health": {
+            "loaded": true,
+            "invalidBones": [],
+            "flapTimeScale": 1.0149850518175394,
+            "glideTimeScale": 0.7
+          }
+        },
+        {
+          "rig": {
+            "id": "thunderhook",
+            "loreName": "Thunderhook",
+            "probed": {
+              "quaternius": true
+            }
+          },
+          "health": {
+            "loaded": true,
+            "invalidBones": [],
+            "flapTimeScale": 1.0002083039289582,
+            "glideTimeScale": 0.7
+          }
+        },
+        {
+          "rig": {
+            "id": "quaternius",
+            "loreName": "Ember Wyrm",
+            "probed": {
+              "quaternius": true
+            }
+          },
+          "health": {
+            "loaded": true,
+            "invalidBones": [],
+            "flapTimeScale": 1,
+            "glideTimeScale": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "All six chapter checkpoints initialize",
+      "status": "pass",
+      "chapters": [
+        {
+          "requested": 0,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 8,
+            "t": 142.6,
+            "flightT": 0,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 0,
+            "spd": 27.9,
+            "pos": [
+              -20,
+              31.6,
+              -262.4
+            ],
+            "fpv": false,
+            "chapter": 0,
+            "tutorial": 0,
+            "routeVisible": 0,
+            "cause": "",
+            "scales": 16,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "hud": {
+            "chapterIndex": 0,
+            "chapterRoman": "I",
+            "chapterTitle": "FIRST FLIGHT",
+            "chapterLabel": "Chapter I \u00b7 First Flight",
+            "regionId": "wake_cove",
+            "regionName": "Wake Cove",
+            "objectiveText": "I \u00b7 learn to fly \u2014 rings 0/3",
+            "missionBeatText": "",
+            "goalText": "Clear three practice rings in the cove",
+            "distanceM": 120.90473083523572,
+            "distanceLabel": "Next ring",
+            "distanceText": "121 m",
+            "heightAboveWater": null,
+            "heightText": null,
+            "subHints": [
+              "Feel beat and brake before open water"
+            ],
+            "storyLine": "Three rings. Learn her weight before the open water.",
+            "popupOnEnter": "CHAPTER I \u00b7 FIRST FLIGHT",
+            "metaObjective": "",
+            "skyPresetId": "cove_dawn",
+            "ambientLine": "She answers you in the cove. Out past the stacks, the keepers are lighting their lamps."
+          }
+        },
+        {
+          "requested": 1,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 9,
+            "t": 142.6,
+            "flightT": 0,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 0,
+            "spd": 33.9,
+            "pos": [
+              660.5,
+              92,
+              -0.2
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 16,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "hud": {
+            "chapterIndex": 1,
+            "chapterRoman": "II",
+            "chapterTitle": "HOME WATERS",
+            "chapterLabel": "Chapter II \u00b7 Home Waters",
+            "regionId": "keeper_shallows",
+            "regionName": "Keeper Shallows",
+            "objectiveText": "II \u00b7 home waters \u2014 beacons 0/4 \u00b7 echo at 1",
+            "missionBeatText": "Optional \u00b7 shatter the keeper lights 0/3 \u00b7 hold X",
+            "goalText": "Reach four beacons through the keeper shallows",
+            "distanceM": 224.66023049349704,
+            "distanceLabel": "Next beacon",
+            "distanceText": "225 m",
+            "heightAboveWater": 89.14440091466129,
+            "heightText": "89 m AGL",
+            "subHints": [
+              "Press C to echo \u2014 lights reveal the road"
+            ],
+            "storyLine": "Echo through the rain. The first lights are still slow.",
+            "popupOnEnter": "CHAPTER II \u00b7 HOME WATERS",
+            "metaObjective": "Charge plasma (X) and shatter keeper searchlights blocking the road.",
+            "skyPresetId": "shallows_dusk",
+            "ambientLine": "Echo through the rain. The first lights are still slow \u2014 use that."
+          }
+        },
+        {
+          "requested": 2,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 10,
+            "t": 142.6,
+            "flightT": 0,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 3,
+            "spd": 33.9,
+            "pos": [
+              745.3,
+              100,
+              -570.4
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 16,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "hud": {
+            "chapterIndex": 1,
+            "chapterRoman": "II",
+            "chapterTitle": "HOME WATERS",
+            "chapterLabel": "Chapter II \u00b7 Home Waters",
+            "regionId": "serpent_reach",
+            "regionName": "Serpent Reach",
+            "objectiveText": "II \u00b7 home waters \u2014 beacons 3/4 \u00b7 echo at 1",
+            "missionBeatText": "Optional \u00b7 shatter the keeper lights 0/3 \u00b7 hold X",
+            "goalText": "Reach four beacons through the keeper shallows",
+            "distanceM": 255.08300772744892,
+            "distanceLabel": "Next beacon",
+            "distanceText": "255 m",
+            "heightAboveWater": 97.63530246484682,
+            "heightText": "98 m AGL",
+            "subHints": [
+              "Press C to echo \u2014 lights reveal the road"
+            ],
+            "storyLine": "Echo through the rain. The first lights are still slow.",
+            "popupOnEnter": "CHAPTER II \u00b7 HOME WATERS",
+            "metaObjective": "Charge plasma (X) and shatter keeper searchlights blocking the road.",
+            "skyPresetId": "serpent_storm",
+            "ambientLine": "Char on the water. Four hearths \u2014 and only one was spared."
+          }
+        },
+        {
+          "requested": 3,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 11,
+            "t": 142.6,
+            "flightT": 0,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 7,
+            "spd": 33.9,
+            "pos": [
+              299.4,
+              92,
+              -1159.9
+            ],
+            "fpv": false,
+            "chapter": 2,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 16,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "hud": {
+            "chapterIndex": 2,
+            "chapterRoman": "III",
+            "chapterTitle": "SERPENT RUN",
+            "chapterLabel": "Chapter III \u00b7 Serpent Run",
+            "regionId": "serpent_reach",
+            "regionName": "Serpent Reach",
+            "objectiveText": "III \u00b7 Serpent Run \u2014 beacons 7/8 \u00b7 dive and flock",
+            "missionBeatText": "\u2713 Coast mapped from above",
+            "goalText": "Thread three canyon gates and reach beacon eight",
+            "distanceM": 524.255961302614,
+            "distanceLabel": "Next beacon",
+            "distanceText": "524 m",
+            "heightAboveWater": 88.88756373639148,
+            "heightText": "89 m AGL",
+            "subHints": [
+              "Thread canyon gates for cover",
+              "Climb over harbor works \u2014 collect altitude"
+            ],
+            "storyLine": "The canyon tightens. Dive, pull out, and break their lock.",
+            "popupOnEnter": "CHAPTER III \u00b7 SERPENT RUN",
+            "metaObjective": "",
+            "skyPresetId": "serpent_storm",
+            "ambientLine": "Char on the water. Four hearths \u2014 and only one was spared."
+          }
+        },
+        {
+          "requested": 4,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 12,
+            "t": 142.6,
+            "flightT": 0,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 10,
+            "spd": 33.9,
+            "pos": [
+              -239.8,
+              160,
+              -1619.5
+            ],
+            "fpv": false,
+            "chapter": 3,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 16,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "hud": {
+            "chapterIndex": 3,
+            "chapterRoman": "IV",
+            "chapterTitle": "THE LONG NIGHT",
+            "chapterLabel": "Chapter IV \u00b7 The Long Night",
+            "regionId": "aurora_gate",
+            "regionName": "Aurora Gate",
+            "objectiveText": "IV \u00b7 the long night \u2014 beacons 10/11",
+            "missionBeatText": "Fly the ribcage low \u2014 thread every arch before the rain closes in.",
+            "goalText": "Cross the rib wastes and destroy keeper towers",
+            "distanceM": 597.9657224157057,
+            "distanceLabel": "Next beacon",
+            "distanceText": "598 m",
+            "heightAboveWater": null,
+            "heightText": null,
+            "subHints": [
+              "Hold X to charge plasma \u2014 shatter searchlights",
+              "Press F to hide in the flock"
+            ],
+            "storyLine": "No more shelter. The keepers turn faster now.",
+            "popupOnEnter": "CHAPTER IV \u00b7 THE LONG NIGHT",
+            "metaObjective": "Fly the ribcage low \u2014 thread every arch before the rain closes in.",
+            "skyPresetId": "aurora_night",
+            "ambientLine": "The aurora pours in like a tide. Home \u2014 or whatever waits on the other side."
+          }
+        },
+        {
+          "requested": 5,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 13,
+            "t": 142.6,
+            "flightT": 0,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 11,
+            "spd": 33.9,
+            "pos": [
+              -239.8,
+              160,
+              -1619.5
+            ],
+            "fpv": false,
+            "chapter": 4,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 16,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "hud": {
+            "chapterIndex": 4,
+            "chapterRoman": "V",
+            "chapterTitle": "TEMPEST GATE",
+            "chapterLabel": "Chapter V \u00b7 Tempest Gate",
+            "regionId": "aurora_gate",
+            "regionName": "Aurora Gate",
+            "objectiveText": "V \u00b7 reach the Tempest Gate \u2014 11/12",
+            "missionBeatText": "",
+            "goalText": "Reach the final beacon before full nightfall",
+            "distanceM": 40.0315310286801,
+            "distanceLabel": "Tempest Gate",
+            "distanceText": "40 m",
+            "heightAboveWater": 158.08826696631135,
+            "heightText": "158 m AGL",
+            "subHints": [
+              "Nightfall accelerates after beacon eleven",
+              "The aurora marks home"
+            ],
+            "storyLine": "One beacon remains. Reach the aurora before nightfall.",
+            "popupOnEnter": "CHAPTER V \u00b7 TEMPEST GATE",
+            "metaObjective": "",
+            "skyPresetId": "aurora_night",
+            "ambientLine": "The aurora pours in like a tide. Home \u2014 or whatever waits on the other side."
+          }
+        }
+      ]
+    },
+    {
+      "name": "No uncaught browser runtime exceptions",
+      "status": "pass",
+      "errors": [],
+      "failedRequests": [
+        {
+          "url": "<local>/synthesized-audio/theme_explore.mp3",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "<local>/licensed-assets/audio/theme_what_the_sky_was_for.mp3",
+          "error": "net::ERR_ABORTED"
+        },
+        {
+          "url": "<local>/synthesized-audio/theme_battle.mp3",
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "final": {
+        "ts": "2026-09-30T11:34:28.391Z",
+        "uptimeSec": 142.7,
+        "loopLagMs": 4174.8,
+        "bootErrors": [],
+        "frameStats": {
+          "samples": 184,
+          "p50": 66.6,
+          "p95": 4749.8,
+          "p99": 15366
+        },
+        "state": {
+          "paused": true,
+          "launching": false,
+          "runToken": 14,
+          "t": 142.7,
+          "flightT": 0,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 3,
+          "spd": 34,
+          "pos": [
+            515,
+            115,
+            -310
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 16,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "motion": {
+          "accel": 0,
+          "yawRate": 0,
+          "pitchRate": 0,
+          "gLoad": 1,
+          "camera": {
+            "pull": 1.23,
+            "drop": 0.12,
+            "fov": 1.7,
+            "jerk": 0.01,
+            "shakeIntensity": 0.35
+          }
+        },
+        "expansion": {
+          "dof": false,
+          "horizon": {
+            "cameraFar": 9000,
+            "fogDensity": 0.00088,
+            "instances": 30,
+            "islandInstances": 10,
+            "drawCalls": 2,
+            "visualOnly": true,
+            "skyPreset": "serpent_storm"
+          },
+          "landmarks": {
+            "landmarks": 12,
+            "procedural": true,
+            "generatedInCode": true,
+            "externalAssets": 0,
+            "buildError": null,
+            "metrics": {
+              "sites": 12,
+              "materials": 2,
+              "buildMs": 226.4,
+              "trianglesByLevel": [
+                57540,
+                27820,
+                10980
+              ],
+              "shortest": 108,
+              "tallest": 247,
+              "perSite": [
+                {
+                  "id": "wake-arch",
+                  "archetype": "seagate",
+                  "triangles": [
+                    6984,
+                    3024,
+                    960
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    166.6,
+                    179.1,
+                    53.1
+                  ],
+                  "height": 179.1
+                },
+                {
+                  "id": "tide-viaduct",
+                  "archetype": "viaduct",
+                  "triangles": [
+                    5360,
+                    2556,
+                    1020
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    325.2,
+                    157,
+                    37.9
+                  ],
+                  "height": 157
+                },
+                {
+                  "id": "storm-spire",
+                  "archetype": "beacon",
+                  "triangles": [
+                    2712,
+                    1624,
+                    580
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    83.6,
+                    244.5,
+                    86.8
+                  ],
+                  "height": 244.5
+                },
+                {
+                  "id": "keeper-arcade",
+                  "archetype": "viaduct",
+                  "triangles": [
+                    6000,
+                    2832,
+                    1104
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    223.6,
+                    108,
+                    21.8
+                  ],
+                  "height": 108
+                },
+                {
+                  "id": "drowned-gate",
+                  "archetype": "seagate",
+                  "triangles": [
+                    9080,
+                    3776,
+                    1200
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    192,
+                    237.8,
+                    59.5
+                  ],
+                  "height": 237.8
+                },
+                {
+                  "id": "cinder-harbor",
+                  "archetype": "harbor",
+                  "triangles": [
+                    4084,
+                    2128,
+                    1028
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    174.2,
+                    150.1,
+                    159
+                  ],
+                  "height": 150.1
+                },
+                {
+                  "id": "salt-arcade",
+                  "archetype": "viaduct",
+                  "triangles": [
+                    4540,
+                    2160,
+                    852
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    375.4,
+                    172,
+                    41.9
+                  ],
+                  "height": 172
+                },
+                {
+                  "id": "bone-sentinel",
+                  "archetype": "ribhall",
+                  "triangles": [
+                    2392,
+                    1364,
+                    852
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    208.1,
+                    189.1,
+                    303.7
+                  ],
+                  "height": 189.1
+                },
+                {
+                  "id": "gale-spire",
+                  "archetype": "beacon",
+                  "triangles": [
+                    2712,
+                    1624,
+                    580
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    74.1,
+                    247,
+                    77
+                  ],
+                  "height": 247
+                },
+                {
+                  "id": "keeper-works",
+                  "archetype": "harbor",
+                  "triangles": [
+                    4072,
+                    2164,
+                    992
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    176.1,
+                    146.4,
+                    165.5
+                  ],
+                  "height": 146.4
+                },
+                {
+                  "id": "rib-vault",
+                  "archetype": "ribhall",
+                  "triangles": [
+                    2620,
+                    1544,
+                    852
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    178.8,
+                    162.2,
+                    265.2
+                  ],
+                  "height": 162.2
+                },
+                {
+                  "id": "aurora-crown",
+                  "archetype": "seagate",
+                  "triangles": [
+                    6984,
+                    3024,
+                    960
+                  ],
+                  "drawCalls": [
+                    2,
+                    2,
+                    2
+                  ],
+                  "size": [
+                    208,
+                    207.4,
+                    62.7
+                  ],
+                  "height": 207.4
+                }
+              ]
+            },
+            "clearance": {
+              "proxies": 42,
+              "tightest": [
+                {
+                  "id": "bone-sentinel-1",
+                  "clearance": 101.1
+                },
+                {
+                  "id": "keeper-arcade-0",
+                  "clearance": 121.7
+                },
+                {
+                  "id": "storm-spire-0",
+                  "clearance": 137.7
+                },
+                {
+                  "id": "keeper-arcade-1",
+                  "clearance": 139.9
+                }
+              ],
+              "warnings": [],
+              "all": [
+                {
+                  "id": "wake-arch-0",
+                  "clearance": 393.8
+                },
+                {
+                  "id": "wake-arch-1",
+                  "clearance": 395.5
+                },
+                {
+                  "id": "tide-viaduct-0",
+                  "clearance": 973.1
+                },
+                {
+                  "id": "tide-viaduct-1",
+                  "clearance": 948.6
+                },
+                {
+                  "id": "tide-viaduct-2",
+                  "clearance": 924.2
+                },
+                {
+                  "id": "tide-viaduct-3",
+                  "clearance": 899.8
+                },
+                {
+                  "id": "tide-viaduct-4",
+                  "clearance": 875.4
+                },
+                {
+                  "id": "tide-viaduct-5",
+                  "clearance": 851
+                },
+                {
+                  "id": "tide-viaduct-6",
+                  "clearance": 826.6
+                },
+                {
+                  "id": "tide-viaduct-7",
+                  "clearance": 802.1
+                },
+                {
+                  "id": "storm-spire-0",
+                  "clearance": 137.7
+                },
+                {
+                  "id": "keeper-arcade-0",
+                  "clearance": 121.7
+                },
+                {
+                  "id": "keeper-arcade-1",
+                  "clearance": 139.9
+                },
+                {
+                  "id": "keeper-arcade-2",
+                  "clearance": 158
+                },
+                {
+                  "id": "keeper-arcade-3",
+                  "clearance": 176.1
+                },
+                {
+                  "id": "keeper-arcade-4",
+                  "clearance": 194.3
+                },
+                {
+                  "id": "keeper-arcade-5",
+                  "clearance": 212.1
+                },
+                {
+                  "id": "keeper-arcade-6",
+                  "clearance": 197.9
+                },
+                {
+                  "id": "keeper-arcade-7",
+                  "clearance": 185.1
+                },
+                {
+                  "id": "keeper-arcade-8",
+                  "clearance": 172.4
+                },
+                {
+                  "id": "drowned-gate-0",
+                  "clearance": 172.6
+                },
+                {
+                  "id": "drowned-gate-1",
+                  "clearance": 251.4
+                },
+                {
+                  "id": "cinder-harbor-0",
+                  "clearance": 187
+                },
+                {
+                  "id": "cinder-harbor-1",
+                  "clearance": 251.9
+                },
+                {
+                  "id": "cinder-harbor-2",
+                  "clearance": 188.1
+                },
+                {
+                  "id": "salt-arcade-0",
+                  "clearance": 208
+                },
+                {
+                  "id": "salt-arcade-1",
+                  "clearance": 206
+                },
+                {
+                  "id": "salt-arcade-2",
+                  "clearance": 218.5
+                },
+                {
+                  "id": "salt-arcade-3",
+                  "clearance": 238.4
+                },
+                {
+                  "id": "salt-arcade-4",
+                  "clearance": 258.2
+                },
+                {
+                  "id": "salt-arcade-5",
+                  "clearance": 278.1
+                },
+                {
+                  "id": "salt-arcade-6",
+                  "clearance": 297.9
+                },
+                {
+                  "id": "bone-sentinel-0",
+                  "clearance": 210.3
+                },
+                {
+                  "id": "bone-sentinel-1",
+                  "clearance": 101.1
+                },
+                {
+                  "id": "gale-spire-0",
+                  "clearance": 164.7
+                },
+                {
+                  "id": "keeper-works-0",
+                  "clearance": 461.1
+                },
+                {
+                  "id": "keeper-works-1",
+                  "clearance": 511.7
+                },
+                {
+                  "id": "keeper-works-2",
+                  "clearance": 473.6
+                },
+                {
+                  "id": "rib-vault-0",
+                  "clearance": 362.4
+                },
+                {
+                  "id": "rib-vault-1",
+                  "clearance": 462
+                },
+                {
+                  "id": "aurora-crown-0",
+                  "clearance": 287.3
+                },
+                {
+                  "id": "aurora-crown-1",
+                  "clearance": 341.2
+                }
+              ]
+            },
+            "loadedTemplates": [
+              "seagate",
+              "viaduct",
+              "beacon",
+              "harbor",
+              "ribhall"
+            ],
+            "active": [
+              "bone-sentinel",
+              "rib-vault",
+              "aurora-crown"
+            ],
+            "regionFilter": "serpent_reach",
+            "activeRegionArchetypes": [
+              "harbor",
+              "viaduct"
+            ],
+            "regionProfiles": [
+              {
+                "regionId": "wake_cove",
+                "name": "Wake Cove",
+                "allowedLandmarkIds": [
+                  "wake-arch",
+                  "tide-viaduct"
+                ],
+                "allowedLandmarkArchetypes": [
+                  "viaduct"
+                ],
+                "sites": [
+                  {
+                    "id": "tide-viaduct",
+                    "archetype": "viaduct"
+                  }
+                ]
+              },
+              {
+                "regionId": "keeper_shallows",
+                "name": "Keeper Shallows",
+                "allowedLandmarkIds": [
+                  "storm-spire",
+                  "keeper-arcade",
+                  "drowned-gate"
+                ],
+                "allowedLandmarkArchetypes": [
+                  "viaduct",
+                  "beacon",
+                  "seagate"
+                ],
+                "sites": [
+                  {
+                    "id": "storm-spire",
+                    "archetype": "beacon"
+                  },
+                  {
+                    "id": "keeper-arcade",
+                    "archetype": "viaduct"
+                  },
+                  {
+                    "id": "drowned-gate",
+                    "archetype": "seagate"
+                  }
+                ]
+              },
+              {
+                "regionId": "serpent_reach",
+                "name": "Serpent Reach",
+                "allowedLandmarkIds": [
+                  "cinder-harbor",
+                  "salt-arcade"
+                ],
+                "allowedLandmarkArchetypes": [
+                  "harbor",
+                  "viaduct",
+                  "seagate"
+                ],
+                "sites": [
+                  {
+                    "id": "cinder-harbor",
+                    "archetype": "harbor"
+                  },
+                  {
+                    "id": "salt-arcade",
+                    "archetype": "viaduct"
+                  }
+                ]
+              },
+              {
+                "regionId": "rib_wastes",
+                "name": "Rib Wastes",
+                "allowedLandmarkIds": [
+                  "bone-sentinel",
+                  "gale-spire",
+                  "keeper-works"
+                ],
+                "allowedLandmarkArchetypes": [
+                  "ribhall",
+                  "beacon",
+                  "harbor"
+                ],
+                "sites": [
+                  {
+                    "id": "bone-sentinel",
+                    "archetype": "ribhall"
+                  },
+                  {
+                    "id": "gale-spire",
+                    "archetype": "beacon"
+                  },
+                  {
+                    "id": "keeper-works",
+                    "archetype": "harbor"
+                  }
+                ]
+              },
+              {
+                "regionId": "aurora_gate",
+                "name": "Aurora Gate",
+                "allowedLandmarkIds": [
+                  "rib-vault",
+                  "aurora-crown"
+                ],
+                "allowedLandmarkArchetypes": [
+                  "seagate",
+                  "ribhall"
+                ],
+                "sites": [
+                  {
+                    "id": "rib-vault",
+                    "archetype": "ribhall"
+                  },
+                  {
+                    "id": "aurora-crown",
+                    "archetype": "seagate"
+                  }
+                ]
+              }
+            ],
+            "collisionWiringRequired": false
+          },
+          "seaFog": 0.00088,
+          "sceneFog": 0.00088,
+          "cameraFar": 9000,
+          "worldArt": {
+            "seaVertices": 10201,
+            "horizonTriangles": 180,
+            "islandDrawCalls": 2,
+            "landmarkMaterials": 2,
+            "objectiveRingsFogFree": true
+          }
+        },
+        "renderInfo": {
+          "calls": 241,
+          "triangles": 622973,
+          "programs": 93,
+          "geometries": 593,
+          "textures": 14,
+          "landmarkLod": [
+            {
+              "id": "wake-arch",
+              "fromDragon": 2005,
+              "fromCamera": 707,
+              "visible": true,
+              "lod": 1
+            },
+            {
+              "id": "tide-viaduct",
+              "fromDragon": 1716,
+              "fromCamera": 1119,
+              "visible": false,
+              "lod": -1
+            },
+            {
+              "id": "storm-spire",
+              "fromDragon": 2036,
+              "fromCamera": 532,
+              "visible": false,
+              "lod": -1
+            },
+            {
+              "id": "keeper-arcade",
+              "fromDragon": 1602,
+              "fromCamera": 137,
+              "visible": false,
+              "lod": -1
+            },
+            {
+              "id": "drowned-gate",
+              "fromDragon": 2091,
+              "fromCamera": 535,
+              "visible": true,
+              "lod": 1
+            },
+            {
+              "id": "cinder-harbor",
+              "fromDragon": 1727,
+              "fromCamera": 860,
+              "visible": false,
+              "lod": -1
+            },
+            {
+              "id": "salt-arcade",
+              "fromDragon": 1319,
+              "fromCamera": 1102,
+              "visible": false,
+              "lod": -1
+            },
+            {
+              "id": "bone-sentinel",
+              "fromDragon": 457,
+              "fromCamera": 1218,
+              "visible": true,
+              "lod": 2
+            },
+            {
+              "id": "gale-spire",
+              "fromDragon": 697,
+              "fromCamera": 1094,
+              "visible": false,
+              "lod": -1
+            },
+            {
+              "id": "keeper-works",
+              "fromDragon": 1095,
+              "fromCamera": 1545,
+              "visible": false,
+              "lod": -1
+            },
+            {
+              "id": "rib-vault",
+              "fromDragon": 556,
+              "fromCamera": 1809,
+              "visible": true,
+              "lod": 2
+            },
+            {
+              "id": "aurora-crown",
+              "fromDragon": 369,
+              "fromCamera": 1588,
+              "visible": true,
+              "lod": 2
+            }
+          ]
+        },
+        "cameraShake": {
+          "intensity": 0.35,
+          "jerk": 0.0096
+        }
+      }
+    }
+  ],
+  "pageErrors": [],
+  "failedRequests": [
+    {
+      "url": "<local>/synthesized-audio/theme_explore.mp3",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "<local>/licensed-assets/audio/theme_what_the_sky_was_for.mp3",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "<local>/synthesized-audio/theme_battle.mp3",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "screenshots": [
+    "01-landing.png",
+    "02-navigation-map.png",
+    {
+      "name": "03-route-attempt.png",
+      "error": "page.screenshot: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n"
+    },
+    {
+      "name": "04-flight-scene.png",
+      "error": "page.screenshot: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n"
+    }
+  ],
+  "campaign": {
+    "method": "Normal begin/reset, then steerObjective only sets control inputs and stepSimulation advances real rules. No position, score or health assignments. Up to 600 simulated seconds; not a full unassisted human playthrough.",
+    "history": [
+      {
+        "simulationSteps": 600,
+        "paused": false,
+        "launching": false,
+        "runToken": 3,
+        "t": 15.1,
+        "flightT": 10.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 40.8,
+        "pos": [
+          -179.4,
+          59.3,
+          -195.8
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 1,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 1,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      {
+        "simulationSteps": 1200,
+        "paused": false,
+        "launching": false,
+        "runToken": 3,
+        "t": 25.1,
+        "flightT": 20.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 40.8,
+        "pos": [
+          -113.7,
+          50.9,
+          55.2
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 2,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 2,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      {
+        "simulationSteps": 1800,
+        "paused": true,
+        "launching": false,
+        "runToken": 3,
+        "t": 30.6,
+        "flightT": 25.5,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 26.2,
+        "pos": [
+          50.4,
+          49.9,
+          177.4
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 3,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      {
+        "simulationSteps": 2400,
+        "paused": false,
+        "launching": false,
+        "runToken": 3,
+        "t": 40.6,
+        "flightT": 35.5,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 40.5,
+        "pos": [
+          395.9,
+          50.6,
+          15.8
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 3,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.026,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      {
+        "simulationSteps": 3000,
+        "paused": false,
+        "launching": false,
+        "runToken": 3,
+        "t": 50.6,
+        "flightT": 45.5,
+        "started": true,
+        "done": false,
+        "det": 0.11,
+        "score": 2,
+        "spd": 38.5,
+        "pos": [
+          727.4,
+          60.8,
+          -43.4
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 9,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.074,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      {
+        "simulationSteps": 3600,
+        "paused": true,
+        "launching": false,
+        "runToken": 3,
+        "t": 60.3,
+        "flightT": 55.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 26.8,
+        "pos": [
+          787.4,
+          65.6,
+          -307.2
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.12,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      {
+        "simulationSteps": 4200,
+        "paused": false,
+        "launching": false,
+        "runToken": 3,
+        "t": 70.3,
+        "flightT": 65.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 25.3,
+        "pos": [
+          745.8,
+          65.4,
+          -555.1
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.168,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      {
+        "simulationSteps": 4800,
+        "paused": false,
+        "launching": false,
+        "runToken": 3,
+        "t": 80.4,
+        "flightT": 75.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 26.7,
+        "pos": [
+          738.8,
+          65.6,
+          -545.9
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.216,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      {
+        "simulationSteps": 5400,
+        "paused": false,
+        "launching": false,
+        "runToken": 3,
+        "t": 90.4,
+        "flightT": 85.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 26.7,
+        "pos": [
+          757.4,
+          65.4,
+          -594.7
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.264,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      {
+        "simulationSteps": 6000,
+        "paused": false,
+        "launching": false,
+        "runToken": 3,
+        "t": 100.4,
+        "flightT": 95.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 26.7,
+        "pos": [
+          721.6,
+          64,
+          -574.9
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.311,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      {
+        "simulationSteps": 6600,
+        "paused": false,
+        "launching": false,
+        "runToken": 3,
+        "t": 105.6,
+        "flightT": 100.6,
+        "started": true,
+        "done": true,
+        "det": 0,
+        "score": 4,
+        "spd": 26,
+        "pos": [
+          762.4,
+          61.4,
+          -548.9
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.336,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      }
+    ],
+    "last": {
+      "paused": false,
+      "launching": false,
+      "runToken": 3,
+      "t": 105.6,
+      "flightT": 100.6,
+      "started": true,
+      "done": true,
+      "det": 0,
+      "score": 4,
+      "spd": 26,
+      "pos": [
+        762.4,
+        61.4,
+        -548.9
+      ],
+      "fpv": false,
+      "chapter": 2,
+      "tutorial": 3,
+      "routeVisible": 12,
+      "cause": "",
+      "scales": 16,
+      "hp": 100,
+      "hpMax": 100,
+      "day": 0.336,
+      "finishing": false,
+      "charges": 3,
+      "chargeT": -1,
+      "bolts": 0,
+      "disabled": 0
+    },
+    "campaignComplete": false,
+    "extent": "Three tutorial rings and four beacons; run ended during village raid because route driver did not fight raiders."
+  }
+}

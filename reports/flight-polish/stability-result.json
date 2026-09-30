@@ -1,0 +1,163 @@
+{
+  "generatedAt": "2026-09-30T11:34:13.726Z",
+  "sourceSha256": "bdf78529cda1e84dfdc271e0fe462d1378cca11878e7e8c2a9cfffc7985c2d90",
+  "method": "Numerical execution of source extracted from index.html, using the shipped Three build; boundary stubs listed per section. No GPU/FPS or full-campaign assertion.",
+  "rigs": [
+    {
+      "id": "stormcrest",
+      "fps": 30,
+      "frames": 600,
+      "simulatedSeconds": 20,
+      "bones": 25,
+      "invalid": 0,
+      "proceduralPoseRestore": true,
+      "maxQuaternionError": 7.3407741441045e-8,
+      "maxSampledVertexRadius": 0.9753524576953827,
+      "assetSha256": "191e7a63a50842bd8824433f878737f1caaca5de6d414bd99a1399d4633cdddc",
+      "boundaries": "Textures stripped; animation clips, mesh vertices/skin weights, bone hierarchy and procedural pose code are actual. 64+ sampled vertices per skinned mesh per frame."
+    },
+    {
+      "id": "stormcrest",
+      "fps": 60,
+      "frames": 600,
+      "simulatedSeconds": 10,
+      "bones": 25,
+      "invalid": 0,
+      "proceduralPoseRestore": true,
+      "maxQuaternionError": 6.760518012072225e-8,
+      "maxSampledVertexRadius": 0.9722286902408095,
+      "assetSha256": "191e7a63a50842bd8824433f878737f1caaca5de6d414bd99a1399d4633cdddc",
+      "boundaries": "Textures stripped; animation clips, mesh vertices/skin weights, bone hierarchy and procedural pose code are actual. 64+ sampled vertices per skinned mesh per frame."
+    },
+    {
+      "id": "stormcrest",
+      "fps": 120,
+      "frames": 600,
+      "simulatedSeconds": 5,
+      "bones": 25,
+      "invalid": 0,
+      "proceduralPoseRestore": true,
+      "maxQuaternionError": 6.848903510991988e-8,
+      "maxSampledVertexRadius": 0.9697440509864627,
+      "assetSha256": "191e7a63a50842bd8824433f878737f1caaca5de6d414bd99a1399d4633cdddc",
+      "boundaries": "Textures stripped; animation clips, mesh vertices/skin weights, bone hierarchy and procedural pose code are actual. 64+ sampled vertices per skinned mesh per frame."
+    },
+    {
+      "id": "quaternius",
+      "fps": 30,
+      "frames": 600,
+      "simulatedSeconds": 20,
+      "bones": 27,
+      "invalid": 0,
+      "proceduralPoseRestore": true,
+      "maxQuaternionError": 3.225617450919316e-8,
+      "maxSampledVertexRadius": 0.03400264675357902,
+      "assetSha256": "983f28d4864199f45e1ca67005466d35f2381f08ecf2e234735bf65ecd7be252",
+      "boundaries": "Textures stripped; animation clips, mesh vertices/skin weights, bone hierarchy and procedural pose code are actual. 64+ sampled vertices per skinned mesh per frame."
+    },
+    {
+      "id": "quaternius",
+      "fps": 60,
+      "frames": 600,
+      "simulatedSeconds": 10,
+      "bones": 27,
+      "invalid": 0,
+      "proceduralPoseRestore": true,
+      "maxQuaternionError": 3.3603525295688996e-8,
+      "maxSampledVertexRadius": 0.03385641582498975,
+      "assetSha256": "983f28d4864199f45e1ca67005466d35f2381f08ecf2e234735bf65ecd7be252",
+      "boundaries": "Textures stripped; animation clips, mesh vertices/skin weights, bone hierarchy and procedural pose code are actual. 64+ sampled vertices per skinned mesh per frame."
+    },
+    {
+      "id": "quaternius",
+      "fps": 120,
+      "frames": 600,
+      "simulatedSeconds": 5,
+      "bones": 27,
+      "invalid": 0,
+      "proceduralPoseRestore": true,
+      "maxQuaternionError": 3.360352507364439e-8,
+      "maxSampledVertexRadius": 0.03380817655680311,
+      "assetSha256": "983f28d4864199f45e1ca67005466d35f2381f08ecf2e234735bf65ecd7be252",
+      "boundaries": "Textures stripped; animation clips, mesh vertices/skin weights, bone hierarchy and procedural pose code are actual. 64+ sampled vertices per skinned mesh per frame."
+    }
+  ],
+  "lifecycle": {
+    "resetCycles": 20,
+    "ownedGeometriesDisposed": 100,
+    "ownedMaterialsDisposed": 120,
+    "ringMaterialsDisposed": 20,
+    "sharedGeometryDisposals": 0,
+    "staleTimerCalls": 0,
+    "pausedCallbackCallsAfterResume": 1,
+    "preservedChapterPosition": [
+      123,
+      234,
+      345
+    ],
+    "checks": [
+      "20 resets clear transient state, controls, charge, combat, springs and world effects",
+      "20 resources per transient effect type disposed; shared projectile geometry retained",
+      "upgrades and scales preserved unless explicitly cleared",
+      "cancelled timer cannot execute even if invoked after cancellation",
+      "paused delayed callback waits for resume",
+      "chapter launch retains checkpoint spawn after timed intro"
+    ],
+    "boundaries": "Audio, DOM, achievement/story callbacks, map state, upgrade lookup and chapter positioning are explicit lightweight stubs; reset/input/timer/cleanup functions executed unchanged from index.html."
+  },
+  "graze": [
+    {
+      "fps": 30,
+      "seconds": 3,
+      "hp": 100,
+      "crashes": 0,
+      "closeCalls": 1,
+      "detectionAfter": 0.9600000000000004,
+      "finalPosition": [
+        51.278861479270844,
+        30.281580680462778,
+        -1.8635580145302457
+      ],
+      "singleImpactHp": 78.1,
+      "centreContactFinite": true,
+      "hillsideGrazing": true,
+      "gustDisplacementRatio": 0.19999999999999998
+    },
+    {
+      "fps": 60,
+      "seconds": 3,
+      "hp": 100,
+      "crashes": 0,
+      "closeCalls": 1,
+      "detectionAfter": 0.9633333333333325,
+      "finalPosition": [
+        51.10412494011586,
+        30.285602410059923,
+        -1.8885383385958951
+      ],
+      "singleImpactHp": 78.1,
+      "centreContactFinite": true,
+      "hillsideGrazing": true,
+      "gustDisplacementRatio": 0.20000000000000007
+    },
+    {
+      "fps": 120,
+      "seconds": 3,
+      "hp": 100,
+      "crashes": 0,
+      "closeCalls": 1,
+      "detectionAfter": 0.9633333333333325,
+      "finalPosition": [
+        51.04173148837118,
+        30.265324532762275,
+        -1.8907375377647708
+      ],
+      "singleImpactHp": 78.1,
+      "centreContactFinite": true,
+      "hillsideGrazing": true,
+      "gustDisplacementRatio": 0.19999999999999996
+    }
+  ],
+  "grazeBoundaries": "Isolated unmodified wind/collision snippets; no player route steering, rendering, new terrain mesh or complete canyon autopilot. Tests use a cylindrical cliff and a flat hillside, deterministic inputs, and stubbed sound/feedback.",
+  "pass": true
+}

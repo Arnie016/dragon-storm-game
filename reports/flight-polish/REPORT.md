@@ -23,7 +23,9 @@ Results from the final recovered checkout are saved alongside reproducible scrip
 | Projectile/profile regression | `regression.test.mjs`: 15 tests passed |
 | Mountain physics/render agreement | `terrain-check.mjs`, `terrain-result.json`: mesh comparisons, exact segment occlusion, route clearance, quality invariance and no mountain shadows |
 | Navigation chart | `navigation-map-check.mjs`, `navigation-map-result.json`: terrain cache, live overlay redraw, invalidation and disposal |
-| Integrated browser/rig/lifecycle | Final results recorded by the additional scripts and JSON files in this directory |
+| Rig/lifecycle/graze stability | `stability-result.json`: 3,600 animation frames, 20 reset cycles, impact cooldowns and wind damping passed |
+| Browser integration | All five quality controls, five dragon variants, six chapter initializations, pause/resume, map, charged tower hit and retry passed; see `BROWSER_VERIFICATION.md` |
+| Confirmed enemy hit | `combat-confirmation/results.json`: 3/3 checks passed; actual projectile reduced HP 100 → 84 and triggered 0.55 seconds of hit protection |
 
 Run CPU checks from the repository root:
 
@@ -31,6 +33,7 @@ Run CPU checks from the repository root:
 node --test reports/flight-polish/regression.test.mjs
 node reports/flight-polish/terrain-check.mjs
 node reports/flight-polish/navigation-map-check.mjs
+node reports/flight-polish/stability-check.mjs
 ```
 
 The chart preview uses the actual terrain with synthetic progression. Browser and combat test setup is declared in each ledger. Synthetic repositioning does not count as campaign progress.
@@ -40,3 +43,17 @@ The chart preview uses the actual terrain with synthetic progression. Browser an
 The available browser uses SwiftShader, a software GPU. Its frame timings cannot establish native-device performance. No 60/120 FPS claim is made. Audio quality, control feel and sustained native-GPU performance need a hands-on target-device run.
 
 Graphics settings change cosmetic budgets; essential combat cues and physics do not depend on the selected level. Terrain geometry counts establish reduced rendering work, not a measured FPS improvement.
+
+## Playthrough extent
+
+The input-only route attempt completed three tutorial rings and four beacons before ending at the village raid after about 100.6 simulated flight seconds. The driver follows flight objectives and does not fight raiders. **The complete campaign is not verified.** Chapter selection and isolated combat tests do not count as campaign completion. The unsuccessful moving-target retaliation diagnostic is retained alongside the successful held-position follow-up.
+
+Final-source boot/render checks reported no uncaught exceptions. See [the browser verification ledger](BROWSER_VERIFICATION.md) for exact setup, evidence versions and remaining limitations.
+
+## Captures
+
+These captures come from actual browser output. The chart uses lossless WebP; the flight image uses JPEG compression. The chart reflects live game state. The Low-preset flight capture uses a diagnostic camera; it is not evidence of a normal-play camera or maximum-quality graphics.
+
+![Actual navigation chart](browser-evidence/02-navigation-map.webp)
+
+![Low-preset flight scene](final-browser-evidence/flight-scene.jpg)

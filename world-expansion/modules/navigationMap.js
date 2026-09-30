@@ -60,7 +60,7 @@ export function createNavigationMap({canvas, world, terrainHeight, canvasFactory
     for(let j=0;j<rows;j++) for(let i=0;i<cols;i++) {
       const k=j*(cols+1)+i,hh=(heights[k]+heights[k+1]+heights[k+cols+1]+heights[k+cols+2])/4;
       const shade=clamp((heights[k]-heights[k+1]+heights[k]-heights[k+cols+1])*.33,-20,20);
-      const color=hh<0?[187,196,181]:hh<12?[191,185,147]:hh<80?[145,157,117]:hh<180?[155,151,119]:hh<340?[178,167,139]:[209,201,177];
+      const color=hh<=.5?[187,196,181]:hh<12?[191,185,147]:hh<80?[145,157,117]:hh<180?[155,151,119]:hh<340?[178,167,139]:[209,201,177];
       const index=(j*cols+i)*4;
       for(let q=0;q<3;q++)pixels.data[index+q]=clamp(color[q]+(hh>0?shade:0),0,255);
       pixels.data[index+3]=255;
@@ -68,8 +68,8 @@ export function createNavigationMap({canvas, world, terrainHeight, canvasFactory
     rc.putImageData(pixels,0,0);c.drawImage(raster,x,y,pw,ph);
     c.save();c.beginPath();c.rect(x,y,pw,ph);c.clip();
     // Marching squares follows the rendered coastline, including the harbor bay.
-    for(const level of [0,45,100,180,300,450]) {
-      c.beginPath();c.strokeStyle=level===0?'rgba(61,81,67,.68)':'rgba(78,79,55,.26)';c.lineWidth=level===0?1.15:.65;
+    for(const level of [.5,45,100,180,300,450]) {
+      c.beginPath();c.strokeStyle=level===.5?'rgba(61,81,67,.68)':'rgba(78,79,55,.26)';c.lineWidth=level===.5?1.15:.65;
       for(let j=0;j<rows;j++) for(let i=0;i<cols;i++) {
         const k=j*(cols+1)+i,values=[heights[k],heights[k+1],heights[k+cols+2],heights[k+cols+1]];
         const verts=[[i,j],[i+1,j],[i+1,j+1],[i,j+1]],crossings=[];
@@ -96,7 +96,7 @@ export function createNavigationMap({canvas, world, terrainHeight, canvasFactory
     const label=(text,wx,wz,dx=0,dy=0)=>{const p=project({x:wx,z:wz});c.font='italic 13px Georgia, serif';c.textAlign='center';c.lineWidth=3;c.strokeStyle='rgba(224,209,174,.85)';c.strokeText(text,p.x+dx,p.y+dy);c.fillStyle='#545b48';c.fillText(text,p.x+dx,p.y+dy);};
     if(world.VILLAGE)label('Hearthholm',world.VILLAGE.x,world.VILLAGE.z,0,19);
     if(world.KEEPERS?.center)label('Keeper Shallows',...world.KEEPERS.center,38,29);
-    if(world.CANYON?.length)label('Serpent Reach',world.CANYON[0][0],world.CANYON[0][1],44,-18);
+    if(world.CANYON?.length)label('Serpent Reach',world.CANYON[0][0],world.CANYON[0][1],94,-8);
     if(world.RIBS?.length)label('Rib Wastes',world.RIBS[2]?.x??0,world.RIBS[2]?.z??-1100,0,27);
     if(world.GATE)label('Tempest Gate',world.GATE.x,world.GATE.z,0,-20);
     // Compass and scale sit inside the chart margin, away from the route.
