@@ -1,0 +1,3138 @@
+{
+  "date": "2026-09-30T17:57:59.780Z",
+  "environment": "Headless Chromium 153 using SwiftShader CPU rendering; render timings are not hardware FPS benchmarks.",
+  "source": "Recovered enhancement branch",
+  "checks": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "screenshots": [
+    "campaign-end.png"
+  ],
+  "campaign": null,
+  "method": "Real UI Story launch, read-only telemetry, normal flight control state and X keyboard events; fixed 1/60-second simulation. No teleports, checkpoint jumps, score/HP/enemy mutation or forced victory. Fresh localStorage; RNG seed104.",
+  "samples": [
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 5.3,
+        "flightT": 4.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 39.6,
+        "pos": [
+          -49.2,
+          58,
+          -379.7
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 1,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 1,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -49.19888907482516,
+          58.014565378580215,
+          -379.68836473771864
+        ],
+        "yaw": 1.8927399479254532,
+        "pitch": -0.008582235569881223,
+        "speed": 39.644346107614645,
+        "objective": [
+          -290,
+          52,
+          -60
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 240
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 9.3,
+        "flightT": 8.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 39.6,
+        "pos": [
+          -141.6,
+          58,
+          -266.7
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 1,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 1,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -141.63442707462104,
+          57.98144586942272,
+          -266.6679983754336
+        ],
+        "yaw": 2.4728626820801773,
+        "pitch": -4.384740558633535e-14,
+        "speed": 39.639566650133446,
+        "objective": [
+          -290,
+          52,
+          -60
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 480
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 13.3,
+        "flightT": 12.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 39.6,
+        "pos": [
+          -235.2,
+          58,
+          -136.3
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 1,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 1,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -235.2374296092078,
+          58.02185339988037,
+          -136.28006573202222
+        ],
+        "yaw": 2.511493928940033,
+        "pitch": -2.240202987901903e-25,
+        "speed": 39.61484325388736,
+        "objective": [
+          -290,
+          52,
+          -60
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 720
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 17.3,
+        "flightT": 16.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 40.2,
+        "pos": [
+          -258.5,
+          53,
+          -23.7
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 2,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 2,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -258.4953744552832,
+          53.00333340505867,
+          -23.660285737543415
+        ],
+        "yaw": 4.109514782826772,
+        "pitch": -0.00005530052522064135,
+        "speed": 40.20040368056832,
+        "objective": [
+          60,
+          46,
+          185
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 960
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 21.3,
+        "flightT": 20.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 40.2,
+        "pos": [
+          -125.2,
+          52.8,
+          63.8
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 2,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 2,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -125.19758959512754,
+          52.766267638026285,
+          63.835532039069584
+        ],
+        "yaw": 4.109514782826772,
+        "pitch": -2.8253530665092027e-16,
+        "speed": 40.17788640295825,
+        "objective": [
+          60,
+          46,
+          185
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 1200
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 25.3,
+        "flightT": 24.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 40.2,
+        "pos": [
+          3.4,
+          52.8,
+          149.4
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 2,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 2,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          3.426606880025648,
+          52.76613742320228,
+          149.40109344275996
+        ],
+        "yaw": 4.109514782826772,
+        "pitch": -1.4434980352507351e-27,
+        "speed": 40.15475577799142,
+        "objective": [
+          60,
+          46,
+          185
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 1440
+    },
+    {
+      "ran": 131,
+      "state": {
+        "paused": true,
+        "launching": false,
+        "runToken": 1,
+        "t": 27.5,
+        "flightT": 26.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 25.8,
+        "pos": [
+          53.7,
+          53.8,
+          177.1
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 3,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          53.66770046285394,
+          53.76709671500158,
+          177.0870064453448
+        ],
+        "yaw": 3.8430564660166495,
+        "pitch": -9.909544100626798e-34,
+        "speed": 25.807769558009785,
+        "objective": [
+          440,
+          50,
+          -10
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 1571
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 31.5,
+        "flightT": 30.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 40.1,
+        "pos": [
+          190.7,
+          53.9,
+          123.4
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 3,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.001,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          190.71268992521613,
+          53.87683825740767,
+          123.43146875918828
+        ],
+        "yaw": 5.182805618475514,
+        "pitch": -5.062874303762247e-45,
+        "speed": 40.14472641370425,
+        "objective": [
+          440,
+          50,
+          -10
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 1811
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 35.5,
+        "flightT": 34.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 40.1,
+        "pos": [
+          333.3,
+          53.9,
+          55.3
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 3,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.02,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          333.3446576242068,
+          53.889588389433676,
+          55.31087308216149
+        ],
+        "yaw": 5.221460618337203,
+        "pitch": -2.586667555581568e-56,
+        "speed": 40.11812826344137,
+        "objective": [
+          440,
+          50,
+          -10
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 2051
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 39.5,
+        "flightT": 38.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 1,
+        "spd": 39.6,
+        "pos": [
+          459.6,
+          53.6,
+          -3.5
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 6,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.04,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          459.57487414301943,
+          53.57696853082594,
+          -3.482695971093697
+        ],
+        "yaw": 4.733586875921718,
+        "pitch": -1.3215514827469264e-67,
+        "speed": 39.64771918511948,
+        "objective": [
+          660,
+          52,
+          0
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 2291
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 43.5,
+        "flightT": 42.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 1,
+        "spd": 39.6,
+        "pos": [
+          601.2,
+          54.6,
+          -0.7
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 6,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.059,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          601.2010865320811,
+          54.61646068874784,
+          -0.6662125409447344
+        ],
+        "yaw": 4.733586875921718,
+        "pitch": -6.751924180523191e-79,
+        "speed": 39.62561063520636,
+        "objective": [
+          660,
+          52,
+          0
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 2531
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 47.5,
+        "flightT": 46.3,
+        "started": true,
+        "done": false,
+        "det": 0.11,
+        "score": 2,
+        "spd": 40.2,
+        "pos": [
+          734,
+          59.9,
+          -46.1
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 9,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.078,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          733.9968344341886,
+          59.947587265270364,
+          -46.13610026030659
+        ],
+        "yaw": 5.160705911291113,
+        "pitch": 7.140683664477632e-8,
+        "speed": 40.16350782331597,
+        "objective": [
+          880,
+          60,
+          -120
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 2771
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 51.5,
+        "flightT": 50.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 3,
+        "spd": 29,
+        "pos": [
+          871.5,
+          63.2,
+          -115
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 13,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.097,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          871.5403201783846,
+          63.24039091269204,
+          -114.99572521924847
+        ],
+        "yaw": 5.626533701982324,
+        "pitch": 0.4503473079093273,
+        "speed": 29.0474093210209,
+        "objective": [
+          780,
+          66,
+          -320
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 3011
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 55.5,
+        "flightT": 54.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 3,
+        "spd": 39.8,
+        "pos": [
+          817.5,
+          64,
+          -245.7
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 13,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.116,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          817.5446991096887,
+          64.03103665985344,
+          -245.65657743170345
+        ],
+        "yaw": 6.732771747779889,
+        "pitch": 2.3008644896574196e-12,
+        "speed": 39.7846618071492,
+        "objective": [
+          780,
+          66,
+          -320
+        ],
+        "raid": false,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 0,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 0,
+      "steps": 3251
+    },
+    {
+      "ran": 116,
+      "state": {
+        "paused": true,
+        "launching": false,
+        "runToken": 1,
+        "t": 57.4,
+        "flightT": 56.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 26.2,
+        "pos": [
+          787,
+          64.1,
+          -307.2
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.125,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          787.0256443758256,
+          64.08389532039872,
+          -307.16243778354186
+        ],
+        "yaw": 6.763525180767467,
+        "pitch": 8.021527047521546e-18,
+        "speed": 26.245860093633627,
+        "objective": [
+          566.840182615098,
+          81.76666666666667,
+          98.15486209741229
+        ],
+        "raid": true,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 1,
+        "chargeSeconds": 0.9,
+        "riders": [
+          {
+            "id": 0,
+            "position": [
+              372.89459743020586,
+              69.8,
+              556.879308444324
+            ],
+            "yaw": 0.6499629934615632,
+            "speed": 33.96666666666666,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 1,
+            "position": [
+              528.432183551195,
+              75.76666666666667,
+              352.2726671290512
+            ],
+            "yaw": 1.1623102934351626,
+            "speed": 33.96666666666666,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 2,
+            "position": [
+              566.840182615098,
+              81.76666666666667,
+              98.15486209741229
+            ],
+            "yaw": 1.69162966012823,
+            "speed": 33.96666666666666,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          }
+        ]
+      },
+      "shots": 0,
+      "steps": 3367
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 61.4,
+        "flightT": 60.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 54.1,
+        "pos": [
+          660,
+          63.3,
+          -174.2
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 16,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.144,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          659.9792339301192,
+          63.250053578174715,
+          -174.22095621074362
+        ],
+        "yaw": 8.735168141791592,
+        "pitch": -0.021229297217866337,
+        "speed": 54.09437887981272,
+        "objective": [
+          437.2117459092337,
+          58.501006658090645,
+          100.30727657229872
+        ],
+        "raid": true,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 1,
+        "chargeSeconds": 0.9,
+        "riders": [
+          {
+            "id": 0,
+            "position": [
+              309.8755714491989,
+              58.20896074566133,
+              443.3354309432959
+            ],
+            "yaw": 0.5691545166816453,
+            "speed": 32.03482679094342,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 1,
+            "position": [
+              415.3233163169678,
+              58.32519873462281,
+              288.8147711497364
+            ],
+            "yaw": 0.9742342667815508,
+            "speed": 32.03482679094342,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 2,
+            "position": [
+              437.2117459092337,
+              58.501006658090645,
+              100.30727657229872
+            ],
+            "yaw": 1.4862140620196818,
+            "speed": 32.03482679094342,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          }
+        ]
+      },
+      "shots": 0,
+      "steps": 3607
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 65.4,
+        "flightT": 64.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 54,
+        "pos": [
+          519.8,
+          56.5,
+          -31.2
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 20,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.163,
+        "finishing": false,
+        "charges": 2.33,
+        "chargeT": 1.5,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          519.7762213480424,
+          56.467819799298404,
+          -31.201542115424477
+        ],
+        "yaw": 8.736748328404692,
+        "pitch": -0.5738153398298258,
+        "speed": 54.0219847088139,
+        "objective": [
+          306.02398761279636,
+          51.70906590147745,
+          223.20144396243305
+        ],
+        "raid": true,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 1,
+        "chargeSeconds": 0.9,
+        "riders": [
+          {
+            "id": 0,
+            "position": [
+              223.96919447321568,
+              26.44878196620234,
+              348.6226882118084
+            ],
+            "yaw": 0.7547394678514685,
+            "speed": 32.00061673154264,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 1,
+            "position": [
+              306.02398761279636,
+              51.70906590147745,
+              223.20144396243305
+            ],
+            "yaw": 1.2709218894061038,
+            "speed": 32.00061673154264,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 2,
+            "position": [
+              320.124907213583,
+              19.233454794264066,
+              101.07502044375285
+            ],
+            "yaw": 1.5890265374214134,
+            "speed": 32.0014533069043,
+            "hp": 0,
+            "dead": false,
+            "falling": true
+          }
+        ]
+      },
+      "shots": 1,
+      "steps": 3847
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 69.4,
+        "flightT": 68.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 25.2,
+        "pos": [
+          453.6,
+          69.2,
+          72.4
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 28,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.182,
+        "finishing": false,
+        "charges": 0.2,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          453.5517288372125,
+          69.18541908114632,
+          72.42949626950133
+        ],
+        "yaw": 10.570482203391286,
+        "pitch": -0.2548268723367203,
+        "speed": 25.191525846558235,
+        "objective": [
+          183.73559923497254,
+          25.619293830843063,
+          185.3900360157241
+        ],
+        "raid": true,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": [
+          {
+            "id": 0,
+            "position": [
+              160.53776920188523,
+              2.327371955104355,
+              281.17749899741216
+            ],
+            "yaw": 0.7547394678514693,
+            "speed": 32.00006486316987,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          },
+          {
+            "id": 1,
+            "position": [
+              183.73559923497254,
+              25.619293830843063,
+              185.3900360157241
+            ],
+            "yaw": 1.2709218894061036,
+            "speed": 32.00001092141372,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 2,
+            "position": [
+              311.48595055746233,
+              2.8084547942640667,
+              101.23252789227936
+            ],
+            "yaw": 1.5890265374214134,
+            "speed": 32.0014533069043,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          },
+          {
+            "id": 3,
+            "position": [
+              338.34398078911374,
+              60.05476035703766,
+              511.5223675405961
+            ],
+            "yaw": 0.7234486692368849,
+            "speed": 32.342460059506145,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 4,
+            "position": [
+              506.3557176438956,
+              69.90225252752381,
+              87.60779122846299
+            ],
+            "yaw": 1.3178238477584359,
+            "speed": 37.26745066500832,
+            "hp": 0,
+            "dead": false,
+            "falling": true
+          }
+        ]
+      },
+      "shots": 4,
+      "steps": 4087
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 73.4,
+        "flightT": 72.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 54.1,
+        "pos": [
+          300.6,
+          23.7,
+          122.4
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 28,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.201,
+        "finishing": false,
+        "charges": 1.07,
+        "chargeT": 0.3,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          300.5583172935581,
+          23.72964863567391,
+          122.41010331355254
+        ],
+        "yaw": 7.972728713540901,
+        "pitch": 1.719790241972702e-8,
+        "speed": 54.07403147155671,
+        "objective": [
+          61.44958077913313,
+          25.056460932120817,
+          147.56769522375174
+        ],
+        "raid": true,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": [
+          {
+            "id": 0,
+            "position": [
+              160.53776920188523,
+              2.327371955104355,
+              281.17749899741216
+            ],
+            "yaw": 0.7547394678514693,
+            "speed": 32.00006486316987,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          },
+          {
+            "id": 1,
+            "position": [
+              61.44958077913313,
+              25.056460932120817,
+              147.56769522375174
+            ],
+            "yaw": 1.2500885560727713,
+            "speed": 32.10000019340216,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 2,
+            "position": [
+              311.48595055746233,
+              2.8084547942640667,
+              101.23252789227936
+            ],
+            "yaw": 1.5890265374214134,
+            "speed": 32.0014533069043,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          },
+          {
+            "id": 3,
+            "position": [
+              242.52989330290475,
+              58.03638680138659,
+              426.4101334348411
+            ],
+            "yaw": 0.8859936978806809,
+            "speed": 32.006064466897655,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 4,
+            "position": [
+              463.05812189020054,
+              -2.5977474724761938,
+              76.41490295918555
+            ],
+            "yaw": 1.3178238477584359,
+            "speed": 37.26745066500832,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          }
+        ]
+      },
+      "shots": 4,
+      "steps": 4327
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 77.4,
+        "flightT": 76.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 25.2,
+        "pos": [
+          156,
+          28.2,
+          101.8
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 28,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.22,
+        "finishing": false,
+        "charges": 0.94,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          156.03209661185187,
+          28.177446874032828,
+          101.76616927253299
+        ],
+        "yaw": 7.709182138106031,
+        "pitch": 0.00992851021040412,
+        "speed": 25.17334831775379,
+        "objective": [
+          138.47602008746648,
+          31.029367972152247,
+          99.20973708355513
+        ],
+        "raid": true,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": [
+          {
+            "id": 0,
+            "position": [
+              160.53776920188523,
+              2.327371955104355,
+              281.17749899741216
+            ],
+            "yaw": 0.7547394678514693,
+            "speed": 32.00006486316987,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          },
+          {
+            "id": 1,
+            "position": [
+              138.47602008746648,
+              31.029367972152247,
+              99.20973708355513
+            ],
+            "yaw": -1.7830156375201942,
+            "speed": 37.895519630594066,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 2,
+            "position": [
+              311.48595055746233,
+              2.8084547942640667,
+              101.23252789227936
+            ],
+            "yaw": 1.5890265374214134,
+            "speed": 32.0014533069043,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          },
+          {
+            "id": 3,
+            "position": [
+              161.02378080222496,
+              29.238393068650907,
+              328.4808833126146
+            ],
+            "yaw": 0.1221603765835204,
+            "speed": 34.252340541198556,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 4,
+            "position": [
+              463.05812189020054,
+              -2.5977474724761938,
+              76.41490295918555
+            ],
+            "yaw": 1.3178238477584359,
+            "speed": 37.26745066500832,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          }
+        ]
+      },
+      "shots": 5,
+      "steps": 4567
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 81.4,
+        "flightT": 80.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 24.8,
+        "pos": [
+          157.7,
+          32.1,
+          192.1
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 32,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.239,
+        "finishing": false,
+        "charges": 0.81,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          157.72153757809585,
+          32.1162517626178,
+          192.0626797465119
+        ],
+        "yaw": 10.221067006079744,
+        "pitch": 0.009857872528566501,
+        "speed": 24.767411657477854,
+        "objective": [
+          162.6346173673423,
+          35.09502173616528,
+          185.09140817246066
+        ],
+        "raid": true,
+        "raidDone": false,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": [
+          {
+            "id": 0,
+            "position": [
+              160.53776920188523,
+              2.327371955104355,
+              281.17749899741216
+            ],
+            "yaw": 0.7547394678514693,
+            "speed": 32.00006486316987,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          },
+          {
+            "id": 1,
+            "position": [
+              148.54360168458183,
+              2.371446987593045,
+              167.72523267251745
+            ],
+            "yaw": -3.5330156375202044,
+            "speed": 37.97453764052565,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          },
+          {
+            "id": 2,
+            "position": [
+              311.48595055746233,
+              2.8084547942640667,
+              101.23252789227936
+            ],
+            "yaw": 1.5890265374214134,
+            "speed": 32.0014533069043,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          },
+          {
+            "id": 3,
+            "position": [
+              162.6346173673423,
+              35.09502173616528,
+              185.09140817246066
+            ],
+            "yaw": -0.9526646901503328,
+            "speed": 37.9336344309324,
+            "hp": 3,
+            "dead": false,
+            "falling": false
+          },
+          {
+            "id": 4,
+            "position": [
+              463.05812189020054,
+              -2.5977474724761938,
+              76.41490295918555
+            ],
+            "yaw": 1.3178238477584359,
+            "speed": 37.26745066500832,
+            "hp": 0,
+            "dead": true,
+            "falling": true
+          }
+        ]
+      },
+      "shots": 6,
+      "steps": 4807
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 85.4,
+        "flightT": 84.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 39.7,
+        "pos": [
+          241.8,
+          60.5,
+          140.9
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 46,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.258,
+        "finishing": false,
+        "charges": 0.68,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          241.77171938054207,
+          60.48359294319282,
+          140.9275937416026
+        ],
+        "yaw": 11.934131859374688,
+        "pitch": 0.0001170187766043207,
+        "speed": 39.66909303136108,
+        "objective": [
+          745,
+          60,
+          -570
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 5047
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 89.4,
+        "flightT": 88.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 39.6,
+        "pos": [
+          337.7,
+          61.1,
+          -6
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 46,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.277,
+        "finishing": false,
+        "charges": 1.55,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          337.7170349956094,
+          61.06925571178772,
+          -5.9691786615194244
+        ],
+        "yaw": 11.934131859374688,
+        "pitch": 5.978593476265334e-16,
+        "speed": 39.64038498661877,
+        "objective": [
+          745,
+          60,
+          -570
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 5287
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 93.4,
+        "flightT": 92.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 39.6,
+        "pos": [
+          427.1,
+          61,
+          -140.2
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 46,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.296,
+        "finishing": false,
+        "charges": 2.42,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          427.0907281601735,
+          61.016703711193756,
+          -140.2205730942946
+        ],
+        "yaw": 11.934131859374688,
+        "pitch": 3.054516633283845e-27,
+        "speed": 39.615935538143624,
+        "objective": [
+          745,
+          60,
+          -570
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 5527
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 97.4,
+        "flightT": 96.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 39.6,
+        "pos": [
+          518.5,
+          61,
+          -269
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 46,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.315,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          518.5230779689244,
+          60.9817536534991,
+          -269.0283640126923
+        ],
+        "yaw": 11.934131859374688,
+        "pitch": 1.560579741714756e-38,
+        "speed": 39.5902344817761,
+        "objective": [
+          745,
+          60,
+          -570
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 5767
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 101.4,
+        "flightT": 100.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 40.2,
+        "pos": [
+          629,
+          61.2,
+          -390.7
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 46,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.334,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          629.0443848729343,
+          61.1732363277435,
+          -390.689615739046
+        ],
+        "yaw": 11.972786813457635,
+        "pitch": 7.973140835812823e-50,
+        "speed": 40.23483862183787,
+        "objective": [
+          745,
+          60,
+          -570
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 6007
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 105.4,
+        "flightT": 104.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 4,
+        "spd": 40.2,
+        "pos": [
+          719.5,
+          61.2,
+          -521.9
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 46,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.353,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          719.5470136809092,
+          61.15834151713216,
+          -521.8502550997702
+        ],
+        "yaw": 12.050122880878366,
+        "pitch": 4.073548636345529e-61,
+        "speed": 40.212125373933695,
+        "objective": [
+          745,
+          60,
+          -570
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 6247
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 109.4,
+        "flightT": 108.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 5,
+        "spd": 22.7,
+        "pos": [
+          790.1,
+          95.5,
+          -633.6
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 50,
+        "hp": 69.8,
+        "hpMax": 100,
+        "day": 0.373,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          790.1165380380849,
+          95.49106783779673,
+          -633.6345430907577
+        ],
+        "yaw": 11.898228644806325,
+        "pitch": -0.6086320962658839,
+        "speed": 22.713740750601666,
+        "objective": [
+          960,
+          62,
+          -840
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 6487
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 113.4,
+        "flightT": 112.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 5,
+        "spd": 39.9,
+        "pos": [
+          893,
+          63.3,
+          -721.6
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 50,
+        "hp": 75.8,
+        "hpMax": 100,
+        "day": 0.392,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          892.9977086746699,
+          63.34559207141714,
+          -721.6357651959796
+        ],
+        "yaw": 12.014545626007978,
+        "pitch": -1.6692470862588547e-9,
+        "speed": 39.87747943724873,
+        "objective": [
+          960,
+          62,
+          -840
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 6727
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 117.4,
+        "flightT": 116.2,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 5,
+        "spd": 40,
+        "pos": [
+          945,
+          64,
+          -778.4
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 50,
+        "hp": 19.9,
+        "hpMax": 100,
+        "day": 0.411,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          945.0493148577798,
+          64.01609232372437,
+          -778.3723196567145
+        ],
+        "yaw": 12.315768971917063,
+        "pitch": -0.00418516062684837,
+        "speed": 39.96348615272044,
+        "objective": [
+          960,
+          62,
+          -840
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 6967
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 121.5,
+        "flightT": 120.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 6,
+        "spd": 28.7,
+        "pos": [
+          1039,
+          65.2,
+          -890.4
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 53,
+        "hp": 25.9,
+        "hpMax": 100,
+        "day": 0.43,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          1038.9592200189031,
+          65.19122998854486,
+          -890.3597789409288
+        ],
+        "yaw": 11.451288105897927,
+        "pitch": -1.5449338713278172e-14,
+        "speed": 28.73514322135385,
+        "objective": [
+          1060,
+          58,
+          -900
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 7207
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 125.5,
+        "flightT": 124.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 7,
+        "spd": 39.7,
+        "pos": [
+          965,
+          75.9,
+          -984.3
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 57,
+        "hp": 31.9,
+        "hpMax": 100,
+        "day": 0.449,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          965.0133602975819,
+          75.93053478845013,
+          -984.2722308742659
+        ],
+        "yaw": 13.450518723070426,
+        "pitch": 6.378053707706025e-10,
+        "speed": 39.739895263287536,
+        "objective": [
+          820,
+          76,
+          -1100
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 7447
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 129.5,
+        "flightT": 128.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 7,
+        "spd": 27.7,
+        "pos": [
+          831,
+          74.6,
+          -1086.3
+        ],
+        "fpv": false,
+        "chapter": 2,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 57,
+        "hp": 37.9,
+        "hpMax": 100,
+        "day": 0.468,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          830.9987797363168,
+          74.6486770971631,
+          -1086.2680934632026
+        ],
+        "yaw": 13.284635000396149,
+        "pitch": 3.258604421843973e-21,
+        "speed": 27.725448854385,
+        "objective": [
+          820,
+          76,
+          -1100
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 7687
+    },
+    {
+      "ran": 5,
+      "state": {
+        "paused": true,
+        "launching": false,
+        "runToken": 1,
+        "t": 129.5,
+        "flightT": 128.4,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 8,
+        "spd": 26,
+        "pos": [
+          828.5,
+          74.4,
+          -1088
+        ],
+        "fpv": false,
+        "chapter": 3,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 61,
+        "hp": 38.1,
+        "hpMax": 100,
+        "day": 0.468,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          828.5159050125745,
+          74.43285891649873,
+          -1087.9575173253834
+        ],
+        "yaw": 13.224095694542155,
+        "pitch": 1.8957837579148032e-21,
+        "speed": 26.022401621015288,
+        "objective": [
+          300,
+          52,
+          -1160
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 7692
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 133.5,
+        "flightT": 132.4,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 8,
+        "spd": 39.9,
+        "pos": [
+          676.6,
+          54.8,
+          -1119.3
+        ],
+        "fpv": false,
+        "chapter": 3,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 61,
+        "hp": 44.1,
+        "hpMax": 100,
+        "day": 0.487,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          676.6035351971191,
+          54.795533038547994,
+          -1119.3408888153122
+        ],
+        "yaw": 13.980557763192424,
+        "pitch": -2.3244686227845124e-10,
+        "speed": 39.94631753747114,
+        "objective": [
+          300,
+          52,
+          -1160
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 7932
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 137.5,
+        "flightT": 136.4,
+        "started": true,
+        "done": false,
+        "det": 0.12,
+        "score": 8,
+        "spd": 39.9,
+        "pos": [
+          519.7,
+          54.9,
+          -1140.8
+        ],
+        "fpv": false,
+        "chapter": 3,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 61,
+        "hp": 50.1,
+        "hpMax": 100,
+        "day": 0.507,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          519.6725547562435,
+          54.85302210617274,
+          -1140.8011193288185
+        ],
+        "yaw": 14.01904577644953,
+        "pitch": -1.187591713674592e-21,
+        "speed": 39.919626922096136,
+        "objective": [
+          300,
+          52,
+          -1160
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 8172
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 141.5,
+        "flightT": 140.4,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 8,
+        "spd": 39.9,
+        "pos": [
+          359.8,
+          54.9,
+          -1155.9
+        ],
+        "fpv": false,
+        "chapter": 3,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 61,
+        "hp": 56.1,
+        "hpMax": 100,
+        "day": 0.526,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          359.7604093745494,
+          54.918823256894726,
+          -1155.853870434039
+        ],
+        "yaw": 14.01904577644953,
+        "pitch": -6.067511794153826e-33,
+        "speed": 39.89603204774786,
+        "objective": [
+          300,
+          52,
+          -1160
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 8412
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 145.5,
+        "flightT": 144.4,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 9,
+        "spd": 40.1,
+        "pos": [
+          220.6,
+          55.7,
+          -1148.6
+        ],
+        "fpv": false,
+        "chapter": 3,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 66,
+        "hp": 62.1,
+        "hpMax": 100,
+        "day": 0.545,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          220.5511526484569,
+          55.73195509135764,
+          -1148.6151939483705
+        ],
+        "yaw": 14.278985668202917,
+        "pitch": -0.0005336537890707525,
+        "speed": 40.08997404633441,
+        "objective": [
+          -200,
+          48,
+          -1080
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 8652
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 149.5,
+        "flightT": 148.4,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 9,
+        "spd": 40.1,
+        "pos": [
+          62.4,
+          55.8,
+          -1122.7
+        ],
+        "fpv": false,
+        "chapter": 3,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 66,
+        "hp": 68.1,
+        "hpMax": 100,
+        "day": 0.564,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          62.38973344439267,
+          55.80863169858696,
+          -1122.695008342866
+        ],
+        "yaw": 14.278985668202917,
+        "pitch": -2.7264847185258198e-15,
+        "speed": 40.065138729082335,
+        "objective": [
+          -200,
+          48,
+          -1080
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 8892
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 153.5,
+        "flightT": 152.4,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 9,
+        "spd": 40,
+        "pos": [
+          -101.8,
+          56.3,
+          -1104.6
+        ],
+        "fpv": false,
+        "chapter": 3,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 66,
+        "hp": 74.1,
+        "hpMax": 100,
+        "day": 0.583,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -101.75106960071054,
+          56.31790848880809,
+          -1104.5953974061156
+        ],
+        "yaw": 14.356116821828035,
+        "pitch": -1.39298531606027e-26,
+        "speed": 40.03861289895304,
+        "objective": [
+          -200,
+          48,
+          -1080
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 9132
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 157.5,
+        "flightT": 156.4,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 10,
+        "spd": 40,
+        "pos": [
+          -235.6,
+          64.3,
+          -1085.8
+        ],
+        "fpv": false,
+        "chapter": 3,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 70,
+        "hp": 80.1,
+        "hpMax": 100,
+        "day": 0.602,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -235.64691348812252,
+          64.34079276799757,
+          -1085.8416060299992
+        ],
+        "yaw": 14.122527884612074,
+        "pitch": 0.00040342954539188683,
+        "speed": 39.95776072686442,
+        "objective": [
+          -520,
+          64,
+          -1100
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 9372
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 161.5,
+        "flightT": 160.4,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 10,
+        "spd": 39.9,
+        "pos": [
+          -396.2,
+          64.4,
+          -1091.4
+        ],
+        "fpv": false,
+        "chapter": 3,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 70,
+        "hp": 86.1,
+        "hpMax": 100,
+        "day": 0.621,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -396.17448155410494,
+          64.43105623146961,
+          -1091.449102556823
+        ],
+        "yaw": 14.084007914961672,
+        "pitch": 2.061157463958281e-15,
+        "speed": 39.93373486418746,
+        "objective": [
+          -520,
+          64,
+          -1100
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 9612
+    },
+    {
+      "ran": 174,
+      "state": {
+        "paused": true,
+        "launching": false,
+        "runToken": 1,
+        "t": 164.4,
+        "flightT": 163.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 11,
+        "spd": 26,
+        "pos": [
+          -505.2,
+          63.9,
+          -1097.7
+        ],
+        "fpv": false,
+        "chapter": 4,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 75,
+        "hp": 90.4,
+        "hpMax": 100,
+        "day": 0.635,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -505.19776920421117,
+          63.933679966508954,
+          -1097.7402548428447
+        ],
+        "yaw": 14.015546026399779,
+        "pitch": 1.3417147293364705e-23,
+        "speed": 25.963744206152757,
+        "objective": [
+          -240,
+          120,
+          -1620
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 9786
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 168.4,
+        "flightT": 167.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 11,
+        "spd": 39.8,
+        "pos": [
+          -473,
+          122.4,
+          -1210.8
+        ],
+        "fpv": false,
+        "chapter": 4,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 75,
+        "hp": 96.4,
+        "hpMax": 100,
+        "day": 0.654,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -472.96665471319676,
+          122.3675353102205,
+          -1210.8420677674305
+        ],
+        "yaw": 12.084608798819199,
+        "pitch": 1.5817290223891722e-7,
+        "speed": 39.821976999289326,
+        "objective": [
+          -240,
+          120,
+          -1620
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 10026
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 172.4,
+        "flightT": 171.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 11,
+        "spd": 39.8,
+        "pos": [
+          -396.5,
+          122.5,
+          -1354.3
+        ],
+        "fpv": false,
+        "chapter": 4,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 75,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.673,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -396.5240847691523,
+          122.54855003737819,
+          -1354.2536586161236
+        ],
+        "yaw": 12.045847537325066,
+        "pitch": 8.081194393657919e-19,
+        "speed": 39.792375055345474,
+        "objective": [
+          -240,
+          120,
+          -1620
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 10266
+    },
+    {
+      "ran": 240,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 176.4,
+        "flightT": 175.3,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 11,
+        "spd": 39.8,
+        "pos": [
+          -320.4,
+          122.5,
+          -1489.4
+        ],
+        "fpv": false,
+        "chapter": 4,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 75,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.692,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -320.39818014752694,
+          122.51073245270395,
+          -1489.3599293669747
+        ],
+        "yaw": 12.045847537325066,
+        "pitch": 4.128754161028492e-30,
+        "speed": 39.767023715435805,
+        "objective": [
+          -240,
+          120,
+          -1620
+        ],
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 10506
+    },
+    {
+      "ran": 226,
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 180.3,
+        "flightT": 179.1,
+        "started": true,
+        "done": true,
+        "det": 0,
+        "score": 12,
+        "spd": 25.7,
+        "pos": [
+          -249,
+          123.2,
+          -1608.8
+        ],
+        "fpv": false,
+        "chapter": 4,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "ESCAPED",
+        "scales": 81,
+        "hp": 61.8,
+        "hpMax": 100,
+        "day": 0.71,
+        "finishing": true,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "campaign": {
+        "position": [
+          -248.9943128249321,
+          123.1906143061858,
+          -1608.8226990944524
+        ],
+        "yaw": 11.93790995536712,
+        "pitch": -2.5332517804203586e-10,
+        "speed": 25.719014036024397,
+        "objective": null,
+        "raid": false,
+        "raidDone": true,
+        "hearth": 100,
+        "wave": 2,
+        "chargeSeconds": 0.9,
+        "riders": []
+      },
+      "shots": 7,
+      "steps": 10732
+    }
+  ],
+  "final": {
+    "state": {
+      "paused": false,
+      "launching": false,
+      "runToken": 1,
+      "t": 180.3,
+      "flightT": 179.1,
+      "started": true,
+      "done": true,
+      "det": 0,
+      "score": 12,
+      "spd": 25.7,
+      "pos": [
+        -249,
+        123.2,
+        -1608.8
+      ],
+      "fpv": false,
+      "chapter": 4,
+      "tutorial": 3,
+      "routeVisible": 12,
+      "cause": "ESCAPED",
+      "scales": 81,
+      "hp": 61.8,
+      "hpMax": 100,
+      "day": 0.71,
+      "finishing": true,
+      "charges": 3,
+      "chargeT": -1,
+      "bolts": 0,
+      "disabled": 0
+    },
+    "campaign": {
+      "position": [
+        -248.9943128249321,
+        123.1906143061858,
+        -1608.8226990944524
+      ],
+      "yaw": 11.93790995536712,
+      "pitch": -2.5332517804203586e-10,
+      "speed": 25.719014036024397,
+      "objective": null,
+      "raid": false,
+      "raidDone": true,
+      "hearth": 100,
+      "wave": 2,
+      "chargeSeconds": 0.9,
+      "riders": []
+    },
+    "driver": {
+      "shots": 7,
+      "held": false,
+      "events": [],
+      "steps": 10732
+    }
+  },
+  "campaignComplete": true,
+  "ending": {
+    "title": "TEMPEST GATE",
+    "cause": "ESCAPED",
+    "beacons": "12 / 12",
+    "storySaved": "1"
+  },
+  "returnedToHub": true
+}

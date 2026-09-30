@@ -2,6 +2,10 @@
 
 This evidence was regenerated after workspace maintenance. The browser was Chromium 153 with SwiftShader software rendering, so these runs verify rendering and game rules but do not establish hardware FPS targets.
 
+## Full main campaign follow-up
+
+The later combat-capable input driver completed the tutorial, both raid waves, twelve beacons and the Tempest Gate. See [CAMPAIGN.md](CAMPAIGN.md) and `campaign-evidence/results.json`. The earlier unsuccessful route attempt below remains part of the historical ledger.
+
 ## Verified behavior
 
 - The real Start → Story menu launched; W, Arrow Up and Space moved the dragon.
@@ -15,7 +19,7 @@ This evidence was regenerated after workspace maintenance. The browser was Chrom
 - All six chapter checkpoint initializations produced finite positions.
 - The final terrain source loaded with open-ocean collision height −10. No uncaught browser exceptions occurred in any of these runs.
 
-## Route attempt and limits
+## Earlier route attempt and limits
 
 The input-only route driver started through normal game initialization and used steering controls plus accelerated rule stepping. It completed all three tutorial rings and four beacons. The run ended after approximately 100.6 simulated flight seconds at the village raid. This driver follows beacons and does not fight raiders; it therefore did not complete the story. No position, score or health assignments were used during this route attempt.
 

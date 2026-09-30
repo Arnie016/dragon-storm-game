@@ -1087,11 +1087,11 @@ addEventListener('unhandledrejection', e => { surfaceBootError('unhandled reject
 /* ============================ AUDIO ============================ */
 const AU = {
   el:{}, on:false, muted:false,
-  load(n,src,loop,vol){ const a=new Audio(src); a.loop=!!loop; a.volume=vol??1; a.preload='auto'; this.el[n]=a; },
-  play(n,vol){ const a=this.el[n]; if(!a||this.muted)return; try{ a.currentTime=0; }catch(e){} if(vol!=null)a.volume=vol; a.play().catch(()=>{}); },
+  load(n,src,loop,vol){ const a=new Audio(src); a.loop=!!loop; a.volume=Math.max(0,Math.min(1,vol??1)); a.preload='auto'; this.el[n]=a; },
+  play(n,vol){ const a=this.el[n]; if(!a||this.muted)return; try{ a.currentTime=0; }catch(e){} if(vol!=null)a.volume=Math.max(0,Math.min(1,vol)); a.play().catch(()=>{}); },
   loop(n){ const a=this.el[n]; if(a&&!this.muted) a.play().catch(()=>{}); },
   stop(n){ const a=this.el[n]; if(a){ a.pause(); try{a.currentTime=0;}catch(e){} } },
-  fadeTo(n,to,ms){ const a=this.el[n]; if(!a)return; const f=a.volume,t0=performance.now();
+  fadeTo(n,to,ms){ const a=this.el[n]; if(!a)return; to=Math.max(0,Math.min(1,to)); const f=a.volume,t0=performance.now();
     if(this.muted){ a.pause(); return; }
     const st=()=>{ const k=Math.min(1,(performance.now()-t0)/ms); a.volume=f+(to-f)*k; if(k<1)requestAnimationFrame(st); else if(to<=0)a.pause(); };
     if(to>0&&a.paused)a.play().catch(()=>{}); st(); },
@@ -4596,6 +4596,11 @@ function simSnapshot(extra={}){
   };
 }
 window.SIM={
+  // Read-only telemetry for end-to-end input-driven campaign verification.
+  campaignState:()=>({position:D.group.position.toArray(),yaw:D.yaw,pitch:D.pitch,speed:D.speed,
+    objective:nextObjectiveTarget()?.toArray()??null,raid:RAID.on,raidDone:!!S.raidDone,
+    hearth:RAID.hearth,wave:RAID.wave,chargeSeconds:chargeSeconds(),
+    riders:RAID.riders.map((r,i)=>({id:i,position:r.g.position.toArray(),yaw:r.yaw,speed:r.speed,hp:r.hp,dead:r.dead,falling:!!r.falling}))}),
   // Test-only stepping uses the real rules without GPU rendering; never use it as an FPS benchmark.
   stepSimulation:(dt=1/60)=>{tick(Math.max(0,Math.min(.05,dt)));return SIM.state();},
   pauseFlight:setFlightPaused,

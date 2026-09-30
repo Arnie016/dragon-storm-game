@@ -12,6 +12,7 @@ The existing story, route, water shader, audio, dragon assets and HUD design rem
 - Combat with cover-aware aim assistance, target brackets and exact damage feedback, charged attacks, continuous projectile collision, terrain obstruction, cancellable tower wind-up and protection against overlapping volleys.
 - Story/retry cleanup preserves earned upgrades while resetting transient state. Chapter launch preserves its spawn. Escape, focus loss and menus pause flight and clear controls; stale callbacks cannot alter a new run.
 - Mountain near-misses retain reduced wind and detection. Graphics controls no longer overlap the opening prompt, and Resume accepts pointer input through the HUD.
+- Audio levels are clamped to the browser’s valid range, fixing a charged-impact exception discovered during the full campaign run.
 - Frame timing now records raw browser intervals instead of hiding stalls behind the simulation timestep cap. Render counts include all passes.
 
 ## Verification
@@ -46,7 +47,7 @@ Graphics settings change cosmetic budgets; essential combat cues and physics do 
 
 ## Playthrough extent
 
-The input-only route attempt completed three tutorial rings and four beacons before ending at the village raid after about 100.6 simulated flight seconds. The driver follows flight objectives and does not fight raiders. **The complete campaign is not verified.** Chapter selection and isolated combat tests do not count as campaign completion. The unsuccessful moving-target retaliation diagnostic is retained alongside the successful held-position follow-up.
+The input-driven main campaign now completes: all three tutorial rings, both village raid waves, all twelve beacons, and `ESCAPED` at the Tempest Gate. The successful run used seven charged shots and finished with Hearthholm at 100 health and the dragon at 61.8 health. It used accelerated simulation with normal controls, no teleports or health/progress overrides. See [campaign verification](CAMPAIGN.md) for the full method and raw evidence. Optional side objectives and a human playthrough are not covered by this completion claim.
 
 Final-source boot/render checks reported no uncaught exceptions. See [the browser verification ledger](BROWSER_VERIFICATION.md) for exact setup, evidence versions and remaining limitations.
 
