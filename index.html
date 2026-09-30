@@ -822,6 +822,16 @@
     text-shadow:0 -1px 0 rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.12); }
   .ach-d{ font-family:var(--body) !important; color:#d6ccb6 !important; }
   .ach-key{ font-family:var(--num) !important; background:linear-gradient(180deg,#f3c77a,#b77b2a) !important; color:#1a1208 !important; }
+
+  .gfxrow button{background:transparent;color:inherit;border:1px solid #69523c;padding:5px 8px;cursor:pointer;font:inherit;letter-spacing:.08em;}
+  .gfxrow button.on{color:#ffe3a3;border-color:#c79f5c;background:#493521;}
+  .gfxrow button:focus-visible{outline:2px solid #ffe3a3;outline-offset:3px;}
+  .gfxrow{flex-wrap:wrap;}
+  #graphicsPanel{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:12;color:#cbbd9c;background:rgba(24,17,11,.94);border:1px solid #665037;padding:9px 12px;max-width:min(340px,calc(100vw - 48px));font:11px Georgia,serif;}
+  body:has(#menu:not(.hide)) #graphicsPanel{display:none;}
+  #graphicsPanel summary{cursor:pointer;letter-spacing:.1em;}
+  #graphicsPanel .gfxrow{margin-top:12px;letter-spacing:.03em;gap:8px;}
+  #graphicsPanel p{margin:10px 0 0;color:#a79b84;font:11px/1.5 system-ui;}
 </style>
 </head>
 <body>
@@ -840,6 +850,7 @@
 </div>
 
 <div id="hud">
+  <div id="flightPause" hidden style="pointer-events:auto;position:fixed;inset:0;z-index:30;background:rgba(8,10,16,.8);text-align:center;padding-top:30vh;box-sizing:border-box;color:#f1e6cc"><div style="font:28px Georgia,serif;letter-spacing:.2em;margin-bottom:24px">FLIGHT PAUSED</div><button class="btn" type="button" id="resumeFlight">RESUME FLIGHT</button><p>Escape to return to the skies</p></div>
   <div class="panel" id="hudTL">
     <div class="row"><span class="k">HEALTH</span><span class="v" id="hpV">100</span></div>
     <div class="bar"><i id="hpFill"></i></div>
@@ -907,7 +918,7 @@
     <div class="pg r"><div class="saga-b" id="sagaB"></div><div class="saga-go">click or press Space to fly</div></div></div></div></div>
   <div id="progress"><div class="pg-t">SAGA <i>P to hide</i></div><ol id="pgList"></ol></div>
   <div id="rookSay"><b>Rook</b><span id="rookLine"></span></div>
-  <div id="bigmap"><canvas id="mapC" width="900" height="900"></canvas><div class="map-k">MAP · G to close</div></div>
+  <div id="bigmap"><canvas id="mapC" width="900" height="900" role="img" aria-label="Navigation chart of the Sable Reach"></canvas><div class="map-k">MAP · G to close</div></div>
   <div id="raidMarks"></div>
   <div id="chargeHud"><div id="chargeRing"><i></i></div><div id="chargeTxt">SPIT</div></div>
   <div id="ctrlhint"><b>W/S</b> speed · <b>↑↓</b> climb/dive · <b>A/D</b> turn · <b>SPACE</b> flap · <b>X</b> charge plasma · <b>C</b> echo · <b>F</b> flock · <b>hold A/D</b> spiral →ULTRA · <b>↓ then ↑</b> stormbreak dive · <b>Q/E</b> look · <b>V</b> view · <b>G</b> map · <b>P</b> saga · <b>T</b> voice · <b>Shift</b> launch · <b>TAB</b> codex · <b>B</b> forge · <b>M</b> mute</div>
@@ -1011,7 +1022,7 @@
         <span class="chip"><b>M</b>mute</span>
         <span class="chip"><b>GOAL</b>follow 12 beacons — never be seen</span>
       </div>
-      <div class="gfxrow">GRAPHICS <b data-g="low">LOW</b><b data-g="med" class="on">MED</b><b data-g="high">HIGH</b>
+      <div class="gfxrow" role="group" aria-label="Graphics quality">GRAPHICS <button type="button" data-g="low">LOW</button><button type="button" data-g="med">MEDIUM</button><button type="button" data-g="high">HIGH</button><button type="button" data-g="extra">EXTRA HIGH</button><button type="button" data-g="extreme">EXTREME</button>
         <label class="shakerow">SHAKE <input id="shakeSlider" type="range" min="0" max="100" value="35"><span class="shakelbl" id="shakeLbl">35%</span></label></div>
       <div class="foot">headphones recommended · dive into shadow to break a lock</div>
     </div>
@@ -1035,6 +1046,8 @@
 </div>
 <button id="muteBtn" type="button" aria-pressed="false">M · SOUND ON</button>
 
+<details id="graphicsPanel"><summary>GRAPHICS · <span id="graphicsCurrent">High</span></summary><div class="gfxrow" role="group" aria-label="Graphics quality"><button type="button" data-g="low">Low</button><button type="button" data-g="med">Medium</button><button type="button" data-g="high">High</button><button type="button" data-g="extra">Extra High</button><button type="button" data-g="extreme">Extreme</button></div><p id="graphicsNote"></p></details>
+
 <script type="importmap">
 { "imports": {
   "three": "./vendor/three.module.js",
@@ -1054,6 +1067,9 @@ import { DRAGON_RIGS, resolveRigFromQuery, rigCatalog } from './world-expansion/
 import { LobbyHub, LobbyMarkers } from './world-expansion/modules/lobbyHub.js';
 import { LANDMARK_SITES } from './world-expansion/modules/proceduralLandmarks.js';
 import * as MAP from './world-expansion/modules/worldMap.js';
+import { createNavigationMap } from './world-expansion/modules/navigationMap.js';
+import { createMountainTerrain, sampleMountainHeight, mountainOccludesSegment } from './world-expansion/modules/mountainTerrain.js';
+import { GRAPHICS_PROFILES, normalizeGraphics, graphicsPixelRatio } from './world-expansion/modules/graphicsProfiles.js';
 import * as BufferGeometryUtils from './utils/BufferGeometryUtils.js';
 
 const $ = id => document.getElementById(id);
@@ -1161,6 +1177,7 @@ function driveThreatTone(dt){
 const renderer = new THREE.WebGLRenderer({ antialias:true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.info.autoReset=false; // count all render passes, including shadows and post effects
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.35;
 document.body.appendChild(renderer.domElement);
@@ -1399,7 +1416,7 @@ function updateSeaLife(dt){
     b.ph+=dt*b.sp;
     b.g.position.set(b.cx+Math.cos(b.ph)*b.r, b.h+Math.sin(b.ph*1.7)*4, b.cz+Math.sin(b.ph)*b.r);
     b.g.rotation.y=-b.ph;
-    for(const w of b.g.children) w.rotation.z=Math.sin(S.t*11+b.ph)*0.8*w.userData.side;
+    for(const w of b.g.children) if(w.userData.side) w.rotation.z=Math.sin(S.t*11+b.ph)*0.8*w.userData.side;
   }
   if(S.poison>0){ S.poison-=dt; S.hp-=dt*2.2; if(S.hp<=0 && !S.done) crash('THE VENOM TOOK YOU'); }
 }
@@ -1507,26 +1524,9 @@ function crystal(x,z,h){
 }
 for(const [x,z,h] of MAP.KEEPERS.crystals) crystal(x,z,h);
 
-// large mountainous islands ringing the archipelago (terrain to weave through)
-const mtnMat = new THREE.MeshStandardMaterial({ color:0xffffff, vertexColors:true, roughness:.95, flatShading:true });
-const snowMat = new THREE.MeshStandardMaterial({ color:0xc9c9d5, emissive:0x171629, emissiveIntensity:.18, roughness:.76, flatShading:true });
-function mountain(x,z,r,h){
-  const g=new THREE.ConeGeometry(r,h,9,4), p=g.attributes.position;
-  const colors=new Float32Array(p.count*3),lo=new THREE.Color(0x111823),mi=new THREE.Color(0x31384a),hi=new THREE.Color(0x8b7883),cc=new THREE.Color();
-  for(let i=0;i<p.count;i++){ const vx=p.getX(i), vy=p.getY(i), vz=p.getZ(i);
-    const n=(Math.sin(vx*0.15+vz*0.2)+Math.cos(vz*0.13-vx*0.1))*r*0.10;
-    p.setX(i,vx+n); p.setZ(i,vz-n*0.7); if(vy<h*0.45) p.setY(i, vy+Math.sin(vx*0.3)*r*0.05);
-    const t=THREE.MathUtils.clamp(vy/h+.5,0,1); cc.copy(lo).lerp(mi,Math.min(1,t*1.65)).lerp(hi,Math.max(0,t-.58)*1.5);
-    colors[i*3]=cc.r; colors[i*3+1]=cc.g; colors[i*3+2]=cc.b; }
-  g.setAttribute('color',new THREE.BufferAttribute(colors,3));
-  g.computeVertexNormals();
-  const m=new THREE.Mesh(g,mtnMat); m.position.set(x,h/2-4,z); m.rotation.y=Math.random()*6; scene.add(m);
-  const cap=new THREE.Mesh(new THREE.ConeGeometry(r*0.34,h*0.28,9), snowMat);
-  cap.position.set(x, h*0.5-4 + h*0.5 - h*0.14, z); cap.rotation.y=m.rotation.y; scene.add(cap);
-  colliders.push({x,z,r:r*0.5,top:h*0.72}); shoreline(x,z,r*0.62); return m;
-}
-// mountain pairs flank every crossing between regions; the outer ranges wall the world in
-for(const [x,z,r,h] of MAP.MOUNTAINS) mountain(x,z,r,h);
+// Fjord terrain shares its canonical surface with collision and the flight chart.
+const mountainTerrain=createMountainTerrain(scene,{quality:'high'});
+function groundHeight(x,z){ return Math.max(MAP.homeHeight(x,z),sampleMountainHeight(x,z)); }
 
 /* ================= FAR REGIONS: the world beyond the lighthouse ================= */
 const charMat=new THREE.MeshStandardMaterial({color:0x17120e,roughness:.95,flatShading:true});
@@ -1873,7 +1873,7 @@ function updateWindLines(){
   const wa=Math.sin(S.t*0.09)*0.9+2.1;
   WINDV.set(Math.cos(wa),(-0.12+Math.sin(S.t*0.21)*0.1),Math.sin(wa)).normalize();
   const c=camera.position, len=16+S.boost*26;
-  for(let i=0;i<WIND_N;i++){ const s=windSeed[i];
+  for(let i=0;i<graphicsProfile.wind;i++){ const s=windSeed[i];
     const t=((s[0]-S.t*(0.16+S.boost*0.25))%1+1)%1;
     const x=c.x+(t-0.5)*windBox*WINDV.x + (s[1]-0.5)*windBox*0.8;
     const y=c.y+(s[2]-0.5)*windBox*0.45 + (t-0.5)*windBox*WINDV.y;
@@ -2004,6 +2004,7 @@ function attachDragonAccessories(model){
   const glow=new THREE.PointLight(0x9a4cff, 0, 60, 2); D.group.add(glow); glow.position.set(0,4,0); D.glow=glow;
   const key1=new THREE.PointLight(0xcdd6ff, 40, 70, 2); key1.position.set(5,16,-6); D.group.add(key1);
   const key2=new THREE.PointLight(0x8a6bff, 26, 60, 2); key2.position.set(0,3,7); D.group.add(key2);
+  D.rigLights=[glow,key1,key2];
   const mouth=new THREE.Mesh(new THREE.SphereGeometry(1,12,12),
     new THREE.MeshBasicMaterial({color:0xd7a0ff, blending:THREE.AdditiveBlending, depthWrite:false, transparent:true}));
   mouth.scale.setScalar(0.001); (D.headNode||model).add(mouth);
@@ -2036,7 +2037,15 @@ function setupDragonClips(g, rig){
   if(rig.id==='quaternius' && D.glide) D.glide.timeScale=0.35;
 }
 function onDragonLoaded(g, rig){
-  if(D.model){ D.group.remove(D.model); D.model.traverse(o=>{ if(o.geometry)o.geometry.dispose?.(); }); }
+  if(D.model){
+    D.mixer?.stopAllAction(); D.mixer?.uncacheRoot(D.model);
+    D.group.remove(D.model);
+    const materials=new Set(), textures=new Set();
+    D.model.traverse(o=>{ o.geometry?.dispose(); for(const m of (Array.isArray(o.material)?o.material:[o.material])) if(m) materials.add(m); });
+    for(const m of materials){ for(const value of Object.values(m)) if(value?.isTexture) textures.add(value); m.dispose(); }
+    for(const texture of textures) texture.dispose();
+  }
+  for(const light of D.rigLights||[]) D.group.remove(light);
   const model=g.scene; D.model=model; model.scale.setScalar(rig.scale||9); model.rotation.y=Math.PI;
   precompileWorld();
   applyDragonMaterials(model, rig);
@@ -2099,10 +2108,13 @@ probeOptionalRigs().then(()=>{
 
 /* he sleeps on the sea-rock until the patrol light finds him */
 function stageRest(){
+  clearFlightInput();
   D.group.position.copy(REST); D.yaw=0.35; D.pitch=0; D.roll=0;
+  D.prevYaw=D.yaw; D.prevPitch=D.pitch;
   D.group.rotation.set(0,D.yaw,0);
   if(D.model) D.model.rotation.x=-0.12;                 // settled, not prone
-  if(D.glide){ D.glide.timeScale=0.12; D.flap.setEffectiveWeight(0); D.glide.setEffectiveWeight(1); }
+  if(D.flap && D.flap!==D.glide) D.flap.setEffectiveWeight(0);
+  if(D.glide){ D.glide.timeScale=0.12; D.glide.setEffectiveWeight(1); }
 }
 
 /* ---- procedural "alive" layer: real spine/tail/neck flex on top of the baked flap+glide ---- */
@@ -2116,7 +2128,8 @@ function collectBones(model){
       wingTips:[by('Wing4.L'),by('Wing4.R')].filter(Boolean),
       membranes:[], wings:[],
       thighs:[by('UpperLeg.L'),by('UpperLeg.R')], shins:[by('LowerLeg.L'),by('LowerLeg.R')] };
-    for(const b of [...D.bones.shoulders,...D.bones.forearms,...D.bones.wingTips]) if(b) D.bones.wings.push(b);
+    for(const b of [...D.bones.shoulders,...D.bones.forearms,...D.bones.wingTips]) if(b){
+      b.side=/[._]L$/.test(b.name)?-1:1; D.bones.wings.push(b); }
   } else {
     D.bones={ tail:[by('tail1'),by('tail2'),by('tail3'),by('tail4'),by('tail5')],
       neck:by('neck'), head:by('head'), chest:by('chest'), hips:by('hips'),
@@ -2133,6 +2146,11 @@ function collectBones(model){
   const axis=()=>({value:0,velocity:0});
   D.springs={turn:axis(),pitch:axis(),tail:axis(),neck:axis(),head:axis(),wing:axis(),
     tension:axis(),launch:axis(),load:axis()};
+  // Restore only the previous procedural offset before the mixer writes the next pose.
+  // Bones absent from a clip must not accumulate another rotation every frame.
+  D.alivePose=[...new Set(Object.values(D.bones).flat().filter(b=>b?.isBone))]
+    .map(bone=>({bone,base:bone.quaternion.clone()}));
+  D.aliveApplied=false;
   D.boneReport={ tail:D.bones.tail.filter(Boolean).length, neck:!!D.bones.neck, head:!!D.bones.head,
     chest:!!D.bones.chest, hips:!!D.bones.hips, wings:D.bones.wings.length,
     shoulders:D.bones.shoulders.length, forearms:D.bones.forearms.length, wingTips:D.bones.wingTips.length,
@@ -2141,8 +2159,14 @@ function collectBones(model){
 // world-space axes of the model, so rotations are predictable regardless of bone roll
 const _mq=new THREE.Quaternion(), _AUP=new THREE.Vector3(), _ART=new THREE.Vector3(), _AFW=new THREE.Vector3();
 let ALIVE=1.0;
+function advanceDragonAnimation(dt){
+  if(D.aliveApplied){ for(const {bone,base} of D.alivePose||[]) bone.quaternion.copy(base); D.aliveApplied=false; }
+  D.mixer?.update(dt);
+}
 function applyAlive(dt){
   if(!D.bones || !D.model || !D.springs || ALIVE<=0) return;
+  for(const {bone,base} of D.alivePose||[]) base.copy(bone.quaternion);
+  D.aliveApplied=true;
   D.model.getWorldQuaternion(_mq);
   _AUP.set(0,1,0).applyQuaternion(_mq); _ART.set(1,0,0).applyQuaternion(_mq); _AFW.set(0,0,-1).applyQuaternion(_mq);
   const spd=THREE.MathUtils.clamp(D.speed/40,0,1.6), t=S.t, g=ALIVE, m=D.motion, q=D.springs;
@@ -2196,6 +2220,20 @@ function applyAlive(dt){
 /* ============================ INPUT ============================ */
 const key={};
 const input={ flap:false };
+function isFlightPaused(){ return !!(S.paused||S.saga||S.shopOpen||S.bookOpen||$('bigmap').classList.contains('on')||$('graphicsPanel')?.open); }
+function clearFlightInput(){
+  for(const id of ['combatTarget','combatThreat']){const el=$(id);if(el)el.style.display='none';}
+  const hit=$('combatHit');if(hit)hit.style.opacity=0;
+  for(const code of Object.keys(key)) key[code]=false;
+  input.flap=false; S.chargeT=-1; S._chargeReady=false;
+  updateChargeHum(0,false);
+  if(D.mouth){ D.mouth.scale.setScalar(.001); D.mouthLt.intensity=0; }
+}
+function setFlightPaused(paused){
+  S.paused=!!paused; clearFlightInput();
+  $('flightPause').hidden=!S.paused;
+  if(WIND.gain) WIND.gain.gain.value=0;
+}
 const fdamp=(l,dt)=>1-Math.exp(-l*dt);          // frame-rate independent smoothing
 function springAxis(axis,target,dt,frequency,damping=1){
   dt=Math.min(dt,.033); const omega=Math.PI*2*frequency;
@@ -2208,9 +2246,21 @@ addEventListener('mousemove',e=>{
   document.documentElement.style.setProperty('--px',(nx*-9).toFixed(1)+'px');
   document.documentElement.style.setProperty('--py',(ny*-6).toFixed(1)+'px');
 });
-addEventListener('mousedown',()=>{ if(S.started&&!S.done) input.flap=true; });
+addEventListener('mousedown',e=>{ if(e.button===0 && e.target===renderer.domElement && S.started&&!S.done&&!isFlightPaused()) input.flap=true; });
 addEventListener('mouseup',()=>{ input.flap=false; });
 addEventListener('keydown',e=>{
+  if(e.code==='Escape' && !e.repeat && S.started&&!S.done){
+    e.preventDefault();
+    if(S.saga) SAGA._close?.();
+    else if(S.shopOpen) toggleShop();
+    else if(S.bookOpen) toggleBook();
+    else if($('bigmap').classList.contains('on')){ $('bigmap').classList.remove('on'); clearFlightInput(); }
+    else if($('graphicsPanel')?.open){ $('graphicsPanel').open=false; clearFlightInput(); }
+    else setFlightPaused(!S.paused);
+    return;
+  }
+  if(e.target?.matches('input,select,textarea')) return;
+  if(isFlightPaused() && !['Tab','KeyB','KeyM','KeyG','KeyP','KeyT'].includes(e.code)) return;
   key[e.code]=true;
   if((e.code==='ShiftLeft'||e.code==='ShiftRight') && !e.repeat && S.started && !S.done && !(S.ultraCd>0)){
     S.ultraT=2.5; S.ultraCd=12; D.speed=Math.max(D.speed,70); popup('ULTRA LAUNCH'); AU.play('zap',.6); AU.play('flap',.7);
@@ -2222,18 +2272,20 @@ addEventListener('keydown',e=>{
         const pp=D.group.position; for(const sx of [-1,1]) smallBurst(pp.x+sx*7,pp.y-3,pp.z,0xbcd0e8); } }
     e.preventDefault(); }
   if(e.code==='KeyX' && !e.repeat){ if(S.started&&!S.done && S.charges>=1 && S.chargeT<0) S.chargeT=0; e.preventDefault(); }
-  if(e.code==='KeyV') S.fpv=!S.fpv;
+  if(e.code==='KeyV' && !e.repeat) S.fpv=!S.fpv;
   if(e.code==='KeyM' && !e.repeat) setMuted(!S.muted);
   if(e.code==='KeyC' && !e.repeat) echoPulse();
   if(e.code==='KeyF' && !e.repeat) callFlock();
-  if(e.code==='Tab'){ e.preventDefault(); if(S.started) toggleBook(); }
+  if(e.code==='Tab'){ e.preventDefault(); if(!e.repeat&&S.started) toggleBook(); }
   if(e.code==='KeyB' && !e.repeat && S.started) toggleShop();
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault();
 });
 addEventListener('keyup',e=>{ key[e.code]=false;
   if(e.code==='Space') input.flap=false;
-  if(e.code==='KeyX' && S.chargeT>=0){ shoot(Math.min(1,S.chargeT/chargeSeconds())); S.chargeT=-1; }
+  if(e.code==='KeyX' && S.chargeT>=0){ if(S.started&&!S.done&&!isFlightPaused()) shoot(Math.min(1,S.chargeT/chargeSeconds())); S.chargeT=-1; }
 });
+addEventListener('blur',()=>{ clearFlightInput(); if(S.started&&!S.done) setFlightPaused(true); });
+document.addEventListener('visibilitychange',()=>{ if(document.hidden){ clearFlightInput(); if(S.started&&!S.done) setFlightPaused(true); } });
 
 /* ============================ GAME STATE ============================ */
 const S={ t:0, flightT:0, started:false, done:false, detection:0, score:0, fpv:false, shake:0, flapCd:0,
@@ -2247,12 +2299,94 @@ const S={ t:0, flightT:0, started:false, done:false, detection:0, score:0, fpv:f
   chapter:0, tutDone:false, spiralFired:false, spiralMax:false, tier:0,
   dive:0, stormbreakFired:false,                    // stormbreak dive -> sonic boom
   turn:0, pTurn:0, pPitch:0, muted:false, impactCd:0, alertStage:0,
-  finishing:false, finishToken:0, lobbyMode:null, practiceMode:false };
+  finishing:false, finishToken:0, lobbyMode:null, practiceMode:false, paused:false, runToken:0 };
 const routeDifficulty=()=>THREE.MathUtils.clamp((S.score-1)/(rings.length-2),0,1);
 const chargeSeconds=()=>Math.max(.54,.9-upLv('gland')*.12);
 
 /* ---- plasma lightning (X): a jagged bolt from the mouth that shatters towers ---- */
+import { segmentSphereT, segmentColumnT } from './world-expansion/modules/combatMath.mjs';
 const bolts=[], BOLT_SEG=16;
+const COMBAT={maxPlayerBolts:10,maxEnemyBolts:20,target:null,hitT:0,uiT:0,invulnerable:0};
+const combatStyle=document.createElement('style');
+combatStyle.textContent=`
+#combatTarget{position:fixed;z-index:24;pointer-events:none;display:none;transform:translate(-50%,-50%);width:36px;height:36px;border:1px solid #e0bc78a0;border-radius:8px;color:#ffe3a3;box-shadow:0 0 18px #e8b45622;transition:border-color .12s}
+#combatTarget span{position:absolute;left:50%;top:43px;transform:translateX(-50%);font:10px/1.4 monospace;letter-spacing:1px;white-space:nowrap;text-shadow:0 2px 5px #000}
+#combatHit{position:fixed;left:50%;top:43%;z-index:25;pointer-events:none;color:#ffe3a3;text-align:center;font:11px/1.5 monospace;letter-spacing:2px;transform:translate(-50%,-50%);opacity:0;text-shadow:0 1px 5px #000}
+#combatHit b{display:block;font-size:24px;line-height:1.1}#combatThreat{position:fixed;left:50%;top:27%;z-index:25;pointer-events:none;color:#ffb782;font:11px/1.5 monospace;letter-spacing:2px;text-align:center;text-shadow:0 2px 6px #000;display:none}
+@media(max-width:600px){#combatThreat{top:31%;font-size:9px}#combatTarget span{font-size:9px}}
+`;
+document.head.appendChild(combatStyle);
+const combatTarget=document.createElement('div'); combatTarget.id='combatTarget'; combatTarget.innerHTML='<span></span>';
+const combatHit=document.createElement('div'); combatHit.id='combatHit'; combatHit.setAttribute('aria-live','polite');
+const combatThreat=document.createElement('div'); combatThreat.id='combatThreat'; combatThreat.textContent='TOWER CHARGING · BREAK THE BEAM';
+document.body.append(combatTarget,combatHit,combatThreat);
+const _combatFrom=new THREE.Vector3(),_combatDir=new THREE.Vector3(),_combatTo=new THREE.Vector3(),_combatScreen=new THREE.Vector3();
+function projectileWorldT(from,to,padding=1){
+  let first=Infinity;
+  for(const c of colliders) first=Math.min(first,segmentColumnT(from,to,c,padding));
+  // Water and the home island use height functions instead of collider proxies.
+  const steps=Math.max(1,Math.min(128,Math.ceil(from.distanceTo(to)/6)));
+  for(let i=0;i<=steps;i++){
+    const t=i/steps; if(t>=first) break;
+    _combatScreen.lerpVectors(from,to,t);
+    if(_combatScreen.y<=Math.max(waveH(_combatScreen.x,_combatScreen.z,S.t),groundHeight(_combatScreen.x,_combatScreen.z))+padding){ first=t; break; }
+  }
+  return first;
+}
+function towerAimTarget(from,dir){
+  let best=null,alignment=Math.cos(.18);
+  for(const sl of searchlights){
+    if(sl.destroyed) continue;
+    _combatTo.copy(sl.lampPos).sub(from); const distance=_combatTo.length();
+    if(distance<14 || distance>480) continue;
+    const dot=_combatTo.multiplyScalar(1/distance).dot(dir);
+    if(dot>alignment && projectileWorldT(from,sl.lampPos,0)===Infinity){ best=sl; alignment=dot; }
+  }
+  return best;
+}
+function combatConfirm(damage,remaining,down=false){
+  COMBAT.hitT=.8;
+  combatHit.innerHTML='<b>'+(down?'✦':'×')+'</b>'+(down?'TARGET DOWN':'HIT −'+Number(damage.toFixed(1))+' · '+Math.max(0,Math.ceil(remaining))+' HP');
+  combatHit.style.color=down?'#b9f6d5':'#ffe3a3';
+}
+function updateCombatFeedback(dt){
+  COMBAT.hitT=Math.max(0,COMBAT.hitT-dt);
+  combatHit.style.opacity=S.started&&!S.done?Math.min(1,COMBAT.hitT*4):0;
+  if(!S.started||S.done){combatTarget.style.display='none';combatThreat.style.display='none';return;}
+  COMBAT.uiT-=dt;
+  if(COMBAT.uiT<=0){
+    COMBAT.uiT=.09;
+    (D.mouth||D.headNode||D.group).getWorldPosition(_combatFrom);
+    _combatDir.set(-Math.sin(D.yaw)*Math.cos(D.pitch),Math.sin(D.pitch),-Math.cos(D.yaw)*Math.cos(D.pitch)).normalize();
+    COMBAT.target=RAID.on?null:towerAimTarget(_combatFrom,_combatDir);
+  }
+  const target=COMBAT.target;
+  if(target&&!target.destroyed){
+    _combatScreen.copy(target.lampPos).project(camera);
+    const visible=_combatScreen.z>-1&&_combatScreen.z<1&&Math.abs(_combatScreen.x)<.94&&Math.abs(_combatScreen.y)<.85;
+    combatTarget.style.display=visible?'block':'none';
+    if(visible){
+      combatTarget.style.left=((_combatScreen.x*.5+.5)*innerWidth)+'px';combatTarget.style.top=((-_combatScreen.y*.5+.5)*innerHeight)+'px';
+      combatTarget.firstChild.textContent='WATCHTOWER · '+Math.round(target.lampPos.distanceTo(D.group.position))+' m · '+Math.round(target.hp/target.maxHp*100)+'%';
+      combatTarget.style.borderColor=S.chargeT>=chargeSeconds()?'#eee2ff':'#e0bc78a0';
+    }
+  }else combatTarget.style.display='none';
+}
+function disposeCombatBolt(b,player=false){
+  if(player){
+    FXL.give(b.slot,b); scene.remove(b.line); b.lgeo.dispose(); b.line.material.dispose();
+    // ballGeo/haloGeo belong to FX, so never dispose them per projectile.
+    b.m.traverse(o=>{if(o.material)o.material.dispose();});
+    if(b.arc){scene.remove(b.arc);b.arc.geometry.dispose();b.arc.material.dispose();}
+  }else b.m.traverse(o=>{if(o.geometry&&!o.userData.sharedCombatGeometry)o.geometry.dispose();if(o.material)o.material.dispose();});
+  scene.remove(b.m);
+}
+function clearCombatProjectiles(){
+  for(const b of bolts)disposeCombatBolt(b,true);bolts.length=0;
+  for(const b of foeBolts)disposeCombatBolt(b);foeBolts.length=0;
+  COMBAT.target=null;COMBAT.hitT=0;COMBAT.uiT=0;COMBAT.invulnerable=0;
+  combatTarget.style.display='none';combatThreat.style.display='none';combatHit.style.opacity=0;
+}
 /* Pooled FX — charge/shoot used to alloc BufferGeometry every tick and hitch hard. */
 const FX={
   gfx:'med',
@@ -2358,9 +2492,9 @@ function updateChargeHum(cp, on){
   if(!on){
     if(FX.humGain){ try{ FX.humGain.gain.exponentialRampToValueAtTime(0.0001, WIND.ctx.currentTime+0.08); }catch(e){} }
     if(FX.chargeHum){
-      const o=FX.chargeHum, o2=FX.chargeHum2, g=FX.humGain;
-      setTimeout(()=>{ try{ o.stop(); o2.stop(); }catch(e){} },120);
-      FX.chargeHum=null; FX.chargeHum2=null; FX.humGain=null;
+      const o=FX.chargeHum, o2=FX.chargeHum2, g=FX.humGain, bp=FX.humBp;
+      setTimeout(()=>{ try{ o.stop(); o2.stop(); o.disconnect(); o2.disconnect(); bp?.disconnect(); g?.disconnect(); }catch(e){} },120);
+      FX.chargeHum=null; FX.chargeHum2=null; FX.humGain=null; FX.humBp=null;
     }
     return;
   }
@@ -2376,27 +2510,31 @@ function updateChargeHum(cp, on){
   }catch(e){}
 }
 function shoot(power=0.35){
-  if(S.shootCd>0 || !D.model || S.charges<1) return; S.shootCd=0.4; S.charges-=1;
+  if(!S.started || S.done || S.launching || isFlightPaused() || S.shootCd>0 || !D.model || S.charges<1 || bolts.length>=COMBAT.maxPlayerBolts) return;
+  S.shootCd=0.4; S.charges-=1;
   power=Math.min(1.25,power+upLv('gland')*.07);
   S.tier = power>0.85 ? 2 : (power>0.45 ? 1 : 0);
   if(S.tier===2){ popup('ARC BURST'); S.shootCd=0.65; }
   if(S.superCharge){ power=1.25; S.superCharge=0; popup('STORMFIRE'); }
   updateChargeHum(0,false);
   const head=FX._mp; (D.mouth||D.headNode||D.group).getWorldPosition(head);
-  const dir=FX._dir.set(-Math.sin(D.yaw),Math.sin(D.pitch)*0.95,-Math.cos(D.yaw)).normalize();
-  raidAimAssist(head,dir);
+  // Use the same pitch convention as flight; the old direction flattened steep shots.
+  const dir=FX._dir.set(-Math.sin(D.yaw)*Math.cos(D.pitch),Math.sin(D.pitch),-Math.cos(D.yaw)*Math.cos(D.pitch)).normalize();
+  const target=RAID.on?null:towerAimTarget(head,dir);
+  if(target) dir.copy(target.lampPos).sub(head).normalize(); else raidAimAssist(head,dir);
   const R=0.9+power*2.2;
   const m=new THREE.Mesh(FX.ballGeo, FX.ballMat.clone());
   m.scale.setScalar(R);
   const halo=new THREE.Mesh(FX.haloGeo, FX.haloMat.clone());
-  halo.scale.setScalar(R); m.add(halo); m.position.copy(head).addScaledVector(dir,3);
+  // Parent already carries R; scaling the halo again made charged shots enormous.
+  m.add(halo); m.position.copy(head).addScaledVector(dir,3);
   const lt=null;
   const N=BOLT_SEG, lgeo=new THREE.BufferGeometry();
   lgeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(N*3), 3));
   const line=new THREE.Line(lgeo, new THREE.LineBasicMaterial({color:0xe0ccff, transparent:true,
     opacity:0.95, blending:THREE.AdditiveBlending, depthWrite:false}));
   line.frustumCulled=false; scene.add(m); scene.add(line);
-  bolts.push({ m, lt, line, lgeo, origin:head.clone(), vel:dir.clone().multiplyScalar(220+power*150),
+  bolts.push({ m, lt, line, lgeo, origin:head.clone(), prev:m.position.clone(), vel:dir.clone().multiplyScalar(220+power*150),
     life:2.4, power, jag:6+power*10 });
   { const bb=bolts[bolts.length-1]; bb.slot=FXL.take(bb,0xc07bff,300+power*760,160+power*180,m.position); }
   if(D.glow) D.glow.intensity=70+power*90;
@@ -2416,7 +2554,7 @@ function shoot(power=0.35){
   shocks.push({m:arc,life:0.28,dur:0.28,axis:true});
   const a=AU.el.zap; if(a){ a.playbackRate=1.45-power*0.5; } AU.play('zap',0.45+power*0.35);
   const th=AU.el.thunder;
-  if(th){ setTimeout(()=>{ try{ th.currentTime=0; th.playbackRate=1.5-power*0.7; th.volume=0.2+power*0.45;
+  if(th){ setTimeout(()=>{ if(S.muted||AU.muted)return; try{ th.currentTime=0; th.playbackRate=1.5-power*0.7; th.volume=0.2+power*0.45;
     th.play().catch(()=>{}); }catch(e){} }, 40+power*70); }
   if(power>0.55){ AU.play('crash',0.35+power*0.3); addViolence(0.55); }
   S.flash=Math.max(S.flash,0.14+power*0.34);
@@ -2450,7 +2588,9 @@ function buildArc(from,to,power){
 }
 function fillBolt(b){
   const pos=b.lgeo.attributes.position.array, N=BOLT_SEG;
-  _b0.copy(b.origin); _b1.copy(b.m.position);
+  _b1.copy(b.m.position);
+  // A short moving trail keeps the world readable; no half-kilometre tether to the mouth.
+  _b0.copy(b.vel).normalize().multiplyScalar(-Math.min(58,b.origin.distanceTo(_b1))).add(_b1);
   _perp.set(-b.vel.z,0,b.vel.x).normalize();     // a lateral axis
   for(let i=0;i<N;i++){ const t=i/(N-1);
     _bp.lerpVectors(_b0,_b1,t);
@@ -2486,7 +2626,7 @@ function updateDebris(dt){
     d.m.rotation.x+=d.spin.x*dt; d.m.rotation.y+=d.spin.y*dt;
     const wh=waveH(d.m.position.x,d.m.position.z,S.t);
     if(d.m.position.y<wh){ d.m.position.y=wh; d.v.multiplyScalar(0.3); d.v.y=Math.abs(d.v.y)*0.2; }
-    if(d.life<=0){ d.m.geometry.dispose(); scene.remove(d.m); debris.splice(i,1); }
+    if(d.life<=0){ d.m.geometry.dispose(); d.m.material.dispose(); scene.remove(d.m); debris.splice(i,1); }
   }
 }
 function plasmaImpact(pos,power){
@@ -2517,36 +2657,42 @@ function plasmaImpact(pos,power){
   rr.position.copy(pos); rr.rotation.x=-Math.PI/2; scene.add(rr); shocks.push({m:rr,life:0.5,dur:0.5,flat:true});
   S.flash=Math.max(S.flash,0.2+power*0.2); S.shake=Math.max(S.shake,0.4+power*0.5);
   AU.play('crash',0.55+power*0.4);
-  const th=AU.el.thunder; if(th){ try{ th.currentTime=0; th.playbackRate=0.85; th.volume=0.35+power*0.4; th.play().catch(()=>{});}catch(e){} }
+  const th=AU.el.thunder; if(th&&!S.muted&&!AU.muted){ try{ th.currentTime=0; th.playbackRate=0.85; th.volume=0.35+power*0.4; th.play().catch(()=>{});}catch(e){} }
 }
 function updateBolts(dt){
+  updateCombatFeedback(dt);
   for(let i=bolts.length-1;i>=0;i--){ const b=bolts[i];
+    b.prev.copy(b.m.position);
     b.m.position.addScaledVector(b.vel,dt); b.life-=dt;
     if(b.slot&&b.slot.owner===b){ b.slot.lt.intensity*=0.95; b.slot.lt.position.copy(b.m.position); }
     b.m.material.opacity=Math.min(1,b.life*2); b.line.material.opacity=0.5+0.5*Math.random();
     fillBolt(b);
-    let hit=raidBoltHit(b) || !!(MYST.active?.boltHit?.(b));
-    if(!hit) for(const sl of searchlights){ if(sl.destroyed) continue;
-      if(b.m.position.distanceTo(sl.lampPos)< (18 + (b.power||0.3)*26)){   // charged = wider kill radius
+    const terrainT=projectileWorldT(b.prev,b.m.position,1.2);
+    let tower=null,towerT=terrainT;
+    for(const sl of searchlights){if(sl.destroyed)continue;
+      const t=segmentSphereT(b.prev,b.m.position,sl.lampPos,10+b.power*14);
+      if(t<towerT){tower=sl;towerT=t;}
+    }
+    let hit=raidBoltHit(b,Math.min(1,towerT));
+    if(!hit && tower){ const sl=tower;
+        b.m.position.lerpVectors(b.prev,b.m.position,towerT);
         const dmg = b.power>0.55 ? 3 : 1.4;                         // charged shots hurt far more
-        sl.hp-=dmg; sl.hbT=3.2; sl.disabled=Math.max(sl.disabled,2.2); sl.lit=0;
+        sl.hp=Math.max(0,sl.hp-dmg); sl.hbT=3.2; sl.disabled=Math.max(sl.disabled,2.2); sl.lit=0; sl.fireWindup=0;
         smallBurst(sl.lampPos.x,sl.lampPos.y,sl.lampPos.z,0xffd070);
         sl.lamp.material.emissiveIntensity=6;                       // hit flash
         S.flash=Math.max(S.flash,0.4); S.shake=Math.max(S.shake,0.3); AU.play('crash',0.35);
-        popup(sl.hp<=0?'TOWER DOWN':'−'+dmg.toFixed(0)+'  ('+Math.max(0,Math.ceil(sl.hp))+' left)');
+        combatConfirm(dmg,sl.hp,sl.hp<=0);
+        popup(sl.hp<=0?'TOWER DOWN':'WATCHTOWER −'+dmg+' · '+Math.ceil(sl.hp)+' HP');
         if(sl.hp<=0) destroyTower(sl,b.power||1);
-        hit=true; break; }
+        hit=true;
     }
-    if(!hit){                                   // detonate on sea or rock, not just towers
-      const bp=b.m.position, wh2=waveH(bp.x,bp.z,S.t);
-      let land=bp.y<wh2+1.5;
-      if(!land) for(const c of colliders){ if(Math.hypot(bp.x-c.x,bp.z-c.z)<c.r+2 && bp.y<c.top){ land=true; break; } }
-      if(land){ plasmaImpact(bp,b.power||0.35); hit=true; }
+    // Stop at cover before evaluating optional target games behind it.
+    if(!hit&&terrainT<=1){
+      b.m.position.lerpVectors(b.prev,b.m.position,terrainT);plasmaImpact(b.m.position,b.power);hit=true;
     }
+    if(!hit) hit=!!(MYST.active?.boltHit?.(b));
     if(hit) b.life=0;
-    if(b.life<=0){ FXL.give(b.slot,b); b.m.geometry.dispose(); scene.remove(b.m); scene.remove(b.line); b.lgeo.dispose();
-      if(b.arc){ scene.remove(b.arc); b.arc.geometry.dispose(); b.arc.material.dispose(); }
-      bolts.splice(i,1); }
+    if(b.life<=0){disposeCombatBolt(b,true);bolts.splice(i,1);}
   }
 }
 
@@ -2568,7 +2714,7 @@ function updateShocks(dt){
     else if(!s.noscale) s.m.scale.setScalar(1+k*(s.flat?6:(s.axis?9:3.2)));
     if(s.m.material) s.m.material.opacity=0.95*(1-k);
     if(!s.flat&&!s.axis&&!s.noscale) s.m.quaternion.copy(camera.quaternion);
-    if(s.life<=0){ if(s.m.geometry) s.m.geometry.dispose(); scene.remove(s.m); shocks.splice(i,1); }
+    if(s.life<=0){ s.m.geometry?.dispose(); s.m.material?.dispose(); scene.remove(s.m); shocks.splice(i,1); }
   }
 }
 const popEl=document.getElementById('popup');
@@ -2610,7 +2756,7 @@ function renderShop(){
     renderShop();
   }));
 }
-function toggleShop(){ S.shopOpen=!S.shopOpen; $('shop').classList.toggle('on',S.shopOpen);
+function toggleShop(){ clearFlightInput(); S.shopOpen=!S.shopOpen; $('shop').classList.toggle('on',S.shopOpen);
   if(S.shopOpen) renderShop(); AU.play('flap',0.25); }
 function achievement(name,desc,key,kicker='SKILL LEARNED'){
   const k=document.querySelector('#ach .ach-k'); if(k) k.textContent=kicker;
@@ -2654,6 +2800,7 @@ function renderBook(){
 }
 function toggleBook(){
   if(S.bookLost){ popup('THE BOOK IS GONE'); return; }
+  clearFlightInput();
   S.bookOpen=!S.bookOpen; $('book').classList.toggle('on',S.bookOpen);
   if(S.bookOpen) renderBook();
   AU.play('flap',0.25);
@@ -2740,48 +2887,81 @@ function updateBursts(dt){
 /* ---- enemy fire: an alerted watchtower shoots glowing bolts to bring you down ---- */
 const foeBolts=[];
 const _lead=new THREE.Vector3(), _fdir=new THREE.Vector3();
+const enemyBoltGeometry=new THREE.SphereGeometry(1,8,8);
+const _enemyHit=new THREE.Vector3();
+function spawnEnemyBolt(from,direction,speed,life=5){
+  if(foeBolts.length>=COMBAT.maxEnemyBolts)return;
+  const m=new THREE.Mesh(enemyBoltGeometry,new THREE.MeshBasicMaterial({color:0xff7a3a,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
+  m.userData.sharedCombatGeometry=true;m.scale.setScalar(1.3);
+  const halo=new THREE.Mesh(enemyBoltGeometry,new THREE.MeshBasicMaterial({color:0xffb060,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.35}));
+  halo.userData.sharedCombatGeometry=true;halo.scale.setScalar(1.9);m.add(halo);
+  m.position.copy(from);scene.add(m);
+  foeBolts.push({m,prev:from.clone(),vel:direction.clone().multiplyScalar(speed),life});
+}
 function towerFire(sl){
-  _lead.copy(D.group.position).addScaledVector(new THREE.Vector3(-Math.sin(D.yaw),0,-Math.cos(D.yaw)), D.speed*0.6);
+  const speed=76+routeDifficulty()*28;
+  const leadTime=Math.min(.7,sl.lampPos.distanceTo(D.group.position)/speed*.65);
+  _fdir.set(-Math.sin(D.yaw)*Math.cos(D.pitch),Math.sin(D.pitch),-Math.cos(D.yaw)*Math.cos(D.pitch));
+  _lead.copy(D.group.position).addScaledVector(_fdir,D.speed*leadTime);
   _fdir.copy(_lead).sub(sl.lampPos).normalize();
-  const m=new THREE.Mesh(new THREE.SphereGeometry(1.3,10,10),
-    new THREE.MeshBasicMaterial({color:0xff7a3a,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
-  m.add(new THREE.Mesh(new THREE.SphereGeometry(2.4,10,10),
-    new THREE.MeshBasicMaterial({color:0xffb060,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.4})));
-  m.position.copy(sl.lampPos);
-  scene.add(m); foeBolts.push({m,vel:_fdir.clone().multiplyScalar(76+routeDifficulty()*28),life:5});
+  spawnEnemyBolt(sl.lampPos,_fdir,speed);
   smallBurst(sl.lampPos.x,sl.lampPos.y,sl.lampPos.z,0xff8030); AU.play('zap',0.3);
 }
 function updateFoeBolts(dt){
-  const p=D.group.position;
+  const p=D.group.position; COMBAT.invulnerable=Math.max(0,COMBAT.invulnerable-dt);
   for(let i=foeBolts.length-1;i>=0;i--){ const b=foeBolts[i];
+    b.prev.copy(b.m.position);
     b.m.position.addScaledVector(b.vel,dt); b.life-=dt;
-    if(!S.done && !S.launching && S.grace<=0 && b.m.position.distanceTo(p)<6.5){
-      S.hp-=Math.max(6,16-upLv('scaleplate')*3); S.hurt=1; S.shake=Math.max(S.shake,0.7); S.flash=Math.max(S.flash,0.35);
-      bigExplosion(b.m.position.clone(),0xff7a3a); AU.play('crash',0.5); b.life=0;
-      if(S.hp<=0) crash('SHOT DOWN');
+    const terrainT=projectileWorldT(b.prev,b.m.position,.8);
+    const hitT=segmentSphereT(b.prev,b.m.position,p,6.5);
+    if(hitT<=1&&hitT<terrainT&&!S.done&&!S.launching&&S.grace<=0){
+      b.life=0;
+      if(COMBAT.invulnerable<=0){
+        COMBAT.invulnerable=.55;
+        const damage=Math.max(6,16-upLv('scaleplate')*3);
+        S.hp=Math.max(0,S.hp-damage); S.hurt=1; S.shake=Math.max(S.shake,0.7); S.flash=Math.max(S.flash,0.35);
+        _enemyHit.lerpVectors(b.prev,b.m.position,hitT);
+        smallBurst(_enemyHit.x,_enemyHit.y,_enemyHit.z,0xff7a3a); AU.play('crash',0.5);
+        popup('HIT −'+damage+' · BREAK THE BEAM');
+        if(S.hp<=0) crash('SHOT DOWN');
+      }
+    }else if(terrainT<=1){
+      _enemyHit.lerpVectors(b.prev,b.m.position,terrainT);
+      smallBurst(_enemyHit.x,_enemyHit.y,_enemyHit.z,0xffb060);b.life=0;
     }
-    if(b.life<=0){ b.m.geometry.dispose(); scene.remove(b.m); foeBolts.splice(i,1); }
+    if(b.life<=0){disposeCombatBolt(b);foeBolts.splice(i,1);}
   }
 }
 // alerted towers track you + shoot; damage bars billboard toward camera
 const _hbUp=new THREE.Vector3();
 function updateTowerCombat(dt){
+  let charging=false;
   for(const sl of searchlights){
     // damage-bar reveal + billboard
-    if(sl.hbT>0){ sl.hbT-=dt; const a=Math.min(1,sl.hbT);
+    if(sl.hbT>0){ sl.hbT=Math.max(0,sl.hbT-dt); const a=Math.min(1,sl.hbT);
       sl.hbBg.material.opacity=0.7*a; sl.hbFill.material.opacity=0.95*a;
       const f=Math.max(0,sl.hp)/sl.maxHp; sl.hbFill.scale.x=f;
-      sl.hbFill.position.x=sl.lampPos.x - sl.hbW*(1-f)/2;
+      _hbUp.set(1,0,0).applyQuaternion(camera.quaternion);
+      sl.hbFill.position.copy(sl.hbBg.position).addScaledVector(_hbUp,-sl.hbW*(1-f)/2);
       sl.hbBg.quaternion.copy(camera.quaternion); sl.hbFill.quaternion.copy(camera.quaternion);
       sl.hbFill.material.color.setHSL(0.02+0.28*f,0.9,0.55);
     } else { sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; }
     if(sl.destroyed) continue;
     // fire back only when it actually has you in the light (rewards staying hidden)
-    const wantFire = sl.lit>0.35 && S.started && !S.done && S.grace<=0 && S.score>=2;
+    const wantFire = sl.lit>0.35 && sl.disabled<=0 && S.started && !S.done && !S.launching && S.grace<=0 && S.score>=2
+      && projectileWorldT(sl.lampPos,D.group.position,.4)===Infinity;
     sl.alerted += ((wantFire?1:0)-sl.alerted)*Math.min(1,dt*3);
-    sl.fireCd-=dt;
-    if(wantFire && sl.fireCd<=0){ sl.fireCd=2.2-routeDifficulty()*.9+Math.random()*.7; towerFire(sl); }
+    sl.fireCd=Math.max(0,sl.fireCd-dt);
+    if(!wantFire){sl.fireWindup=0;continue;}
+    if(sl.fireCd<=0){
+      sl.fireWindup=(sl.fireWindup||0)+dt;charging=true;
+      sl.lamp.material.emissiveIntensity=3+Math.sin(S.t*28)*1.2+sl.fireWindup*2;
+      if(sl.fireWindup>=.8){
+        sl.fireWindup=0;sl.fireCd=2.2-routeDifficulty()*.9+Math.random()*.7;towerFire(sl);
+      }
+    }
   }
+  combatThreat.style.display=charging?'block':'none';
   updateFoeBolts(dt);
 }
 /* ================= UNIQUE 1: ECHOLOCATION — a Galevein reads the storm by sound =================
@@ -3090,23 +3270,29 @@ function raidAimAssist(from,dir){           // bend a plasma shot toward a raide
   if(best){ const lead=best.g.position.clone().add(new THREE.Vector3(-Math.sin(best.yaw),0,-Math.cos(best.yaw)).multiplyScalar(best.speed*0.18));
     dir.copy(lead.sub(from).normalize()); }
 }
-function raidBoltHit(b){
+function raidBoltHit(b,maxT=1){
   if(!RAID.on) return false;
+  let target=null,first=maxT;
   for(const r of RAID.riders){ if(r.dead||r.falling) continue;
-    if(b.m.position.distanceTo(r.g.position)<9+(b.power||0.3)*6){
+    const t=segmentSphereT(b.prev||b.m.position,b.m.position,r.g.position,9+(b.power||0.3)*6);
+    if(t<=first){target=r;first=t;}
+  }
+  if(target){const r=target;
+      b.m.position.lerpVectors(b.prev||b.m.position,b.m.position,first);
       r.hp-= (b.power||0)>0.55 ? 3 : 1.4; smallBurst(r.g.position.x,r.g.position.y,r.g.position.z,0xffb060);
+      combatConfirm((b.power||0)>.55?3:1.4,r.hp,r.hp<=0);
       AU.play('crash',0.4); S.shake=Math.max(S.shake,0.25);
       if(r.hp<=0){ r.falling=1; r.vy=-4; popup('RIDER DOWN'); S.scales=(S.scales||0)+4; bigExplosion(r.g.position.clone(),0xff7a3a); }
       else popup('HIT · '+Math.ceil(r.hp)+' LEFT');
-      return true; } }
+      return true; }
   return false;
 }
 function raiderFire(r){
   const from=r.g.position.clone().add(new THREE.Vector3(-Math.sin(r.yaw),0,-Math.cos(r.yaw)).multiplyScalar(6));
   const p=D.group.position, lead=p.clone().addScaledVector(new THREE.Vector3(-Math.sin(D.yaw),0,-Math.cos(D.yaw)),D.speed*0.55);
   const dir=lead.sub(from).normalize();
-  const m=new THREE.Mesh(new THREE.SphereGeometry(1.2,8,8),new THREE.MeshBasicMaterial({color:0xff6a2a,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
-  m.position.copy(from); scene.add(m); foeBolts.push({m,vel:dir.multiplyScalar(90),life:4});
+  if(projectileWorldT(from,p,.4)!==Infinity)return;
+  spawnEnemyBolt(from,dir,90,4);
   AU.play('zap',0.25);
 }
 const _rv=new THREE.Vector3();
@@ -3266,25 +3452,18 @@ function driveRook(){
   if(S.score>=8) rookSay('Bones, big as ships. Something like me died here.','ribs');
   if(MYST.active) rookSay('A legend? Lead the way.','legend');
 }
-// full map
-function drawMap(){ const c=$('mapC'), x=c.getContext('2d'), W=c.width, sc=W/4200, cx=W/2, cz=W*0.62;
-  const P=(wx,wz)=>[cx+wx*sc, cz+wz*sc];
-  x.fillStyle='#d9c7a0'; x.fillRect(0,0,W,W);
-  x.fillStyle='rgba(60,90,110,.35)'; x.fillRect(0,0,W,W);
-  x.fillStyle='#8a9a6a'; let [hx,hz]=P(0,0); x.beginPath(); x.ellipse(hx,hz,300*sc,280*sc,0,0,7); x.fill();
-  x.fillStyle='#6b5a44'; for(const [mx,mz,r] of MAP.MOUNTAINS){ const [a,b]=P(mx,mz); x.beginPath(); x.moveTo(a,b-r*sc*.9); x.lineTo(a+r*sc*.8,b+r*sc*.5); x.lineTo(a-r*sc*.8,b+r*sc*.5); x.fill(); }
-  x.strokeStyle='rgba(120,40,30,.8)'; x.setLineDash([6,6]); x.lineWidth=2; x.beginPath(); rings.forEach((r,i)=>{ const [a,b]=P(r.position.x,r.position.z); i?x.lineTo(a,b):x.moveTo(a,b); }); x.stroke(); x.setLineDash([]);
-  rings.forEach((r,i)=>{ const [a,b]=P(r.position.x,r.position.z); x.fillStyle=r.userData.hit?'#5a7a5a':'#8e2420'; x.beginPath(); x.arc(a,b,5,0,7); x.fill(); });
-  x.font='bold 16px Georgia'; x.textAlign='center';
-  for(const st of MYST.sites){ const [a,b]=P(st.x,st.z); x.fillStyle=st.play?'#b8860b':'#8a8378'; x.fillText('?',a,b+5); }
-  x.font='13px Georgia'; x.fillStyle='#3b2c1a';
-  for(const [n,wx,wz] of [['Hearthholm',MAP.VILLAGE.x,MAP.VILLAGE.z+40],['Keeper Shallows',760,120],['Serpent Reach',950,-1000],['Rib Wastes',-200,-930],['Storm Gate',-240,-1790],['Feeding Grounds',-620,-120]]){ const [a,b]=P(wx,wz); x.fillText(n,a,b); }
-  const t=MYST.active?MYST.target():nextObjectiveTarget(); if(t){ const [a,b]=P(t.x,t.z); x.strokeStyle='#e2a64b'; x.lineWidth=3; x.beginPath(); x.arc(a,b,11,0,7); x.stroke(); }
-  const p=D.group.position, [a,b]=P(p.x,p.z); x.save(); x.translate(a,b); x.rotate(-D.yaw); x.fillStyle='#10131c'; x.beginPath(); x.moveTo(0,-11); x.lineTo(7,8); x.lineTo(-7,8); x.fill(); x.restore();
-  x.font='bold 22px Georgia'; x.fillStyle='#3b2c1a'; x.fillText('The Sable Reach',W/2,34); }
-addEventListener('keydown',e=>{ if(!S.started) return;
+// Full flight chart, cached terrain and live route/threat states.
+let navigationChart;
+function drawMap(){
+  navigationChart ||= createNavigationMap({canvas:$('mapC'),world:MAP,terrainHeight:groundHeight});
+  navigationChart.draw({player:{x:D.group.position.x,y:D.group.position.y,z:D.group.position.z,yaw:D.yaw},
+    rings,towers:searchlights,gates,tutorialRings:tutRings,tutorialDone:S.tutDone,
+    objective:MYST.active?MYST.target():nextObjectiveTarget(),objectiveLabel:$('objText').textContent,
+    sites:MYST.sites,raid:!!S.raid,time:S.t});
+}
+addEventListener('keydown',e=>{ if(!S.started||e.repeat||e.target?.matches('input,select,textarea')) return;
   if(e.code==='KeyP'){ $('progress').classList.toggle('off'); }
-  if(e.code==='KeyG'){ const m=$('bigmap'); m.classList.toggle('on'); if(m.classList.contains('on')) drawMap(); }
+  if(e.code==='KeyG'){ clearFlightInput(); const m=$('bigmap'); m.classList.toggle('on'); if(m.classList.contains('on')) drawMap(); }
   if(e.code==='KeyT'){ ROOK.voice=!ROOK.voice; popup(ROOK.voice?'ROOK SPEAKS ALOUD':'ROOK: SUBTITLES ONLY'); } });
 
 /* ================= SAGA PAGES — the book opens between chapters and before each legend ================= */
@@ -3304,9 +3483,10 @@ const SAGA={
   rescue:{t:'Stranded on the Stack', q:'"Better no load on the road than a heavy heart."', b:'A fisher is stuck on a sea stack, waving a flare. Fly in low, pick him up, bring him home.'}
 };
 function sagaOpen(key,then){ const d=SAGA[key]; if(!d||!S.started){ then&&then(); return; }
+  SAGA._close?.(false); clearFlightInput();
   $('sagaT').textContent=d.t; $('sagaQ').textContent=d.q; $('sagaB').textContent=d.b;
   $('sagaK').textContent=key.startsWith('ch')?'THE SAGA':'A LEGEND'; S.saga=true; $('saga').classList.add('on'); AU.play('flap',.3);
-  const close=()=>{ if(!S.saga) return; S.saga=false; $('saga').classList.remove('on'); removeEventListener('keydown',kd); then&&then(); };
+  const close=(resume=true)=>{ S.saga=false; $('saga').classList.remove('on'); removeEventListener('keydown',kd); SAGA._close=null; clearFlightInput(); if(resume) then&&then(); };
   const kd=e=>{ if(e.code==='Space'||e.code==='Enter'){ e.preventDefault(); close(); } };
   $('saga').onclick=close; addEventListener('keydown',kd); SAGA._close=close; }
 
@@ -3314,6 +3494,15 @@ function sagaOpen(key,then){ const d=SAGA[key]; if(!d||!S.started){ then&&then()
    Shapes rise out of the dark and wheel around you. While they fly with you the
    keepers can't pick you out of the swarm — detection barely builds. */
 const flock=[];
+function clearFlock(){
+  for(const {m} of flock){
+    const materials=new Set();
+    m.traverse(o=>{ o.geometry?.dispose(); if(o.material) materials.add(o.material); });
+    for(const material of materials) material.dispose();
+    scene.remove(m);
+  }
+  flock.length=0;
+}
 function makeFlockDragon(){
   const g=new THREE.Group();
   const body=new THREE.Mesh(new THREE.ConeGeometry(0.9,4.4,4),
@@ -3343,7 +3532,7 @@ function updateFlock(dt){
       f.m.rotation.y=-f.ph+Math.PI/2;
       for(const c of f.m.children){ if(c.userData.side) c.rotation.z=Math.sin(S.t*7+f.ph)*0.55*c.userData.side; }
     }
-    if(S.flockT<=0){ for(const f of flock) scene.remove(f.m); flock.length=0; }
+    if(S.flockT<=0) clearFlock();
   }
 }
 
@@ -3359,6 +3548,10 @@ function updateTowers(dt){
 const _wq=new THREE.Quaternion(), _dir=new THREE.Vector3(), _toD=new THREE.Vector3();
 function beamDir(sl){ sl.cone.getWorldQuaternion(_wq); return _dir.set(1,0,0).applyQuaternion(_wq).normalize().clone(); }
 function occluded(lamp,drag){
+  if(mountainOccludesSegment(lamp,drag,1)) return true;
+  const terrainSteps=Math.ceil(lamp.distanceTo(drag)/12);
+  for(let i=1;i<terrainSteps;i++){const t=i/terrainSteps; const x=lamp.x+(drag.x-lamp.x)*t,z=lamp.z+(drag.z-lamp.z)*t;
+    if(lamp.y+(drag.y-lamp.y)*t<MAP.homeHeight(x,z)+1) return true;}
   // any rock/crystal sphere blocking the segment lamp->dragon
   for(const c of colliders){
     const cx=c.x, cz=c.z, cy=Math.min(c.top*0.6,drag.y+6);
@@ -3385,7 +3578,7 @@ function driveTimeOfDay(dt){
   uDay.value=TOD.day;
   const d=TOD.day, dayW=Math.max(0,1-d/0.34);            // 1 = full day, 0 by dusk
   moon.color.copy(_sun).lerp(_moonC, d).lerp(_sunWhite, dayW); moon.intensity=1.85+.28*d + dayW*.72;
-  moon.position.set(-260, 60+180*d, 140-40*d);            // sun low -> moon high
+  moon.position.set(-260, 60+180*d, 140-40*d).add(D.group.position);            // sun low -> moon high
   amb.color.copy(_ambSet).lerp(_ambNight, d).lerp(_ambDay, dayW); amb.intensity=1.55-.18*d + dayW*.48;
   hemi.color.copy(_hemiSkyDay).lerp(_hemiSkyNight,d); hemi.groundColor.copy(_hemiGroundDay).lerp(_hemiGroundNight,d); hemi.intensity=.78+.18*d;
   rimP.intensity=.82+.82*d; fillT.intensity=.58+.42*d;
@@ -3429,8 +3622,7 @@ function driveRogue(dt){
 }
 
 function tick(dt){
-  if(S.saga){ renderWorld(); return; }
-  if((S.shopOpen||S.bookOpen)&&S.started&&!S.done) return;
+  if(isFlightPaused()) return;
   S.t+=dt; seaUniforms.uT.value=S.t; sky.material.uniforms.uT.value=S.t;
   if(S.started&&!S.done) S.flightT+=dt;
   updateTempestGate(dt); driveTimeOfDay(dt); driveThreatTone(dt); driveRogue(dt);
@@ -3442,10 +3634,10 @@ function tick(dt){
 
   // resting-dragon cinematic: breathing, patrol sweep, the moment he's found
   if(!S.started){
-    if(D.mixer){ D.mixer.update(dt); D.turn=0.28*Math.sin(S.t*0.4); applyAlive(dt); }  // idle tail sway
+    if(D.mixer){ advanceDragonAnimation(dt); D.turn=0.28*Math.sin(S.t*0.4); applyAlive(dt); }  // idle tail sway
     if(D.model){
       const b=1+Math.sin(S.t*1.5)*0.011;                       // slow breath
-      D.model.scale.setScalar(9*b);
+      D.model.scale.setScalar((activeRig.scale||9)*b);
       D.model.rotation.x += (-0.12 - D.model.rotation.x)*fdamp(3,dt);
     }
     lobbyMarkers.syncAnchor(REST);
@@ -3467,7 +3659,7 @@ function tick(dt){
     if(S.flash>0){ S.flash=Math.max(0,S.flash-dt*2.2); $('flash').style.opacity=(S.flash*0.5).toFixed(2); moon.intensity=0.8+S.flash*2.5; }
     return;
   }
-  if(S.done){ if(D.mixer) D.mixer.update(dt); return; }
+  if(S.done){ advanceDragonAnimation(dt); return; }
 
   /* ---- flight input: pure keyboard, no cursor drift ---- */
   const pitchCmd=THREE.MathUtils.clamp((key['ArrowUp']?1:0)-(key['ArrowDown']?1:0), -1,1);
@@ -3587,17 +3779,20 @@ function tick(dt){
     p.y += (wh+3.0-p.y)*Math.min(1,dt*5);
   }
   S.impactCd=Math.max(0,S.impactCd-dt);
-  const th=MAP.homeHeight(p.x,p.z);
+  const th=groundHeight(p.x,p.z);
+  let terrainGrazing=false;
   if(th>-1 && !S.launching){
     if(p.y<th+2.5 && S.impactCd<=0){
       S.hp-=Math.max(8,14+Math.max(0,D.speed-30)*.5-upLv('scaleplate')*3); S.hurt=1; S.shake=Math.max(S.shake,.8); S.impactCd=1.1;
       D.speed=Math.max(13,D.speed*.55); D.pitch=Math.max(D.pitch,0.35); p.y=th+5;
       AU.play('crash',.6); popup('GROUND STRIKE · '+Math.max(0,Math.round(S.hp))+' HEALTH');
       if(S.hp<=0) crash('DASHED ON THE ROCKS');
-    } else if(p.y<th+9){ p.y+=(th+9-p.y)*Math.min(1,dt*2.2);        // she lifts you off the hillside
-      if(D.speed>22 && (S.grazeT=(S.grazeT||0)-dt)<=0){ S.grazeT=1.4; popup('CLOSE CALL'); smallBurst(p.x,p.y-2,p.z,0xcfd8ff); } }
+    } else if(p.y<th+9){
+      terrainGrazing=p.y>=th+2.5 && D.speed>22;
+      p.y+=(th+9-p.y)*Math.min(1,dt*2.2);        // she lifts you off the hillside
+    }
   }
-  if(!S.launching){ let grazing=false;
+  if(!S.launching){ let grazing=terrainGrazing;
     for(const c of colliders){
       const dx=p.x-c.x, dz=p.z-c.z, horiz=Math.hypot(dx,dz);
       if(p.y < c.top+2){
@@ -3616,7 +3811,8 @@ function tick(dt){
     for(const c of colliders){ const dx=p.x-c.x, dz=p.z-c.z, h=Math.hypot(dx,dz);
       if(p.y<c.top+6 && h<c.r+30 && h<avd){ avd=h; av={dx,dz,h,c}; } }
     if(av){ const push=THREE.MathUtils.clamp(1-(av.h-av.c.r)/30,0,1);
-      p.x += (av.dx/av.h)*push*15*dt; p.z += (av.dz/av.h)*push*15*dt;
+      const safeH=Math.max(.001,av.h);
+      p.x += (av.dx/safeH)*push*15*dt; p.z += (av.dz/safeH)*push*15*dt;
       D.roll += (av.dx*Math.cos(D.yaw)-av.dz*Math.sin(D.yaw))>0 ? push*0.9*dt : -push*0.9*dt;
       if(push>0.45){ $('warn').textContent='PULL AWAY'; $('warn').style.opacity=(0.4+0.4*Math.sin(S.t*12)).toFixed(2); }
     }
@@ -3644,11 +3840,13 @@ function tick(dt){
     // Wings ALWAYS beat — steady cruise flap that deepens on climb; weight capped
     // below the deep-fold frames that shatter this envelope-weighted mesh.
     const wTarget = input.flap ? 1.0 : (braking ? 0.85 : 0.55);   // full beat: the re-skin holds
-    const w=THREE.MathUtils.lerp(D.flap.getEffectiveWeight(), wTarget, fdamp(5,dt));
-    D.flap.setEffectiveWeight(w); D.glide.setEffectiveWeight(1-w);
-    D.flap.timeScale = input.flap ? 1.55+D.boost*0.7 : (braking ? 1.9 : 1.0+D.boost*0.5);
-    D.glide.timeScale = 0.7;
-    D.mixer.update(dt);
+    if(D.flap && D.glide && D.flap!==D.glide){
+      const w=THREE.MathUtils.lerp(D.flap.getEffectiveWeight(), wTarget, fdamp(5,dt));
+      D.flap.setEffectiveWeight(w); D.glide.setEffectiveWeight(1-w);
+      D.flap.timeScale=input.flap?1.55+S.boost*.7:(braking?1.9:1+S.boost*.5);
+      D.glide.timeScale=.7;
+    } else { const action=D.flap||D.glide; if(action){ action.setEffectiveWeight(1); action.timeScale=input.flap?1.5:1; } }
+    advanceDragonAnimation(dt);
     applyAlive(dt);
     // surge & brake body language, clamped so the silhouette always stays a readable prone glide
     if(D.model){
@@ -3746,7 +3944,8 @@ function tick(dt){
     if(S.chapter===0 || S.raid) continue;                 // the road is locked while Hearthholm burns
     r.material.emissiveIntensity=2.6+Math.sin(S.t*3+r.position.x*0.1)*0.9;   // breathe
     if(p.distanceTo(r.position)<RING_R+2){
-      r.userData.hit=true; r.userData.pop=1; r.material=ringDone; S.score++;
+      r.userData.hit=true; r.userData.pop=1;
+      if(r.material!==ringBase&&r.material!==ringDone) r.material.dispose(); r.material=ringDone; S.score++;
       const clean=S.detection<.18, rewards=[2,2,3,2,3,2,3,3,4,3,4,5];
       const earned=rewards[S.score-1]+(clean?1:0);
       AU.play('ring',0.75); shockwave(r.position,0x9a5cff);
@@ -3775,7 +3974,7 @@ function tick(dt){
 
 function updateRain(){
   const c=camera.position;
-  for(let i=0;i<RAIN_N;i++){ const s=rainSeed[i];
+  for(let i=0;i<graphicsProfile.rain;i++){ const s=rainSeed[i];
     const fall=((s[1]*400-S.t*95*(0.7+s[2]*.6))%rainBox+rainBox)%rainBox;
     const x=c.x+(s[0]-.5)*rainBox, z=c.z+(s[2]-.5)*rainBox, y=c.y+fall-rainBox/2;
     rp[i*6]=x; rp[i*6+1]=y; rp[i*6+2]=z; rp[i*6+3]=x+.22; rp[i*6+4]=y-5.0; rp[i*6+5]=z;
@@ -3850,7 +4049,7 @@ function hud(litNow){
 
 /* ---- endings ---- */
 function showOver(kick,title,cls,sub){
-  S.done=true; input.flap=false;
+  S.done=true; clearFlightInput();
   TONE.snap=0.8; TONE.mode = cls==='good' ? 'escape' : 'spotted';
   if(cls==='good'){ AU.fadeTo('music',0.28,700); AU.fadeTo('menu',0.22,900); AU.fadeTo('amb',0.2,600); }
   else { AU.fadeTo('menu',0,200); AU.fadeTo('music',0.7,160); AU.fadeTo('amb',0.08,400); }
@@ -3859,13 +4058,15 @@ function showOver(kick,title,cls,sub){
   $('overBeacons').textContent=S.score+' / '+rings.length;
   $('overTime').textContent=Math.round(S.flightT)+'s';
   $('over').classList.remove('hide');
-  setTimeout(()=>{ if(S.done) returnToHub(S.cause||kick); }, cls==='good'?2200:800);
+  afterRunDelay(cls==='good'?6000:4500,()=>{ if(S.done) returnToHub(S.cause||kick); });
 }
 function returnToHub(reason=''){
+  invalidateRunTimers(); closeFlightPanels(); clearFlightInput();
   $('over').classList.add('hide'); $('hud').classList.remove('on');
   menuEl.classList.remove('hide'); menuEl.classList.add('live');
   $('lobbyHub').classList.add('on'); $('lobbyHub').classList.remove('hide');
   S.started=false; S.done=false; S.launching=false; input.flap=false;
+  S.finishing=false; S.finishToken++; ROG.life=0; ROG.amp=0; uRA.value=0;
   S.alertStage=0; S.detection=0; TONE.mode='hub'; TONE.threat=0; TONE.snap=0.4;
   AU.fadeTo('music',0,500); AU.fadeTo('menu',0.36,700); AU.fadeTo('amb',0.28,600);
   lobby.returnToHub(reason); stageRest();
@@ -3879,8 +4080,8 @@ function escaped(){ try{ localStorage.setItem('galevein_story_done','1'); }catch
   S.done=true; S.finishing=true; S.cause='ESCAPED'; const token=++S.finishToken; GATE.open=.08;
   TONE.snap=0.5; TONE.threat=0.4;
   AU.play('ring',0.9); AU.play('thunder',.35); S.flash=1; storyPop('The Gate hears Galevein. The storm folds open.',2.2);
-  setTimeout(()=>{ if(S.finishing&&S.finishToken===token) showOver('ESCAPED','TEMPEST GATE','good',
-    'All twelve beacons. The aurora opens, and the Sable Reach falls behind you.'); },1800);
+  afterRunDelay(1800,()=>{ if(S.finishing&&S.finishToken===token) showOver('ESCAPED','TEMPEST GATE','good',
+    'All twelve beacons. The aurora opens, and the Sable Reach falls behind you.'); });
 }
 
 /* ---- start / restart: armour shutter closes, he leaps, shutter opens on the flight ---- */
@@ -3916,19 +4117,36 @@ function setMuted(muted){
   if(S.muted){ for(const a of Object.values(AU.el)) a.pause(); if(WIND.gain) WIND.gain.gain.value=0; updateChargeHum(0,false); }
   else if(AU.on){ AU.loop('amb'); AU.loop('music'); updateWind(); }
 }
+const runTimers=new Set();
+function invalidateRunTimers(){ S.runToken++; for(const id of runTimers) clearTimeout(id); runTimers.clear(); }
+function afterRunDelay(ms,callback){
+  const token=S.runToken;
+  const id=setTimeout(()=>{ runTimers.delete(id); if(token!==S.runToken) return;
+    if(isFlightPaused()){ afterRunDelay(100,callback); return; } callback(); },ms);
+  runTimers.add(id); return id;
+}
+function closeFlightPanels(){
+  SAGA._close?.(false); S.saga=false; S.bookOpen=false; S.shopOpen=false;
+  for(const id of ['saga','book','shop','bigmap']) $(id).classList.remove('on');
+  if($('graphicsPanel')) $('graphicsPanel').open=false;
+  setFlightPaused(false);
+}
 function begin(opts={}){ S.simDriven=false;
-  if(S.launching||S.started) return; S.launching=true;
+  if(S.launching||S.started) return;
+  reset({launch:false,preserveUpgrades:true}); S.simDriven=false; S.launching=true;
   S.lobbyMode=opts.mode||S.lobbyMode||'story';
   S.practiceMode=!!opts.practice||S.lobbyMode==='practice';
   $('lobbyHub').classList.remove('on'); $('lobbyHub').classList.add('hide');
   startAudio(); triggerRipple();
   TONE.mode='flight'; TONE.threat=0.15; TONE.snap=0.35; S.alertStage=0;
   $('shutter').classList.add('closed');
-  setTimeout(()=>{
+  afterRunDelay(950,()=>{
     S.started=true; S.flightT=0; S.grace=3; TOD.day=0.0; S.keepersWoke=false; S.hp=S.hpMax; S.hurt=0;
     S.chapter=0; S.tutDone=false; S.altitudePeak=0; S.altitudeCollected=false;
     for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; }
     for(const r of rings) r.visible=false;
+    D.group.position.set(REST.x, REST.y+6, REST.z);
+    D.yaw=0; D.pitch=0.22; D.roll=0; D.speed=30; S.prevSpeed=30;
     if(S.practiceMode){
       storyPop('Practice flight — three rings in the cove. No keeper hunt.',6);
     } else if(S.lobbyMode==='chapter' && opts.chapterIndex!=null){
@@ -3938,35 +4156,42 @@ function begin(opts={}){ S.simDriven=false;
       storyPop('Stay close to the cliffs. Three rings — feel how she answers before the sea takes you seriously.',7);
     }
     for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.fireCd=2+Math.random(); if(S.practiceMode) sl.alerted=0; }
-    D.group.position.set(REST.x, REST.y+6, REST.z);
-    D.yaw=0; D.pitch=0.22; D.roll=0; D.speed=30; S.prevSpeed=30;
+    D.prevYaw=D.yaw; D.prevPitch=D.pitch;
     if(D.model) D.model.scale.setScalar(activeRig.scale||9);
     if(D.glide) D.glide.timeScale=activeRig.id==='quaternius'?0.35:1;
     $('menu').classList.add('hide'); $('hud').classList.add('on');
     const back=new THREE.Vector3(Math.sin(D.yaw),0,Math.cos(D.yaw));
     camera.position.copy(D.group.position).addScaledVector(back,25).add(new THREE.Vector3(0,9,0));
-  },950);
-  setTimeout(()=>{ $('shutter').classList.remove('closed');
-    input.flap=true; AU.play('flap',0.5); setTimeout(()=>{ input.flap=false; },700); },1900);
-  setTimeout(()=>{ S.launching=false; },2900);
+  });
+  afterRunDelay(1900,()=>{ $('shutter').classList.remove('closed');
+    input.flap=true; AU.play('flap',0.5); afterRunDelay(700,()=>{ input.flap=false; }); });
+  afterRunDelay(2900,()=>{ S.launching=false; });
 }
-function reset(){
+function reset(opts={}){
+  invalidateRunTimers(); closeFlightPanels(); clearFlightInput();
+  MYST.active?.cleanup?.(); MYST.active=null; S.mystLine='';
+  ROOK.said={}; ROOK.t=0; $('rookSay').classList.remove('on');
   if(RAID.on) endRaid(false); S.raid=false; S.raidDone=false; RAID.fires=0;
   for(const fe of (RAID.fireList||[])){ scene.remove(fe.g); const i=NORSE.fires.indexOf(fe); if(i>=0) NORSE.fires.splice(i,1); } RAID.fireList=[];
   startAudio(); D.group.position.set(REST.x,REST.y+6,REST.z); D.yaw=0; D.pitch=0.22; D.roll=0; D.speed=30; input.flap=false;
   S.done=false; S.flightT=0; S.detection=0; S.score=0; S.shake=0; S.fpv=false; S.nextThunder=S.t+5; S.shootCd=0;
   S.finishing=false; S.finishToken++; GATE.open=0; S.impactCd=0; S.alertStage=0;
+  S.cause=''; S.flash=0; S.captureKind=null; S.camYaw=0; S.camPitch=0; S.ultraT=0; S.ultraCd=0;
+  S.flapCd=0; S.grazing=false; S.gustPow=0; S.gustNext=6; S.raidLeft=0; S._tutSeen=0;
+  D.turn=0; D.prevYaw=D.yaw; D.prevPitch=D.pitch; D.recoil=0;
+  Object.assign(D.motion,{longAccel:0,yawRate:0,pitchRate:0,gLoad:1});
+  for(const axis of Object.values(D.springs||{})){ axis.value=0; axis.velocity=0; }
   S.boost=0; S.accel=0; S.prevSpeed=30; S.boomed=false; S.charges=3; S.chargeT=-1; S.grace=3; S.launching=true;
   TOD.day=0.0; S.keepersWoke=false; ROG.amp=0; ROG.life=0; ROG.next=6; uRA.value=0;
-  if(D.model) D.model.scale.setScalar(9);
+  if(D.model) D.model.scale.setScalar(activeRig.scale||9);
   if(D.glide) D.glide.timeScale=1;
-  for(const r of rings){ r.userData.hit=false; r.userData.pop=0; r.scale.setScalar(1); r.material=ringBase.clone(); }
+  for(const r of rings){ r.userData.hit=false; r.userData.pop=0; r.scale.setScalar(1); if(r.material!==ringBase&&r.material!==ringDone) r.material.dispose(); r.material=ringBase.clone(); }
   for(const sl of searchlights){ sl.lit=0; sl.disabled=0; sl.destroyed=false; sl.fall=0;
     sl.group.rotation.z=0; sl.group.position.y=0; sl.spot.intensity=3200; sl.cone.visible=true;
     sl.lampGlow.intensity=500; sl.lamp.material.emissiveIntensity=2.4; }
-  for(const b of bolts){ scene.remove(b.m); scene.remove(b.line); } bolts.length=0;
-  for(const s of shocks){ scene.remove(s.m); } shocks.length=0;
-  for(const d of debris){ scene.remove(d.m); } debris.length=0;
+  clearCombatProjectiles();
+  for(const s of shocks){ s.m.geometry?.dispose(); s.m.material?.dispose(); scene.remove(s.m); } shocks.length=0;
+  for(const d of debris){ d.m.geometry?.dispose(); d.m.material?.dispose(); scene.remove(d.m); } debris.length=0;
   for(const b of BURST_POOL){ b.alive=false; b.sp.visible=false; b.slot=null; } FXL.clear();
   if(D.mouth){ D.mouth.scale.setScalar(0.001); D.mouthLt.intensity=0; } S._chargeReady=false;
   for(const gm of gates){ gm.userData.hit=false; gm.material.emissiveIntensity=2.2; }
@@ -3975,23 +4200,24 @@ function reset(){
   S.echoCd=0; S.echoR=0; S.echoOn=false; echoMesh.visible=false; S.dive=0; S.stormbreakFired=false;
   S.spiral=0; S.spiralFired=false; S.spiralMax=false; S.lift=0; S.beatCd=0; S.poison=0;
   S.bookLost=false; S.violence=0; S.violenceWarned=false; S.bookOpen=false; $('book').classList.remove('on');
-  S.shopOpen=false; $('shop').classList.remove('on'); S.scales=0;
+  S.shopOpen=false; $('shop').classList.remove('on');
   S.chapter=0; S.tutDone=false; S.altitudePeak=0; S.altitudeCollected=false;
   for(const r of tutRings){ r.userData.hit=false; r.material.emissiveIntensity=2.4; r.visible=true; }
   for(const r of rings) r.visible=false;
-  for(const u of UPGRADES){ UP[u.id]=0; } S.hpMax=100; S.hp=100; for(const sk of SKILLS) sk._had=false;
+  if(opts.preserveUpgrades===false){ for(const u of UPGRADES) UP[u.id]=0; S.scales=0; }
+  S.hpMax=100+upLv('scaleplate')*12; S.hp=S.hpMax; for(const sk of SKILLS) sk._had=false;
   S.strikeT=0; S.strikeNext=12; S.superCharge=0; teleMark.visible=false;
-  S.flockCd=0; S.flockT=0; for(const f of flock) scene.remove(f.m); flock.length=0;
-  for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; sl.fireCd=1.5+Math.random(); sl.alerted=0; }
-  for(const b of foeBolts){ scene.remove(b.m); } foeBolts.length=0;
+  S.flockCd=0; S.flockT=0; clearFlock();
+  for(const sl of searchlights){ sl.hp=sl.maxHp; sl.hbT=0; sl.hbBg.material.opacity=0; sl.hbFill.material.opacity=0; sl.fireCd=1.5+Math.random(); sl.alerted=0; sl.fireWindup=0; sl.boltFireT=0; }
   $('over').classList.add('hide'); $('litglow').style.opacity=0; $('warn').style.opacity=0;
   AU.fadeTo('music',0.4,600); AU.fadeTo('amb',0.5,600);
-  S.started=true;
+  S.started=opts.launch!==false;
+  if(opts.launch===false){ S.launching=false; return; }
   storyPop('Back to the cove. Three rings first — then follow the beacon road.',5);
   $('shutter').classList.add('closed');
-  setTimeout(()=>{ $('shutter').classList.remove('closed'); input.flap=true; AU.play('flap',0.5);
-    setTimeout(()=>{ input.flap=false; },700); },900);
-  setTimeout(()=>{ S.launching=false; },1800);
+  afterRunDelay(900,()=>{ $('shutter').classList.remove('closed'); input.flap=true; AU.play('flap',0.5);
+    afterRunDelay(700,()=>{ input.flap=false; }); });
+  afterRunDelay(1800,()=>{ S.launching=false; });
 }
 /* ---- landing interactions ---- */
 const menuEl=$('menu');
@@ -4062,30 +4288,48 @@ $('againBtn').addEventListener('click',()=>{
 });
 $('hubBtn').addEventListener('click',()=>returnToHub('manual'));
 $('muteBtn').addEventListener('click',()=>setMuted(!S.muted));
+$('resumeFlight').addEventListener('click',e=>{ e.stopPropagation(); setFlightPaused(false); });
+$('graphicsPanel')?.addEventListener('toggle',()=>clearFlightInput());
 
-/* ---- graphics presets: LOW / MED / HIGH (persisted) ---- */
-function applyGfx(level){
-  localStorage.setItem('galevein_gfx',level);
-  FX.gfx=level;
-  document.querySelectorAll('.gfxrow b').forEach(b=>b.classList.toggle('on',b.dataset.g===level));
-  const hi=level==='high', med=level==='med';
-  renderer.setPixelRatio(hi?Math.min(devicePixelRatio,2):med?1.5:1);
-  rainGeo.setDrawRange(0,(hi?RAIN_N:med?900:450)*2);
-  streaks.visible=hi||med;
-  windLines.visible=hi||med;
-  renderer.shadowMap.enabled=hi;
-  cinematicDof.enabled=hi;
+/* ---- five graphics profiles: visual cost never changes gameplay ---- */
+let graphicsProfile=GRAPHICS_PROFILES.high;
+function applyGfx(value){
+  const level=normalizeGraphics(value), p=GRAPHICS_PROFILES[level];
+  graphicsProfile=p; FX.gfx=level;
+  mountainTerrain.setQuality(level==='extra'?'extra-high':level);
+  try { localStorage.setItem('galevein_gfx',level); } catch {}
+  document.querySelectorAll('[data-g]').forEach(b=>{
+    b.classList.toggle('on',b.dataset.g===level);
+    b.setAttribute('aria-pressed',String(b.dataset.g===level));
+  });
+  renderer.setPixelRatio(graphicsPixelRatio(p,devicePixelRatio));
+  renderer.setSize(innerWidth,innerHeight);
+  rainGeo.setDrawRange(0,p.rain*2);
+  windGeo.setDrawRange(0,p.wind*2); streakGeo.setDrawRange(0,p.streaks*2);
+  streaks.visible=p.streaks>0; windLines.visible=p.wind>0;
+  if(sea.geometry.parameters.widthSegments!==p.sea){
+    sea.geometry.dispose(); sea.geometry=new THREE.PlaneGeometry(9000,9000,p.sea,p.sea);
+  }
+  renderer.shadowMap.enabled=p.shadow>0;
+  moon.castShadow=p.shadow>0;
+  moon.target=D.group;
+  if(moon.shadow.mapSize.x!==p.shadow && moon.shadow.map){ moon.shadow.map.dispose(); moon.shadow.map=null; }
+  if(p.shadow){
+    moon.shadow.mapSize.set(p.shadow,p.shadow);
+    const c=moon.shadow.camera;
+    c.left=-100;c.right=100;c.top=100;c.bottom=-100;c.near=1;c.far=650;c.updateProjectionMatrix();
+    moon.shadow.bias=-.0006; moon.shadow.normalBias=.6;
+  }
+  // Only the dragon casts; distant mountains never add another scene shadow pass.
+  if(D.model) D.model.traverse(o=>{if(o.isMesh) o.castShadow=p.shadow>0;});
+  cinematicDof.enabled=p.dof;
+  cinematicDof.resolutionScale=p.postScale;
   cinematicDof.setSize(renderer.domElement.width,renderer.domElement.height);
-  moon.castShadow=hi;
-  if(hi){ moon.shadow.mapSize.set(1024,1024); const c=moon.shadow.camera;
-    c.left=-260;c.right=260;c.top=260;c.bottom=-260;c.far=1200; moon.shadow.bias=-0.002;
-    moon.target=D.group; }
-  scene.traverse(o=>{ if(o.isMesh&&o.material&&o.material.isMeshStandardMaterial){ o.receiveShadow=hi; } });
-  if(D.model) D.model.traverse(o=>{ if(o.isMesh) o.castShadow=hi; });
-  // punchier night grade on MED/HIGH without extra draw calls
-  renderer.toneMappingExposure = hi ? 1.55 : (med ? 1.42 : 1.28);
+  $('graphicsCurrent').textContent=p.label;
+  $('graphicsNote').textContent=p.dof?'Cinematic depth · soft shadows · detailed sea':'Clear flight view · '+(p.shadow?'dragon shadows':'lighter rendering');
+  return level;
 }
-document.querySelectorAll('.gfxrow b').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); applyGfx(b.dataset.g); }));
+document.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();applyGfx(b.dataset.g);}));
 applyGfx(localStorage.getItem('galevein_gfx')||'high');
 
 /* ============================ CAMERA + LOOP ============================ */
@@ -4109,7 +4353,7 @@ function updateStreaks(){
   _sfwd.set(-Math.sin(D.yaw)*Math.cos(D.pitch),Math.sin(D.pitch),-Math.cos(D.yaw)*Math.cos(D.pitch)).normalize();
   _srt.crossVectors(_sfwd,_SUP).normalize(); _sup.crossVectors(_srt,_sfwd).normalize();
   const cx=camera.position.x, cy=camera.position.y, cz=camera.position.z, len=8+b*48, scroll=S.t*(0.5+b*2.6);
-  for(let i=0;i<STREAK_N;i++){ const s=streakSeed[i];
+  for(let i=0;i<graphicsProfile.streaks;i++){ const s=streakSeed[i];
     // keep streaks in a PERIPHERAL ring (min radius 28) so they never slash through the dragon on the axis
     const ang=s[0]*6.2832, rad=28+s[1]*38, along=((s[2]-scroll)%1+1)%1, ax=(along-0.5)*180;
     const rc=Math.cos(ang)*rad, rs=Math.sin(ang)*rad;
@@ -4184,6 +4428,7 @@ function render(dt=1/60){
 }
 let CAM_OVERRIDE=null;   // debug/verification only: SIM.viewFrom(...)
 function renderWorld(){
+  renderer.info.reset();
   if(CAM_OVERRIDE){ camera.position.set(...CAM_OVERRIDE[0]); camera.lookAt(...CAM_OVERRIDE[1]); camera.fov=CAM_OVERRIDE[2]||55; camera.updateProjectionMatrix(); }
   sky.position.copy(camera.position);
   horizonDirector.update(camera.position,S.t,TOD.day);
@@ -4196,9 +4441,9 @@ let last=performance.now(), fpsE=60, fpsAcc=0, loopAlive=performance.now();
 const frameTimes=[];
 function loop(now){ requestAnimationFrame(loop);
   loopAlive=now;
-  const dt=Math.min((now-last)/1000,0.05); last=now;
-  frameTimes.push(dt*1000); if(frameTimes.length>900)frameTimes.shift();
-  fpsE+=(1/Math.max(dt,1e-3)-fpsE)*0.06; fpsAcc+=dt;
+  const elapsed=Math.max(0,now-last), dt=Math.min(elapsed/1000,0.05); last=now;
+  frameTimes.push(elapsed); if(frameTimes.length>900)frameTimes.shift();
+  fpsE+=(1000/Math.max(elapsed,1)-fpsE)*0.06; fpsAcc+=dt;
   if(fpsAcc>0.35){ fpsAcc=0; $('fpsV').textContent=Math.round(fpsE); }
   tick(dt); render(dt);
 }
@@ -4262,6 +4507,7 @@ function simJumpBeacon(n, opts={}){ S.simDriven=true;
     S.score=score;
     for(let j=0;j<rings.length;j++){
       rings[j].userData.hit=j<score;
+      if(rings[j].material!==ringBase&&rings[j].material!==ringDone) rings[j].material.dispose();
       rings[j].material=j<score?ringDone:ringBase.clone();
     }
     structure?.director?.syncChapterFromProgress(S.score,true);
@@ -4288,10 +4534,10 @@ function simJumpChapter(n){
   } else {
     S.chapter=chapter; S.tutDone=true;
     for(const r of tutRings) r.userData.hit=true;
-    for(const r of rings){ r.visible=true; r.userData.hit=false; r.material=ringBase.clone(); }
+    for(const r of rings){ r.visible=true; r.userData.hit=false; if(r.material!==ringBase&&r.material!==ringDone) r.material.dispose(); r.material=ringBase.clone(); }
     const target=Math.min((chapter===1?0:chapter===2?3:chapter===3?7:chapter===4?10:11), rings.length-1);
     S.score=target;
-    for(let j=0;j<target;j++){ rings[j].userData.hit=true; rings[j].material=ringDone; }
+    for(let j=0;j<target;j++){ rings[j].userData.hit=true; if(rings[j].material!==ringBase&&rings[j].material!==ringDone) rings[j].material.dispose(); rings[j].material=ringDone; }
     simJumpBeacon(target+1,{speed:34,setupRun:false});
     structure?.director?.syncChapterFromProgress(S.score,true);
     const hud=structure?.tick({tutorialDone:3});
@@ -4305,7 +4551,7 @@ function simJumpState(patch={}){ S.simDriven=true;
   if(patch.chapter!=null) S.chapter=patch.chapter;
   if(patch.score!=null){
     S.score=THREE.MathUtils.clamp(patch.score,0,rings.length);
-    for(let i=0;i<rings.length;i++){ rings[i].userData.hit=i<S.score; rings[i].material=(i<S.score?ringDone:ringBase.clone()); }
+    for(let i=0;i<rings.length;i++){ rings[i].userData.hit=i<S.score; if(rings[i].material!==ringBase&&rings[i].material!==ringDone) rings[i].material.dispose(); rings[i].material=(i<S.score?ringDone:ringBase.clone()); }
     rings.forEach(r=>r.visible=S.tutDone||S.chapter>0);
   }
   if(patch.detection!=null) S.detection=THREE.MathUtils.clamp(patch.detection,0,1);
@@ -4350,7 +4596,16 @@ function simSnapshot(extra={}){
   };
 }
 window.SIM={
-  state:()=>({t:+S.t.toFixed(1),flightT:+S.flightT.toFixed(1),started:S.started,done:S.done,det:+S.detection.toFixed(2),score:S.score,
+  // Test-only stepping uses the real rules without GPU rendering; never use it as an FPS benchmark.
+  stepSimulation:(dt=1/60)=>{tick(Math.max(0,Math.min(.05,dt)));return SIM.state();},
+  pauseFlight:setFlightPaused,
+  combatState:()=>({towers:searchlights.map((s,index)=>({index,lampPos:s.lampPos.toArray(),beamDirection:beamDir(s).toArray(),range:s.range,coneHalf:s.coneHalf,hp:s.hp,maxHp:s.maxHp,destroyed:s.destroyed,disabled:s.disabled,lit:s.lit,fireWindup:s.fireWindup||0,fireCd:s.fireCd})),bolts:bolts.length,foeBolts:foeBolts.length,target:searchlights.indexOf(COMBAT.target),invulnerable:COMBAT.invulnerable,maxPlayerBolts:COMBAT.maxPlayerBolts,maxEnemyBolts:COMBAT.maxEnemyBolts}),
+  terrainState:()=>mountainTerrain.getStats(),
+  terrainHeight:groundHeight,
+  setGraphics:applyGfx,
+  getGraphics:()=>({id:FX.gfx,...graphicsProfile,pixelRatio:renderer.getPixelRatio(),width:renderer.domElement.width,height:renderer.domElement.height,shadowEnabled:renderer.shadowMap.enabled,dof:cinematicDof.enabled}),
+  rigHealth:()=>{const invalid=[];D.model?.traverse(o=>{if(o.isBone&&!o.quaternion.toArray().every(Number.isFinite))invalid.push(o.name);});return {loaded:!!D.model,invalidBones:invalid,flapTimeScale:D.flap?.timeScale,glideTimeScale:D.glide?.timeScale};},
+  state:()=>({paused:isFlightPaused(),launching:S.launching,runToken:S.runToken,t:+S.t.toFixed(1),flightT:+S.flightT.toFixed(1),started:S.started,done:S.done,det:+S.detection.toFixed(2),score:S.score,
     spd:+D.speed.toFixed(1),pos:D.group.position.toArray().map(v=>+v.toFixed(1)),fpv:S.fpv,
     chapter:S.chapter,tutorial:tutRings.filter(r=>r.userData.hit).length,routeVisible:rings.filter(r=>r.visible).length,cause:S.cause||'',
     scales:Math.floor(S.scales||0),hp:+S.hp.toFixed(1),hpMax:S.hpMax,day:+TOD.day.toFixed(3),finishing:S.finishing,
