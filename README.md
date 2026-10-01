@@ -51,3 +51,11 @@ They scale resolution, rain/trails, sea geometry, mountain detail distance, drag
 Mountains use a shared terrain surface for collision, projectiles and navigation. Watchtowers show target/health feedback, warn before firing and lose their lock behind terrain. Retry clears the previous run while keeping earned upgrades.
 
 See [the change and verification report](reports/flight-polish/REPORT.md) for tests, screenshots and measured limitations.
+
+## Journey saves and optional backend
+
+**Continue** now resumes the actual saved Story flight. Forge upgrades and scales persist across reloads; a previous-revision recovery copy and portable save export/import are available under **Journey & Backups** in the hub. Escape pauses the flight and offers **Save & Return to Hub**.
+
+For server backups, use Node 24 and run `npm start` instead of the Python static server. Enable server backup from the hub. The service stores validated saves in SQLite, isolates players with private session cookies, retains ten revisions, and detects concurrent save conflicts. Static hosting still works with device saves alone.
+
+See [backend setup and save semantics](backend/README.md) and [verification results](reports/state-backend/REPORT.md). Run `npm test` for the state, API, collision and audio regression tests.
