@@ -1,0 +1,298 @@
+{
+  "environment": "Chromium / SwiftShader software rendering. Restore fixtures are diagnostics, not earned campaign progress.",
+  "checks": [
+    {
+      "name": "boot with backend and clean profile",
+      "status": "pass",
+      "details": {
+        "paused": false,
+        "runToken": 0,
+        "t": 0.3,
+        "flightT": 0,
+        "started": false,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 20,
+        "pos": [
+          -20,
+          25.5,
+          -262
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.342,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      }
+    },
+    {
+      "name": "normal Story launch and save-to-hub create a resumable flight",
+      "status": "pass",
+      "details": {
+        "health": 100,
+        "position": [
+          -19.873791520313087,
+          33.8579818223262,
+          -265.71962077091797
+        ]
+      }
+    },
+    {
+      "name": "reload and Continue restore saved position and pause before flight",
+      "status": "pass",
+      "details": {
+        "paused": true,
+        "launching": false,
+        "runToken": 1,
+        "t": 0.7,
+        "flightT": 0.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 32.1,
+        "pos": [
+          -19.9,
+          33.9,
+          -265.7
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      }
+    },
+    {
+      "name": "import diagnostic second-wave save and restore combat/loadout without duplicate rewards",
+      "status": "pass",
+      "details": {
+        "state": {
+          "paused": true,
+          "launching": false,
+          "runToken": 3,
+          "t": 0.7,
+          "flightT": 0.1,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 4,
+          "spd": 32.1,
+          "pos": [
+            -19.9,
+            33.9,
+            -265.7
+          ],
+          "fpv": false,
+          "chapter": 2,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 26,
+          "hp": 73,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 1.7,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 1
+        },
+        "raid": {
+          "position": [
+            -19.873791520313087,
+            33.8579818223262,
+            -265.71962077091797
+          ],
+          "yaw": 0,
+          "pitch": 0.10303590774424713,
+          "speed": 32.13576640935968,
+          "objective": [
+            200,
+            80,
+            -30
+          ],
+          "raid": true,
+          "raidDone": false,
+          "hearth": 82,
+          "wave": 2,
+          "chargeSeconds": 0.9,
+          "riders": [
+            {
+              "id": 0,
+              "position": [
+                200,
+                80,
+                -30
+              ],
+              "yaw": 0.3,
+              "speed": 34,
+              "hp": 1.6,
+              "dead": false,
+              "falling": false
+            }
+          ]
+        },
+        "upgrades": {
+          "strap": 0,
+          "rudder": 2,
+          "stirrup": 0,
+          "gland": 0,
+          "scaleplate": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            0.07058291740807433,
+            -0.9380311004767115,
+            -0.33928705591079517
+          ],
+          "range": 420,
+          "coneHalf": 0.3,
+          "hp": 0,
+          "maxHp": 4,
+          "destroyed": true,
+          "disabled": 1000000000,
+          "lit": 0,
+          "fireWindup": 0,
+          "fireCd": 2.4500566373256243
+        }
+      }
+    },
+    {
+      "name": "server backup stores the browser journey and survives a local-save loss",
+      "status": "fail",
+      "error": "locator.click: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-save=\"connect\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button hidden=\"\" type=\"button\" data-save=\"connect\">Enable server backup</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    6 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\n    at /workspace/scratch/13b7a043f2a6/dragon-storm-game/reports/state-backend/browser-check.mjs:32:105\n    at async check (/workspace/scratch/13b7a043f2a6/dragon-storm-game/reports/state-backend/browser-check.mjs:14:49)\n    at async file:///workspace/scratch/13b7a043f2a6/dragon-storm-game/reports/state-backend/browser-check.mjs:31:2"
+    }
+  ],
+  "errors": [],
+  "firstCheckpoint": {
+    "mode": "story",
+    "rig": "stormcrest",
+    "savedAt": 1790813764859,
+    "worldTime": 0.6832999999999998,
+    "flightTime": 0.1166999999999971,
+    "day": 0,
+    "state": {
+      "hp": 100,
+      "charges": 3,
+      "detection": 0,
+      "grace": 2.8833000000000033,
+      "echoCd": 0,
+      "flockCd": 0,
+      "flockT": 0,
+      "poison": 0,
+      "violence": 0,
+      "altitudePeak": 0,
+      "ultraCd": 0,
+      "ultraT": 0,
+      "superCharge": 0,
+      "spiral": 0,
+      "dive": 0,
+      "lift": 9.482900000000036,
+      "strikeNext": 11.883300000000002,
+      "gustNext": 5.883300000000003,
+      "shootCd": 0,
+      "beatCd": 0.41000000000000003,
+      "tutDone": false,
+      "raidDone": false,
+      "altitudeCollected": false,
+      "bookLost": false,
+      "violenceWarned": false,
+      "spiralFired": false,
+      "spiralMax": false,
+      "stormbreakFired": false,
+      "keepersWoke": false
+    },
+    "loadout": {
+      "scales": 0,
+      "upgrades": {
+        "strap": 0,
+        "rudder": 0,
+        "stirrup": 0,
+        "gland": 0,
+        "scaleplate": 0
+      }
+    },
+    "rings": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "tutorial": [
+      false,
+      false,
+      false
+    ],
+    "gates": [
+      false,
+      false,
+      false
+    ],
+    "towers": [
+      {
+        "hp": 4,
+        "destroyed": false
+      },
+      {
+        "hp": 4,
+        "destroyed": false
+      },
+      {
+        "hp": 4,
+        "destroyed": false
+      }
+    ],
+    "raid": {
+      "on": false,
+      "wave": 0,
+      "hearth": 100,
+      "riders": []
+    },
+    "dragon": {
+      "position": [
+        -19.873791520313087,
+        33.8579818223262,
+        -265.71962077091797
+      ],
+      "yaw": 0,
+      "pitch": 0.10303590774424713,
+      "roll": 0,
+      "speed": 32.13576640935968
+    }
+  },
+  "fatal": "locator.click: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-save=\"connect\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button hidden=\"\" type=\"button\" data-save=\"connect\">Enable server backup</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    6 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\n    at /workspace/scratch/13b7a043f2a6/dragon-storm-game/reports/state-backend/browser-check.mjs:32:105\n    at async check (/workspace/scratch/13b7a043f2a6/dragon-storm-game/reports/state-backend/browser-check.mjs:14:49)\n    at async file:///workspace/scratch/13b7a043f2a6/dragon-storm-game/reports/state-backend/browser-check.mjs:31:2"
+}

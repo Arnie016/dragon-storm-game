@@ -1,0 +1,45 @@
+
+> test
+> node --test tests/*.test.mjs reports/flight-polish/regression.test.mjs reports/flight-polish/audio-volume.test.mjs
+
+✔ actual audio adapter clamps boosted impacts and fade targets (1.804254ms)
+✔ high-speed segment hits a sphere even when both endpoints are outside (1.468565ms)
+✔ sphere endpoint and tangent contacts register (0.152337ms)
+✔ stationary sphere queries distinguish inside from outside (0.133939ms)
+✔ sphere behind the projectile or past the endpoint is not hit (0.094991ms)
+✔ sphere intersection works along steep vertical trajectories (0.34296ms)
+✔ invalid sphere inputs do not leak NaN into collision ordering (0.131055ms)
+✔ cylinder side crossing records earliest wall entry (0.306096ms)
+✔ horizontal flight over cylinder top remains clear (0.142242ms)
+✔ vertical trajectories collide with the top cap without lateral movement (0.179356ms)
+✔ column tangency and inside starts are inclusive (0.205486ms)
+✔ finite cylinder bottom rejects shots beneath floating geometry (0.135261ms)
+✔ projectile padding expands both cylinder walls and cap (0.159187ms)
+✔ nearest cover wins over a target behind it (0.159487ms)
+✔ all five graphics levels are present, immutable and ordered by resolution budget (0.736406ms)
+✔ graphics storage values normalize safely and device pixel ratio is bounded (0.164334ms)
+✔ sessions isolate saves; unauthenticated, cross-origin and invalid uploads are rejected (77.185003ms)
+✔ concurrent writes use compare-and-swap and retain only ten revisions (45.506661ms)
+✔ SQLite preserves sessions and saves after a server restart (14.628465ms)
+✔ static serving exposes game assets but not backend code, database, or git metadata (28.129256ms)
+✔ payload cap and API rate limit are enforced (16.127946ms)
+✔ flight, loadout, damaged towers and second-wave raid survive export/import (7.577263ms)
+✔ legacy story/village/mystery data migrates without deleting old keys (0.374627ms)
+✔ corrupted primary recovers the prior revision and retains a good backup (0.751037ms)
+✔ quota failure leaves durable primary unchanged (0.708324ms)
+✔ another tab cannot silently overwrite a newer journey (0.469419ms)
+✔ future saves cannot be silently replaced by an old client (0.55141ms)
+✔ malformed import, negative currency, invalid health and invalid tutorial are rejected (1.293214ms)
+✔ unavailable browser storage has a usable in-memory starting profile (0.220268ms)
+✔ checksum catches accidental payload edits (0.452183ms)
+✔ unknown fields never enter the shared save model (0.469729ms)
+✔ sync serializes writes and coalesces changes while a request is in flight (6.9769ms)
+✔ sync conflicts stop automatic uploads and require an explicit choice (1.408816ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 292.669742

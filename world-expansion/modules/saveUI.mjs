@@ -2,7 +2,7 @@ import {SaveStore, SaveConflict, SAVE_KEY, encodeSave} from './saveStore.mjs';
 import {SaveSync} from './saveSync.mjs';
 import {MAX_SAVE_BYTES,validateSave} from './saveSchema.mjs';
 
-export function mountSaveUI({storage,capture,applyProfile,resume,isPlaying,pause,canSave,getMilestone=()=>''}){
+export function mountSaveUI({storage,capture,applyProfile,resume,isPlaying,pause,canSave,getMilestone=()=>'',backToTitle=()=>{}}){
   const store=new SaveStore(storage);
   const panel=document.createElement('details');panel.id='savePanel';
   panel.innerHTML=`<summary>JOURNEY & BACKUPS <span id="saveStatus" role="status"></span></summary>
@@ -12,8 +12,17 @@ export function mountSaveUI({storage,capture,applyProfile,resume,isPlaying,pause
     <div id="saveConflict" hidden><p>A server backup already exists. Export your local save first if you want to keep both.</p><button type="button" data-save="remote">Use server save</button><button type="button" data-save="local">Replace server with local</button></div>
     <p id="saveNotice" role="status"></p></div>`;
   document.querySelector('#lobbyHub').append(panel);
+  const back=document.createElement('button');back.type='button';back.id='journeyBack';back.textContent='← Back to title & settings';
+  back.addEventListener('click',e=>{e.stopPropagation();backToTitle();});document.querySelector('#lobbyHub').append(back);
   const style=document.createElement('style');style.textContent=`
     #lobbyHub:not(.on){visibility:hidden}#lobbyHub.on{visibility:visible}
+    #menu:has(#lobbyHub.on) #wakehint{visibility:hidden;pointer-events:none}
+    #menu .card:has(#lobbyHub.on)>div:first-child,#menu .card:has(#lobbyHub.on)>.dock{visibility:hidden}
+    #lobbyHub.on{background:rgba(9,14,20,.88);border:1px solid #b69b6240;border-radius:14px;box-sizing:border-box;padding:20px 0}
+    #lobbyHub .lobby-nodes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:calc(100% - 40px);max-width:610px;padding:0}
+    #lobbyHub .lobby-node{min-width:0;padding:16px 18px}
+    #lobbyHub:has(#continueFlight[hidden]) [data-lobby-mode="chapter"]{grid-column:1/-1}
+    #journeyBack{background:none;border:0;color:#bba989;cursor:pointer;font:12px Georgia,serif;padding:6px}
     #savePanel{position:relative;max-width:610px;width:calc(100% - 40px);color:#c6c2b6;font:13px/1.5 Georgia,serif;text-align:left;pointer-events:auto}
     #savePanel summary{cursor:pointer;text-align:center;letter-spacing:.08em;padding:7px;color:#dfcdae}
     #saveStatus{display:block;letter-spacing:0;color:#93b9a9;font:12px/1.6 sans-serif}
