@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "checks": 3,
+  "kind": "CPU canvas preview with synthetic route progression",
+  "size": [
+    900,
+    900
+  ],
+  "terrainSamplesPerBuild": 33304,
+  "bounds": {
+    "minX": -1900,
+    "maxX": 2050,
+    "minZ": -2710,
+    "maxZ": 1300
+  }
+}

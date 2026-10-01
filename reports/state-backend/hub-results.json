@@ -1,0 +1,26 @@
+{
+  "checks": [
+    {
+      "viewport": [
+        1280,
+        800
+      ],
+      "titleHidden": true,
+      "cardsSeparate": true,
+      "backVisible": true,
+      "overflow": false
+    },
+    {
+      "viewport": [
+        800,
+        500
+      ],
+      "titleHidden": true,
+      "cardsSeparate": true,
+      "backVisible": true,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "backNavigation": true
+}

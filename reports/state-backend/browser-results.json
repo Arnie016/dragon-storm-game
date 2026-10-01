@@ -1,0 +1,317 @@
+{
+  "environment": "Chromium / SwiftShader software rendering. Restore fixtures are diagnostics, not earned campaign progress.",
+  "checks": [
+    {
+      "name": "boot with backend and clean profile",
+      "status": "pass",
+      "details": {
+        "paused": false,
+        "runToken": 0,
+        "t": 0.3,
+        "flightT": 0,
+        "started": false,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 20,
+        "pos": [
+          -20,
+          25.5,
+          -262
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0.342,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      }
+    },
+    {
+      "name": "normal Story launch and save-to-hub create a resumable flight",
+      "status": "pass",
+      "details": {
+        "health": 100,
+        "position": [
+          -19.874020088747727,
+          31.969349646779722,
+          -265.48259537409734
+        ]
+      }
+    },
+    {
+      "name": "reload and Continue restore saved position and pause before flight",
+      "status": "pass",
+      "details": {
+        "paused": true,
+        "launching": false,
+        "runToken": 1,
+        "t": 0.7,
+        "flightT": 0.1,
+        "started": true,
+        "done": false,
+        "det": 0,
+        "score": 0,
+        "spd": 29.6,
+        "pos": [
+          -19.9,
+          32,
+          -265.5
+        ],
+        "fpv": false,
+        "chapter": 0,
+        "tutorial": 0,
+        "routeVisible": 0,
+        "cause": "",
+        "scales": 0,
+        "hp": 100,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      }
+    },
+    {
+      "name": "import diagnostic second-wave save and restore combat/loadout without duplicate rewards",
+      "status": "pass",
+      "details": {
+        "state": {
+          "paused": true,
+          "launching": false,
+          "runToken": 3,
+          "t": 0.7,
+          "flightT": 0.1,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 4,
+          "spd": 29.6,
+          "pos": [
+            -19.9,
+            32,
+            -265.5
+          ],
+          "fpv": false,
+          "chapter": 2,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 26,
+          "hp": 73,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 1.7,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 1
+        },
+        "raid": {
+          "position": [
+            -19.874020088747727,
+            31.969349646779722,
+            -265.48259537409734
+          ],
+          "yaw": 0,
+          "pitch": 0.1031029028553298,
+          "speed": 29.5814011107026,
+          "objective": [
+            200,
+            80,
+            -30
+          ],
+          "raid": true,
+          "raidDone": false,
+          "hearth": 82,
+          "wave": 2,
+          "chargeSeconds": 0.9,
+          "riders": [
+            {
+              "id": 0,
+              "position": [
+                200,
+                80,
+                -30
+              ],
+              "yaw": 0.3,
+              "speed": 34,
+              "hp": 1.6,
+              "dead": false,
+              "falling": false
+            }
+          ]
+        },
+        "upgrades": {
+          "strap": 0,
+          "rudder": 2,
+          "stirrup": 0,
+          "gland": 0,
+          "scaleplate": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            0.07092568680354627,
+            -0.9400184375728824,
+            -0.33366882379761253
+          ],
+          "range": 420,
+          "coneHalf": 0.3,
+          "hp": 0,
+          "maxHp": 4,
+          "destroyed": true,
+          "disabled": 1000000000,
+          "lit": 0,
+          "fireWindup": 0,
+          "fireCd": 2.2647480373086193
+        }
+      }
+    },
+    {
+      "name": "server backup stores the browser journey and survives a local-save loss",
+      "status": "pass",
+      "details": {
+        "revision": 1
+      }
+    },
+    {
+      "name": "real Forge purchase persists across reload",
+      "status": "pass",
+      "details": {
+        "upgrades": {
+          "strap": 0,
+          "rudder": 2,
+          "stirrup": 0,
+          "gland": 0,
+          "scaleplate": 1
+        },
+        "scales": 20
+      }
+    },
+    {
+      "name": "no browser exceptions",
+      "status": "pass"
+    }
+  ],
+  "errors": [],
+  "firstCheckpoint": {
+    "mode": "story",
+    "rig": "stormcrest",
+    "savedAt": 1790814000579,
+    "worldTime": 0.6998000000000008,
+    "flightTime": 0.11660000000000219,
+    "day": 0,
+    "state": {
+      "hp": 100,
+      "charges": 3,
+      "detection": 0,
+      "grace": 2.883399999999998,
+      "echoCd": 0,
+      "flockCd": 0,
+      "flockT": 0,
+      "poison": 0,
+      "violence": 0,
+      "altitudePeak": 0,
+      "ultraCd": 0,
+      "ultraT": 0,
+      "superCharge": 0,
+      "spiral": 0,
+      "dive": 0,
+      "lift": 0,
+      "strikeNext": 11.883399999999996,
+      "gustNext": 5.883399999999998,
+      "shootCd": 0,
+      "beatCd": 0,
+      "tutDone": false,
+      "raidDone": false,
+      "altitudeCollected": false,
+      "bookLost": false,
+      "violenceWarned": false,
+      "spiralFired": false,
+      "spiralMax": false,
+      "stormbreakFired": false,
+      "keepersWoke": false
+    },
+    "loadout": {
+      "scales": 0,
+      "upgrades": {
+        "strap": 0,
+        "rudder": 0,
+        "stirrup": 0,
+        "gland": 0,
+        "scaleplate": 0
+      }
+    },
+    "rings": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "tutorial": [
+      false,
+      false,
+      false
+    ],
+    "gates": [
+      false,
+      false,
+      false
+    ],
+    "towers": [
+      {
+        "hp": 4,
+        "destroyed": false
+      },
+      {
+        "hp": 4,
+        "destroyed": false
+      },
+      {
+        "hp": 4,
+        "destroyed": false
+      }
+    ],
+    "raid": {
+      "on": false,
+      "wave": 0,
+      "hearth": 100,
+      "riders": []
+    },
+    "dragon": {
+      "position": [
+        -19.874020088747727,
+        31.969349646779722,
+        -265.48259537409734
+      ],
+      "yaw": 0,
+      "pitch": 0.1031029028553298,
+      "roll": 0,
+      "speed": 29.5814011107026
+    }
+  }
+}

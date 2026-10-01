@@ -1,0 +1,1211 @@
+{
+  "date": "2026-09-30T11:36:55.451Z",
+  "environment": "Headless Chromium 153 using SwiftShader CPU rendering; render timings are not hardware FPS benchmarks.",
+  "source": "Recovered enhancement branch",
+  "checks": [
+    {
+      "name": "Current final terrain and game load without exceptions",
+      "status": "pass",
+      "terrain": {
+        "quality": "low",
+        "mountains": 20,
+        "canonicalCells": 40,
+        "levels": [
+          1,
+          3,
+          16
+        ],
+        "visibleTriangles": 8800,
+        "shadowCasters": 0,
+        "residentTriangles": 84000
+      },
+      "seaHeight": -10,
+      "rig": {
+        "loaded": true,
+        "invalidBones": [],
+        "flapTimeScale": 1,
+        "glideTimeScale": 0.12
+      },
+      "boot": []
+    },
+    {
+      "name": "Held position receives an actual watchtower projectile",
+      "status": "pass",
+      "setup": "Declared diagnostic: chapter 2 and dragon held 35m in front of tower beam; lock position only after a real enemy projectile launches. Position/speed are fixed for target geometry; no HP, projectile, fire timer, detection or damage injection.",
+      "maximumBolts": 1,
+      "maximumWindup": 0.7833333333333341,
+      "maximumLit": 0.9091865333058989,
+      "hit": {
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 5.2,
+          "flightT": 4.2,
+          "started": true,
+          "done": false,
+          "det": 0.32,
+          "score": 3,
+          "spd": 13,
+          "pos": [
+            693.1,
+            80.7,
+            -134.5
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 0,
+          "hp": 84,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "invulnerable": 0.55,
+        "projectiles": 0,
+        "popup": "HIT −16 · BREAK THE BEAM"
+      },
+      "samples": [
+        {
+          "step": 0,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 1,
+            "t": 1.1,
+            "flightT": 0,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 3,
+            "spd": 13,
+            "pos": [
+              732.7,
+              80.7,
+              -112.6
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 0,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "tower": {
+            "index": 0,
+            "lampPos": [
+              700,
+              84,
+              -100
+            ],
+            "beamDirection": [
+              0.9225313850196091,
+              -0.08987854919801105,
+              -0.37531012516032985
+            ],
+            "range": 480,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0.11619333749479926,
+            "fireWindup": 0,
+            "fireCd": 1.7858695267207894
+          },
+          "foeBolts": 0,
+          "invulnerable": 0,
+          "terrain": -10,
+          "locked": false
+        },
+        {
+          "step": 30,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 1,
+            "t": 1.6,
+            "flightT": 0.5,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 3,
+            "spd": 13,
+            "pos": [
+              729.6,
+              80.7,
+              -118.8
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 0,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "tower": {
+            "index": 0,
+            "lampPos": [
+              700,
+              84,
+              -100
+            ],
+            "beamDirection": [
+              0.8383122374738583,
+              -0.08987854919801105,
+              -0.5377308238288317
+            ],
+            "range": 480,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0.9005936491315697,
+            "fireWindup": 0,
+            "fireCd": 1.2858695267207911
+          },
+          "foeBolts": 0,
+          "invulnerable": 0,
+          "terrain": -10,
+          "locked": false
+        },
+        {
+          "step": 60,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 1,
+            "t": 2.1,
+            "flightT": 1,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 3,
+            "spd": 13,
+            "pos": [
+              725.7,
+              80.7,
+              -123.9
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 0,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "tower": {
+            "index": 0,
+            "lampPos": [
+              700,
+              84,
+              -100
+            ],
+            "beamDirection": [
+              0.7258034444267446,
+              -0.08987854919801107,
+              -0.6820052833023614
+            ],
+            "range": 480,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0.9089936113479531,
+            "fireWindup": 0,
+            "fireCd": 0.7858695267207915
+          },
+          "foeBolts": 0,
+          "invulnerable": 0,
+          "terrain": -10,
+          "locked": false
+        },
+        {
+          "step": 90,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 1,
+            "t": 2.6,
+            "flightT": 1.5,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 3,
+            "spd": 13,
+            "pos": [
+              720.9,
+              80.8,
+              -128.2
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 0,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "tower": {
+            "index": 0,
+            "lampPos": [
+              700,
+              84,
+              -100
+            ],
+            "beamDirection": [
+              0.5888017223388086,
+              -0.08987854919801105,
+              -0.8032648244289758
+            ],
+            "range": 480,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0.906663677532637,
+            "fireWindup": 0,
+            "fireCd": 0.28586952672079063
+          },
+          "foeBolts": 0,
+          "invulnerable": 0,
+          "terrain": -10,
+          "locked": false
+        },
+        {
+          "step": 120,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 1,
+            "t": 3.1,
+            "flightT": 2,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 3,
+            "spd": 13,
+            "pos": [
+              715.5,
+              80.7,
+              -131.5
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 0,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "tower": {
+            "index": 0,
+            "lampPos": [
+              700,
+              84,
+              -100
+            ],
+            "beamDirection": [
+              0.43193032490681393,
+              -0.08987854919801105,
+              -0.8974174284133082
+            ],
+            "range": 480,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0.9029274269532749,
+            "fireWindup": 0,
+            "fireCd": 0
+          },
+          "foeBolts": 0,
+          "invulnerable": 0,
+          "terrain": -10,
+          "locked": false
+        },
+        {
+          "step": 150,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 1,
+            "t": 3.6,
+            "flightT": 2.5,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 3,
+            "spd": 13,
+            "pos": [
+              709.5,
+              80.7,
+              -133.8
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 0,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "tower": {
+            "index": 0,
+            "lampPos": [
+              700,
+              84,
+              -100
+            ],
+            "beamDirection": [
+              0.26048302696104053,
+              -0.08987854919801107,
+              -0.9612858258911732
+            ],
+            "range": 480,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0.8989978865866329,
+            "fireWindup": 0,
+            "fireCd": 0
+          },
+          "foeBolts": 0,
+          "invulnerable": 0,
+          "terrain": -10,
+          "locked": false
+        },
+        {
+          "step": 180,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 1,
+            "t": 4.1,
+            "flightT": 3,
+            "started": true,
+            "done": false,
+            "det": 0,
+            "score": 3,
+            "spd": 13,
+            "pos": [
+              703.2,
+              80.7,
+              -134.9
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 0,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "tower": {
+            "index": 0,
+            "lampPos": [
+              700,
+              84,
+              -100
+            ],
+            "beamDirection": [
+              0.08024548098780791,
+              -0.08987854919801108,
+              -0.9927147169127172
+            ],
+            "range": 480,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0.8963824291766592,
+            "fireWindup": 0,
+            "fireCd": 0
+          },
+          "foeBolts": 0,
+          "invulnerable": 0,
+          "terrain": -10,
+          "locked": false
+        },
+        {
+          "step": 210,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 1,
+            "t": 4.6,
+            "flightT": 3.5,
+            "started": true,
+            "done": false,
+            "det": 0.15,
+            "score": 3,
+            "spd": 13,
+            "pos": [
+              696.8,
+              80.8,
+              -134.9
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 0,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "tower": {
+            "index": 0,
+            "lampPos": [
+              700,
+              84,
+              -100
+            ],
+            "beamDirection": [
+              -0.10270002522834339,
+              -0.08987854919801105,
+              -0.9906435035935774
+            ],
+            "range": 480,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0.894272096510012,
+            "fireWindup": 0.49999999999999994,
+            "fireCd": 0
+          },
+          "foeBolts": 0,
+          "invulnerable": 0,
+          "terrain": -10,
+          "locked": false
+        },
+        {
+          "step": 240,
+          "state": {
+            "paused": false,
+            "launching": false,
+            "runToken": 1,
+            "t": 5.1,
+            "flightT": 4,
+            "started": true,
+            "done": false,
+            "det": 0.29,
+            "score": 3,
+            "spd": 13,
+            "pos": [
+              693.1,
+              80.7,
+              -134.5
+            ],
+            "fpv": false,
+            "chapter": 1,
+            "tutorial": 3,
+            "routeVisible": 12,
+            "cause": "",
+            "scales": 0,
+            "hp": 100,
+            "hpMax": 100,
+            "day": 0,
+            "finishing": false,
+            "charges": 3,
+            "chargeT": -1,
+            "bolts": 0,
+            "disabled": 0
+          },
+          "tower": {
+            "index": 0,
+            "lampPos": [
+              700,
+              84,
+              -100
+            ],
+            "beamDirection": [
+              -0.2821798212033494,
+              -0.08987854919801104,
+              -0.9551420810014114
+            ],
+            "range": 480,
+            "coneHalf": 0.3,
+            "hp": 4,
+            "maxHp": 4,
+            "destroyed": false,
+            "disabled": 0,
+            "lit": 0.7511999211670066,
+            "fireWindup": 0,
+            "fireCd": 1.9580829292556805
+          },
+          "foeBolts": 1,
+          "invulnerable": 0,
+          "terrain": -10,
+          "locked": true
+        }
+      ]
+    },
+    {
+      "name": "No uncaught browser exceptions",
+      "status": "pass",
+      "pageErrors": []
+    }
+  ],
+  "pageErrors": [],
+  "failedRequests": [],
+  "screenshots": [],
+  "campaign": null,
+  "retaliation": {
+    "setup": "Declared diagnostic: chapter 2 and dragon held 35m in front of tower beam; lock position only after a real enemy projectile launches. Position/speed are fixed for target geometry; no HP, projectile, fire timer, detection or damage injection.",
+    "maximumBolts": 1,
+    "maximumWindup": 0.7833333333333341,
+    "maximumLit": 0.9091865333058989,
+    "hit": {
+      "state": {
+        "paused": false,
+        "launching": false,
+        "runToken": 1,
+        "t": 5.2,
+        "flightT": 4.2,
+        "started": true,
+        "done": false,
+        "det": 0.32,
+        "score": 3,
+        "spd": 13,
+        "pos": [
+          693.1,
+          80.7,
+          -134.5
+        ],
+        "fpv": false,
+        "chapter": 1,
+        "tutorial": 3,
+        "routeVisible": 12,
+        "cause": "",
+        "scales": 0,
+        "hp": 84,
+        "hpMax": 100,
+        "day": 0,
+        "finishing": false,
+        "charges": 3,
+        "chargeT": -1,
+        "bolts": 0,
+        "disabled": 0
+      },
+      "invulnerable": 0.55,
+      "projectiles": 0,
+      "popup": "HIT −16 · BREAK THE BEAM"
+    },
+    "samples": [
+      {
+        "step": 0,
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 1.1,
+          "flightT": 0,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 3,
+          "spd": 13,
+          "pos": [
+            732.7,
+            80.7,
+            -112.6
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 0,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            0.9225313850196091,
+            -0.08987854919801105,
+            -0.37531012516032985
+          ],
+          "range": 480,
+          "coneHalf": 0.3,
+          "hp": 4,
+          "maxHp": 4,
+          "destroyed": false,
+          "disabled": 0,
+          "lit": 0.11619333749479926,
+          "fireWindup": 0,
+          "fireCd": 1.7858695267207894
+        },
+        "foeBolts": 0,
+        "invulnerable": 0,
+        "terrain": -10,
+        "locked": false
+      },
+      {
+        "step": 30,
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 1.6,
+          "flightT": 0.5,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 3,
+          "spd": 13,
+          "pos": [
+            729.6,
+            80.7,
+            -118.8
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 0,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            0.8383122374738583,
+            -0.08987854919801105,
+            -0.5377308238288317
+          ],
+          "range": 480,
+          "coneHalf": 0.3,
+          "hp": 4,
+          "maxHp": 4,
+          "destroyed": false,
+          "disabled": 0,
+          "lit": 0.9005936491315697,
+          "fireWindup": 0,
+          "fireCd": 1.2858695267207911
+        },
+        "foeBolts": 0,
+        "invulnerable": 0,
+        "terrain": -10,
+        "locked": false
+      },
+      {
+        "step": 60,
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 2.1,
+          "flightT": 1,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 3,
+          "spd": 13,
+          "pos": [
+            725.7,
+            80.7,
+            -123.9
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 0,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            0.7258034444267446,
+            -0.08987854919801107,
+            -0.6820052833023614
+          ],
+          "range": 480,
+          "coneHalf": 0.3,
+          "hp": 4,
+          "maxHp": 4,
+          "destroyed": false,
+          "disabled": 0,
+          "lit": 0.9089936113479531,
+          "fireWindup": 0,
+          "fireCd": 0.7858695267207915
+        },
+        "foeBolts": 0,
+        "invulnerable": 0,
+        "terrain": -10,
+        "locked": false
+      },
+      {
+        "step": 90,
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 2.6,
+          "flightT": 1.5,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 3,
+          "spd": 13,
+          "pos": [
+            720.9,
+            80.8,
+            -128.2
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 0,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            0.5888017223388086,
+            -0.08987854919801105,
+            -0.8032648244289758
+          ],
+          "range": 480,
+          "coneHalf": 0.3,
+          "hp": 4,
+          "maxHp": 4,
+          "destroyed": false,
+          "disabled": 0,
+          "lit": 0.906663677532637,
+          "fireWindup": 0,
+          "fireCd": 0.28586952672079063
+        },
+        "foeBolts": 0,
+        "invulnerable": 0,
+        "terrain": -10,
+        "locked": false
+      },
+      {
+        "step": 120,
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 3.1,
+          "flightT": 2,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 3,
+          "spd": 13,
+          "pos": [
+            715.5,
+            80.7,
+            -131.5
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 0,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            0.43193032490681393,
+            -0.08987854919801105,
+            -0.8974174284133082
+          ],
+          "range": 480,
+          "coneHalf": 0.3,
+          "hp": 4,
+          "maxHp": 4,
+          "destroyed": false,
+          "disabled": 0,
+          "lit": 0.9029274269532749,
+          "fireWindup": 0,
+          "fireCd": 0
+        },
+        "foeBolts": 0,
+        "invulnerable": 0,
+        "terrain": -10,
+        "locked": false
+      },
+      {
+        "step": 150,
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 3.6,
+          "flightT": 2.5,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 3,
+          "spd": 13,
+          "pos": [
+            709.5,
+            80.7,
+            -133.8
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 0,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            0.26048302696104053,
+            -0.08987854919801107,
+            -0.9612858258911732
+          ],
+          "range": 480,
+          "coneHalf": 0.3,
+          "hp": 4,
+          "maxHp": 4,
+          "destroyed": false,
+          "disabled": 0,
+          "lit": 0.8989978865866329,
+          "fireWindup": 0,
+          "fireCd": 0
+        },
+        "foeBolts": 0,
+        "invulnerable": 0,
+        "terrain": -10,
+        "locked": false
+      },
+      {
+        "step": 180,
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 4.1,
+          "flightT": 3,
+          "started": true,
+          "done": false,
+          "det": 0,
+          "score": 3,
+          "spd": 13,
+          "pos": [
+            703.2,
+            80.7,
+            -134.9
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 0,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            0.08024548098780791,
+            -0.08987854919801108,
+            -0.9927147169127172
+          ],
+          "range": 480,
+          "coneHalf": 0.3,
+          "hp": 4,
+          "maxHp": 4,
+          "destroyed": false,
+          "disabled": 0,
+          "lit": 0.8963824291766592,
+          "fireWindup": 0,
+          "fireCd": 0
+        },
+        "foeBolts": 0,
+        "invulnerable": 0,
+        "terrain": -10,
+        "locked": false
+      },
+      {
+        "step": 210,
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 4.6,
+          "flightT": 3.5,
+          "started": true,
+          "done": false,
+          "det": 0.15,
+          "score": 3,
+          "spd": 13,
+          "pos": [
+            696.8,
+            80.8,
+            -134.9
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 0,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            -0.10270002522834339,
+            -0.08987854919801105,
+            -0.9906435035935774
+          ],
+          "range": 480,
+          "coneHalf": 0.3,
+          "hp": 4,
+          "maxHp": 4,
+          "destroyed": false,
+          "disabled": 0,
+          "lit": 0.894272096510012,
+          "fireWindup": 0.49999999999999994,
+          "fireCd": 0
+        },
+        "foeBolts": 0,
+        "invulnerable": 0,
+        "terrain": -10,
+        "locked": false
+      },
+      {
+        "step": 240,
+        "state": {
+          "paused": false,
+          "launching": false,
+          "runToken": 1,
+          "t": 5.1,
+          "flightT": 4,
+          "started": true,
+          "done": false,
+          "det": 0.29,
+          "score": 3,
+          "spd": 13,
+          "pos": [
+            693.1,
+            80.7,
+            -134.5
+          ],
+          "fpv": false,
+          "chapter": 1,
+          "tutorial": 3,
+          "routeVisible": 12,
+          "cause": "",
+          "scales": 0,
+          "hp": 100,
+          "hpMax": 100,
+          "day": 0,
+          "finishing": false,
+          "charges": 3,
+          "chargeT": -1,
+          "bolts": 0,
+          "disabled": 0
+        },
+        "tower": {
+          "index": 0,
+          "lampPos": [
+            700,
+            84,
+            -100
+          ],
+          "beamDirection": [
+            -0.2821798212033494,
+            -0.08987854919801104,
+            -0.9551420810014114
+          ],
+          "range": 480,
+          "coneHalf": 0.3,
+          "hp": 4,
+          "maxHp": 4,
+          "destroyed": false,
+          "disabled": 0,
+          "lit": 0.7511999211670066,
+          "fireWindup": 0,
+          "fireCd": 1.9580829292556805
+        },
+        "foeBolts": 1,
+        "invulnerable": 0,
+        "terrain": -10,
+        "locked": true
+      }
+    ]
+  }
+}
